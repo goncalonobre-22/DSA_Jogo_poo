@@ -120,8 +120,10 @@ public class VoxelWorld {
             }
         }
 
-        setBlock(pos.x + 2, pos.y + 3, pos.z, VoxelPalette.DIRT_ID);
+        setBlock(pos.x + 2, pos.y + 1, pos.z, VoxelPalette.DIRT_ID);
         setBlock(pos.x - 2, pos.y + 3, pos.z, VoxelPalette.SAND_ID);
+        setBlock(pos.x + 4, pos.y + 1, pos.z, VoxelPalette.METALORE_ID);
+
     }
 
     public int getTopSolidY(int x, int z) {
