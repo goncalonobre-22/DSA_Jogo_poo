@@ -27,6 +27,13 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean placeRequested;
     private volatile boolean toggleInventoryRequested;
     private int scrollDelta = 0;
+    private volatile boolean inventoryLeftRequested;
+    private volatile boolean inventoryRightRequested;
+    private volatile boolean inventoryUpRequested;
+    private volatile boolean inventoryDownRequested;
+    private volatile int hotbarNumberPressed = 0;
+
+
 
     @Override
     protected void initialize(Application app) {
@@ -54,20 +61,38 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         // Interact (E)
         im.addMapping("Interact", new KeyTrigger(KeyInput.KEY_E));
 
-        im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
-        im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-");
-        // Adicionado do inventário pt.2
-        im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint",
-                "ToggleMouse", "Break", "Place", "ToggleShading", "Respawn", "Interact", "ToggleInventory");
-        im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-", "MouseWheelUp", "MouseWheelDown");
-
         // Mouse wheel
         im.addMapping("MouseWheelUp", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
         im.addMapping("MouseWheelDown", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
         // Place voxel (right mouse)
         im.addMapping("Place", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
         // Toggle Inventory (I)
-        im.addMapping("ToggleInventory", new KeyTrigger(KeyInput.KEY_I));
+        im.addMapping("ToggleInventory", new KeyTrigger(KeyInput.KEY_TAB));
+
+        im.addMapping("InvLeft",  new KeyTrigger(KeyInput.KEY_LEFT));
+        im.addMapping("InvRight", new KeyTrigger(KeyInput.KEY_RIGHT));
+        im.addMapping("InvUp",    new KeyTrigger(KeyInput.KEY_UP));
+        im.addMapping("InvDown",  new KeyTrigger(KeyInput.KEY_DOWN));
+
+        im.addMapping("Hotbar1", new KeyTrigger(KeyInput.KEY_1));
+        im.addMapping("Hotbar2", new KeyTrigger(KeyInput.KEY_2));
+        im.addMapping("Hotbar3", new KeyTrigger(KeyInput.KEY_3));
+        im.addMapping("Hotbar4", new KeyTrigger(KeyInput.KEY_4));
+        im.addMapping("Hotbar5", new KeyTrigger(KeyInput.KEY_5));
+        im.addMapping("Hotbar6", new KeyTrigger(KeyInput.KEY_6));
+        im.addMapping("Hotbar7", new KeyTrigger(KeyInput.KEY_7));
+        im.addMapping("Hotbar8", new KeyTrigger(KeyInput.KEY_8));
+        im.addMapping("Hotbar9", new KeyTrigger(KeyInput.KEY_9));
+        im.addMapping("Hotbar10", new KeyTrigger(KeyInput.KEY_0));
+
+        im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
+        im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-");
+        // Adicionado do inventário pt.2
+        im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint",
+                "ToggleMouse", "Break", "Place", "ToggleShading", "Respawn", "Interact", "ToggleInventory");
+        im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-", "MouseWheelUp", "MouseWheelDown");
+        im.addListener(this, "InvLeft", "InvRight", "InvUp", "InvDown");
+        im.addListener(this, "Hotbar1","Hotbar2","Hotbar3","Hotbar4","Hotbar5","Hotbar6","Hotbar7","Hotbar8","Hotbar9", "Hotbar10");
     }
 
     @Override
@@ -140,6 +165,30 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
             case "ToggleInventory" -> {
                 if (isPressed) toggleInventoryRequested = true;
             }
+
+            case "InvLeft"  -> {
+                if (isPressed) inventoryLeftRequested  = true;
+            }
+            case "InvRight" -> {
+                if (isPressed) inventoryRightRequested = true;
+            }
+            case "InvUp"    -> {
+                if (isPressed) inventoryUpRequested    = true;
+            }
+            case "InvDown"  -> {
+                if (isPressed) inventoryDownRequested  = true;
+            }
+            case "Hotbar1" -> { if (isPressed) hotbarNumberPressed = 1; }
+            case "Hotbar2" -> { if (isPressed) hotbarNumberPressed = 2; }
+            case "Hotbar3" -> { if (isPressed) hotbarNumberPressed = 3; }
+            case "Hotbar4" -> { if (isPressed) hotbarNumberPressed = 4; }
+            case "Hotbar5" -> { if (isPressed) hotbarNumberPressed = 5; }
+            case "Hotbar6" -> { if (isPressed) hotbarNumberPressed = 6; }
+            case "Hotbar7" -> { if (isPressed) hotbarNumberPressed = 7; }
+            case "Hotbar8" -> { if (isPressed) hotbarNumberPressed = 8; }
+            case "Hotbar9" -> { if (isPressed) hotbarNumberPressed = 9; }
+            case  "Hotbar10" -> { if (isPressed) hotbarNumberPressed = 10; }
+
         }
     }
 
@@ -235,4 +284,36 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         scrollDelta = 0;
         return d;
     }
+
+    public boolean consumeInventoryLeft() {
+        boolean r = inventoryLeftRequested;
+        inventoryLeftRequested = false;
+        return r;
+    }
+
+    public boolean consumeInventoryRight() {
+        boolean r = inventoryRightRequested;
+        inventoryRightRequested = false;
+        return r;
+    }
+
+    public boolean consumeInventoryUp() {
+        boolean r = inventoryUpRequested;
+        inventoryUpRequested = false;
+        return r;
+    }
+
+    public boolean consumeInventoryDown() {
+        boolean r = inventoryDownRequested;
+        inventoryDownRequested = false;
+        return r;
+    }
+
+    public int consumeHotbarNumber() {
+        int r = hotbarNumberPressed;
+        hotbarNumberPressed = 0;
+        return r;
+    }
+
+
 }

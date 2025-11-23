@@ -39,7 +39,7 @@ public class HudAppState extends BaseAppState {
 
     private static final int SLOT_SIZE = 40;
     private static final int SLOT_SPACING = 45;
-    private static final int HOTBAR_SLOTS = 9;
+    private static final int HOTBAR_SLOTS = 10;
 
     public HudAppState(Node guiNode, AssetManager assetManager) {
         this.guiNode = guiNode;
@@ -93,6 +93,23 @@ public class HudAppState extends BaseAppState {
         } else {
             updateHotbar();
         }
+
+        InputAppState input = getStateManager().getState(InputAppState.class);
+
+// Se inventário está aberto → teclas movem seleção
+        if (inventoryOpen) {
+            if (input.consumeInventoryLeft())  moveInventorySelection("Left");
+            if (input.consumeInventoryRight()) moveInventorySelection("Right");
+            if (input.consumeInventoryUp())    moveInventorySelection("Up");
+            if (input.consumeInventoryDown())  moveInventorySelection("Down");
+        } else {
+            // Hotbar numbers
+            int num = input.consumeHotbarNumber();
+            if (num > 0 && num <= 10) {
+                player.getInventory().setSelectedSlot(num - 1);
+            }
+        }
+
     }
 
     //Coisas novas 3
@@ -302,6 +319,35 @@ public class HudAppState extends BaseAppState {
             inventoryNode.removeFromParent();
         }
     }
+
+    public void moveInventorySelection(String dir) {
+        Inventory inv = player.getInventory();
+        int selected = inv.getSelectedSlot();
+
+        int cols = 10;
+        int rows = 4;
+
+        int col = selected % cols;
+        int row = selected / cols;
+
+        switch (dir) {
+            case "Left":
+                if (col > 0) selected--;
+                break;
+            case "Right":
+                if (col < cols - 1) selected++;
+                break;
+            case "Up":
+                if (row > 0) selected -= cols;
+                break;
+            case "Down":
+                if (row < rows - 1) selected += cols;
+                break;
+        }
+
+        inv.setSelectedSlot(selected);
+    }
+
 
     @Override
     protected void onEnable() { }

@@ -110,7 +110,7 @@ public class Inventory {
     }
 
     public void setSelectedSlot(int slot) {
-        if (slot >= 0 && slot < 9) {  // Hotbar tem 9 slots (0-8)
+        if (slot >= 0 && slot < inventorySize) {  // Hotbar tem 10 slots (0-9)
             this.selectedSlot = slot;
         }
     }
