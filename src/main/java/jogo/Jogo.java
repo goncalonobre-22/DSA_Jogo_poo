@@ -1,6 +1,7 @@
 package jogo;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.state.BaseAppState;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.system.AppSettings;
@@ -14,6 +15,7 @@ import jogo.appstate.RenderAppState;
 import jogo.appstate.InteractionAppState;
 import jogo.engine.GameRegistry;
 import jogo.engine.RenderIndex;
+import jogo.gameobject.character.Player;
 
 /**
  * Main application entry.
@@ -31,6 +33,8 @@ public class Jogo extends SimpleApplication {
         app.setSettings(settings);
         app.start();
     }
+
+
 
     private BulletAppState bulletAppState;
 
@@ -51,7 +55,9 @@ public class Jogo extends SimpleApplication {
         InputAppState input = new InputAppState();
         stateManager.attach(input);
 
-        WorldAppState world = new WorldAppState(rootNode, assetManager, physicsSpace, cam, input);
+        Player player_inv = new Player();
+
+        WorldAppState world = new WorldAppState(rootNode, assetManager, physicsSpace, cam, input, player_inv);
         stateManager.attach(world);
 
         // Engine registry and render layers
@@ -65,7 +71,7 @@ public class Jogo extends SimpleApplication {
         // chest.setPosition(26.5f, world.getRecommendedSpawnPosition().y - 2f, 26.5f);
         // registry.add(chest);
 
-        PlayerAppState player = new PlayerAppState(rootNode, assetManager, cam, input, physicsSpace, world);
+        PlayerAppState player = new PlayerAppState(rootNode, assetManager, cam, input, physicsSpace, world, player_inv);
         stateManager.attach(player);
 
         // Post-processing: SSAO for subtle contact shadows
@@ -83,6 +89,30 @@ public class Jogo extends SimpleApplication {
         }
 
         // HUD (just a crosshair for now)
-        stateManager.attach(new HudAppState(guiNode, assetManager));
+        //stateManager.attach(new HudAppState(guiNode, assetManager));
+        HudAppState hudAppState = new HudAppState(guiNode, assetManager);
+        hudAppState.setPlayer(player_inv);
+        stateManager.attach(hudAppState);
+
+// Handler para toggle do inventário
+        stateManager.attach(new BaseAppState() {
+            @Override
+            protected void initialize(com.jme3.app.Application app) {}
+
+            @Override
+            public void update(float tpf) {
+                if (input.consumeToggleInventoryRequested()) {
+                    hudAppState.toggleInventory();
+                    input.setMouseCaptured(!hudAppState.isInventoryOpen());
+                }
+            }
+
+            @Override
+            protected void cleanup(com.jme3.app.Application app) {}
+            @Override
+            protected void onEnable() {}
+            @Override
+            protected void onDisable() {}
+        });
     }
 }

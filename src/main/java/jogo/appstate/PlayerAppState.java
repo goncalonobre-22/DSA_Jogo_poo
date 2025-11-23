@@ -39,13 +39,15 @@ public class PlayerAppState extends BaseAppState {
     private Vector3f spawnPosition = new Vector3f(25.5f, 12f, 25.5f);
     private PointLight playerLight;
 
-    public PlayerAppState(Node rootNode, AssetManager assetManager, Camera cam, InputAppState input, PhysicsSpace physicsSpace, WorldAppState world) {
+    public PlayerAppState(Node rootNode, AssetManager assetManager, Camera cam, InputAppState input, PhysicsSpace physicsSpace, WorldAppState world, Player player) {
         this.rootNode = rootNode;
         this.assetManager = assetManager;
         this.cam = cam;
         this.input = input;
         this.physicsSpace = physicsSpace;
         this.world = world;
+        // Adicionado do inventário pt.1 (Só o this.player = player)
+        this.player = player;
         world.registerPlayerAppState(this);
     }
 
@@ -60,7 +62,7 @@ public class PlayerAppState extends BaseAppState {
         rootNode.attachChild(playerNode);
 
         // Engine-neutral player entity (no engine visuals here)
-        player = new Player();
+        //player = new Player();
 
         // BetterCharacterControl(radius, height, mass)
         characterControl = new BetterCharacterControl(0.42f, 1.8f, 80f);
@@ -87,6 +89,8 @@ public class PlayerAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
+        handleInventoryInput();  // ADICIONAR esta linha
+
         // respawn on request
         if (input.consumeRespawnRequested()) {
             // refresh spawn from world in case terrain changed
@@ -186,5 +190,27 @@ public class PlayerAppState extends BaseAppState {
             physicsSpace.remove(characterControl);
             physicsSpace.add(characterControl);
         }
+    }
+
+    private void handleInventoryInput() {
+        // Scroll do mouse para trocar slot selecionado
+        int scroll = input.consumeScrollDelta();
+        if (scroll != 0) {
+            int currentSlot = player.getInventory().getSelectedSlot();
+            currentSlot -= scroll;
+
+            // Wrap around (0-8)
+            if (currentSlot < 0) currentSlot = 8;
+            if (currentSlot > 8) currentSlot = 0;
+
+            player.getInventory().setSelectedSlot(currentSlot);
+            System.out.println("Slot selecionado: " + (currentSlot + 1));
+        }
+    }
+
+
+    // Adicionado do inventário
+    public Player getPlayer() {
+        return player;
     }
 }

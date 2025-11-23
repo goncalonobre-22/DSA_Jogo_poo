@@ -23,6 +23,10 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean interactRequested;
     private float mouseDX, mouseDY;
     private boolean mouseCaptured = true;
+    // Adicionado do  inventário 1
+    private volatile boolean placeRequested;
+    private volatile boolean toggleInventoryRequested;
+    private int scrollDelta = 0;
 
     @Override
     protected void initialize(Application app) {
@@ -52,6 +56,18 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
         im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
         im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-");
+        // Adicionado do inventário pt.2
+        im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint",
+                "ToggleMouse", "Break", "Place", "ToggleShading", "Respawn", "Interact", "ToggleInventory");
+        im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-", "MouseWheelUp", "MouseWheelDown");
+
+        // Mouse wheel
+        im.addMapping("MouseWheelUp", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+        im.addMapping("MouseWheelDown", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+        // Place voxel (right mouse)
+        im.addMapping("Place", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        // Toggle Inventory (I)
+        im.addMapping("ToggleInventory", new KeyTrigger(KeyInput.KEY_I));
     }
 
     @Override
@@ -73,6 +89,13 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.deleteMapping("Respawn");
         im.deleteMapping("Interact");
         im.removeListener(this);
+
+
+        // Adicionado do inventário pt.3
+        im.deleteMapping("MouseWheelUp");
+        im.deleteMapping("MouseWheelDown");
+        im.deleteMapping("Place");
+        im.deleteMapping("ToggleInventory");
     }
 
     @Override
@@ -109,6 +132,14 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
             case "Interact" -> {
                 if (isPressed && mouseCaptured) interactRequested = true;
             }
+
+            // Adicionado do inventário pt.4
+            case "Place" -> {
+                if (isPressed && mouseCaptured) placeRequested = true;
+            }
+            case "ToggleInventory" -> {
+                if (isPressed) toggleInventoryRequested = true;
+            }
         }
     }
 
@@ -120,6 +151,10 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
             case "MouseX-" -> mouseDX -= value;
             case "MouseY+" -> mouseDY += value;
             case "MouseY-" -> mouseDY -= value;
+
+            //Adicionado do inventário pt.5
+            case "MouseWheelUp" -> scrollDelta = 1;
+            case "MouseWheelDown" -> scrollDelta = -1;
         }
     }
 
@@ -181,5 +216,23 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
     public boolean isMouseCaptured() {
         return mouseCaptured;
+    }
+
+    public boolean consumePlaceRequested() {
+        boolean r = placeRequested;
+        placeRequested = false;
+        return r;
+    }
+
+    public boolean consumeToggleInventoryRequested() {
+        boolean r = toggleInventoryRequested;
+        toggleInventoryRequested = false;
+        return r;
+    }
+
+    public int consumeScrollDelta() {
+        int d = scrollDelta;
+        scrollDelta = 0;
+        return d;
     }
 }

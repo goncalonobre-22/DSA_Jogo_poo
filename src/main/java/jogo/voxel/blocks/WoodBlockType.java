@@ -6,14 +6,14 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.texture.Texture2D;
 import jogo.voxel.VoxelBlockType;
 
-public class MetalOreBlockType extends VoxelBlockType {
-    public MetalOreBlockType() {
-        super("metalOre");
+public class WoodBlockType extends VoxelBlockType {
+    public WoodBlockType() {
+        super("wood");
     }
 
     @Override
     public Material getMaterial(AssetManager assetManager) {
-        Texture2D tex = (Texture2D) assetManager.loadTexture("Textures/metalOre.png");
+        Texture2D tex = (Texture2D) assetManager.loadTexture("Textures/wood.png");
         Material s = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         s.setTexture("DiffuseMap", tex);
         s.setBoolean("UseMaterialColors", true);

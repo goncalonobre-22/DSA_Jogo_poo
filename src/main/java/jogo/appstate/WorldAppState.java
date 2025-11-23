@@ -11,6 +11,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
+import jogo.gameobject.character.Player;
+import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
 public class WorldAppState extends BaseAppState {
@@ -21,18 +23,22 @@ public class WorldAppState extends BaseAppState {
     private final Camera cam;
     private final InputAppState input;
     private PlayerAppState playerAppState;
+    // Adicionado do inventário
+    private Player player;
 
     // world root for easy cleanup
     private Node worldNode;
     private VoxelWorld voxelWorld;
     private com.jme3.math.Vector3f spawnPosition;
 
-    public WorldAppState(Node rootNode, AssetManager assetManager, PhysicsSpace physicsSpace, Camera cam, InputAppState input) {
+    public WorldAppState(Node rootNode, AssetManager assetManager, PhysicsSpace physicsSpace, Camera cam, InputAppState input, Player player) {
         this.rootNode = rootNode;
         this.assetManager = assetManager;
         this.physicsSpace = physicsSpace;
         this.cam = cam;
         this.input = input;
+        // Adicionado do inventário (Experimentar tirar depois)
+        this.player = this.player;
     }
 
     public void registerPlayerAppState(PlayerAppState playerAppState) {
@@ -80,12 +86,62 @@ public class WorldAppState extends BaseAppState {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
             pick.ifPresent(hit -> {
                 VoxelWorld.Vector3i cell = hit.cell;
+                byte blockId = voxelWorld.getBlock(cell.x, cell.y, cell.z);
+
                 if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
+                    // Adiciona o bloco ao inventário
+                    if (player != null && blockId != VoxelPalette.AIR_ID) {
+                        boolean added = player.getInventory().addItem(blockId, 1);
+                        if (added) {
+                            System.out.println("Bloco adicionado ao inventário!");
+                        } else {
+                            System.out.println("Inventário cheio!");
+                        }
+                    }
+
                     voxelWorld.rebuildDirtyChunks(physicsSpace);
                     playerAppState.refreshPhysics();
                 }
             });
         }
+
+        // Adicionado por causa do inventário
+        // COLOCAR BLOCO (clique direito)
+        if (input != null && input.isMouseCaptured() && input.consumePlaceRequested()) {
+            var pick = voxelWorld.pickFirstSolid(cam, 6f);
+            pick.ifPresent(hit -> {
+                // Coloca o bloco na face do bloco atingido
+                VoxelWorld.Vector3i cell = hit.cell;
+                Vector3f normal = hit.normal;
+
+                int placeX = cell.x + (int)normal.x;
+                int placeY = cell.y + (int)normal.y;
+                int placeZ = cell.z + (int)normal.z;
+
+                // Verifica se tem bloco selecionado no inventário
+                if (player != null) {
+                    var selectedItem = player.getInventory().getSelectedItem();
+                    if (selectedItem != null && selectedItem.getAmount() > 0) {
+                        byte blockId = selectedItem.getBlockId();
+
+                        // Verifica se a posição está vazia
+                        if (voxelWorld.getBlock(placeX, placeY, placeZ) == VoxelPalette.AIR_ID) {
+                            voxelWorld.setBlock(placeX, placeY, placeZ, blockId);
+
+                            // Remove 1 item do inventário
+                            player.getInventory().removeItem(blockId, 1);
+                            System.out.println("Bloco colocado!");
+
+                            voxelWorld.rebuildDirtyChunks(physicsSpace);
+                            playerAppState.refreshPhysics();
+                        }
+                    } else {
+                        System.out.println("Nenhum bloco selecionado!");
+                    }
+                }
+            });
+        }
+
         if (input != null && input.consumeToggleShadingRequested()) {
             voxelWorld.toggleRenderDebug();
         }
