@@ -1,10 +1,7 @@
 package jogo.engine;
 
 import jogo.gameobject.GameObject;
-import jogo.gameobject.item.DirtBlockItem;
-import jogo.gameobject.item.Item;
-import jogo.gameobject.item.PlaceableItem;
-import jogo.gameobject.item.StoneBlockItem;
+import jogo.gameobject.item.*;
 import jogo.voxel.VoxelPalette;
 
 import java.util.*;
@@ -32,6 +29,9 @@ public class GameRegistry {
         // Regista todos os items de blocos
         registerBlockItem(VoxelPalette.STONE_ID, StoneBlockItem.class);
         registerBlockItem(VoxelPalette.DIRT_ID, DirtBlockItem.class);
+        registerBlockItem(VoxelPalette.WOOD_ID, WoodBlockItem.class);
+        registerBlockItem(VoxelPalette.METALORE_ID, MetalOreBlockItem.class);
+        registerBlockItem(VoxelPalette.SAND_ID, SandBlockItem.class);
     }
 
     private static void registerBlockItem(byte blockId, Class<? extends PlaceableItem> itemClass) {

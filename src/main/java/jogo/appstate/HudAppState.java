@@ -113,38 +113,6 @@ public class HudAppState extends BaseAppState {
 
     //Coisas novas 3
 
-
-    private Geometry createSlot(int x, int y, boolean selected) {
-        Quad quad = new Quad(SLOT_SIZE, SLOT_SIZE);
-        Geometry geom = new Geometry("Slot", quad);
-
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        if (selected) {
-            mat.setColor("Color", ColorRGBA.Yellow);  // Amarelo sólido
-        } else {
-            mat.setColor("Color", new ColorRGBA(0.4f, 0.4f, 0.4f, 1f));  // Cinza sólido
-        }
-
-        geom.setMaterial(mat);
-        geom.setLocalTranslation(x, y, 0);
-
-        return geom;
-    }
-
-
-    private BitmapText createItemText(Stacks stack, int x, int y) {
-        Item item = stack.getItem();
-        String text = item.getName() + "\nx" + stack.getAmount();
-
-        BitmapText bt = new BitmapText(font);
-        bt.setText(text);
-        bt.setSize(font.getCharSet().getRenderedSize() * 0.7f);
-        bt.setColor(ColorRGBA.White);
-        bt.setLocalTranslation(x + 3, y + 20, 0);
-
-        return bt;
-    }
-
     private void updateHotbar() {
         hotbarNode.detachAllChildren();
 
@@ -209,15 +177,25 @@ public class HudAppState extends BaseAppState {
 
                 // Texto da quantidade
                 if (stack.getAmount() > 1) {
-                    BitmapText amountText = new BitmapText(font, false);
-                    amountText.setText(String.valueOf(stack.getAmount()));
-                    amountText.setSize(font.getCharSet().getRenderedSize() - 4);
-                    amountText.setColor(ColorRGBA.White);
+                    if (stack.getAmount() < 10) {
+                        BitmapText amountText = new BitmapText(font, false);
+                        amountText.setText(String.valueOf(stack.getAmount()));
+                        amountText.setSize(font.getCharSet().getRenderedSize() - 4);
+                        amountText.setColor(ColorRGBA.White);
 
-                    // canto inferior direito
-                    amountText.setLocalTranslation(x + SLOT_SIZE - 15, startY + 20, 2);
+                        // canto inferior direito
+                        amountText.setLocalTranslation(x + SLOT_SIZE - 15, startY + 20, 2);
+                        hotbarNode.attachChild(amountText);
+                    } else {
+                        BitmapText amountText = new BitmapText(font, false);
+                        amountText.setText(String.valueOf(stack.getAmount()));
+                        amountText.setSize(font.getCharSet().getRenderedSize() - 4);
+                        amountText.setColor(ColorRGBA.White);
 
-                    hotbarNode.attachChild(amountText);
+                        // canto inferior direito
+                        amountText.setLocalTranslation(x + SLOT_SIZE - 20, startY + 20, 2);
+                        hotbarNode.attachChild(amountText);
+                    }
                 }
             }
 
@@ -311,12 +289,21 @@ public class HudAppState extends BaseAppState {
                     inventoryNode.attachChild(iconGeom);
                 }
 
-                BitmapText number = new BitmapText(font, false);
-                number.setText(String.valueOf(stack.getAmount()));
-                number.setSize(font.getCharSet().getRenderedSize() * 0.7f);
-                number.setColor(ColorRGBA.White);
-                number.setLocalTranslation(x+24, y + 23, 0);
-                inventoryNode.attachChild(number);
+                if (stack.getAmount() < 10) {
+                    BitmapText number = new BitmapText(font, false);
+                    number.setText(String.valueOf(stack.getAmount()));
+                    number.setSize(font.getCharSet().getRenderedSize() * 0.7f);
+                    number.setColor(ColorRGBA.White);
+                    number.setLocalTranslation(x+24, y + 23, 0);
+                    inventoryNode.attachChild(number);
+                } else {
+                    BitmapText number = new BitmapText(font, false);
+                    number.setText(String.valueOf(stack.getAmount()));
+                    number.setSize(font.getCharSet().getRenderedSize() * 0.7f);
+                    number.setColor(ColorRGBA.White);
+                    number.setLocalTranslation(x+18, y + 23, 0);
+                    inventoryNode.attachChild(number);
+                }
             }
         }
 

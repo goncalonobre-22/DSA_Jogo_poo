@@ -1,0 +1,16 @@
+package jogo.gameobject.item;
+
+import com.jme3.asset.AssetManager;
+import com.jme3.texture.Texture;
+import jogo.voxel.VoxelPalette;
+
+public class MetalOreBlockItem extends PlaceableItem {
+    public MetalOreBlockItem() {
+        super("Metal Ore", VoxelPalette.METALORE_ID);
+    }
+
+    @Override
+    public Texture getIcon(AssetManager assetManager) {
+        return assetManager.loadTexture("Textures/metalOre.png");
+    }
+}
