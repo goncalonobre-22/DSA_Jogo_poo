@@ -5,7 +5,7 @@ import com.jme3.texture.Texture;
 import jogo.voxel.VoxelPalette;
 
 public class SandBlockItem extends PlaceableItem {
-    public SandBlockItem(AssetManager assetManager) {
+    public SandBlockItem() {
         super("Sand", VoxelPalette.SAND_ID);
     }
 

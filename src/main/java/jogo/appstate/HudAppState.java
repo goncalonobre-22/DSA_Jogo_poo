@@ -18,9 +18,13 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
+import jogo.gameobject.item.PlaceableItem;
+import jogo.gameobject.item.SandBlockItem;
 import jogo.util.Inventory;
 import jogo.util.Stacks;
 import jogo.voxel.VoxelPalette;
+
+import java.util.Objects;
 
 public class HudAppState extends BaseAppState {
 
@@ -177,25 +181,20 @@ public class HudAppState extends BaseAppState {
 
                 // Texto da quantidade
                 if (stack.getAmount() > 1) {
+                    BitmapText amountText = new BitmapText(font, false);
+                    amountText.setText(String.valueOf(stack.getAmount()));
+                    amountText.setSize(font.getCharSet().getRenderedSize() - 4);
+                    amountText.setColor(ColorRGBA.White);
                     if (stack.getAmount() < 10) {
-                        BitmapText amountText = new BitmapText(font, false);
-                        amountText.setText(String.valueOf(stack.getAmount()));
-                        amountText.setSize(font.getCharSet().getRenderedSize() - 4);
-                        amountText.setColor(ColorRGBA.White);
-
-                        // canto inferior direito
                         amountText.setLocalTranslation(x + SLOT_SIZE - 15, startY + 20, 2);
-                        hotbarNode.attachChild(amountText);
                     } else {
-                        BitmapText amountText = new BitmapText(font, false);
-                        amountText.setText(String.valueOf(stack.getAmount()));
-                        amountText.setSize(font.getCharSet().getRenderedSize() - 4);
-                        amountText.setColor(ColorRGBA.White);
-
-                        // canto inferior direito
                         amountText.setLocalTranslation(x + SLOT_SIZE - 20, startY + 20, 2);
-                        hotbarNode.attachChild(amountText);
                     }
+
+                    if (Objects.equals(item.getName(), "Sand")){
+                        amountText.setColor(ColorRGBA.Black);
+                    }
+                    hotbarNode.attachChild(amountText);
                 }
             }
 
@@ -289,21 +288,20 @@ public class HudAppState extends BaseAppState {
                     inventoryNode.attachChild(iconGeom);
                 }
 
+                BitmapText number = new BitmapText(font, false);
+                number.setText(String.valueOf(stack.getAmount()));
+                number.setSize(font.getCharSet().getRenderedSize() * 0.7f);
+                number.setColor(ColorRGBA.White);
                 if (stack.getAmount() < 10) {
-                    BitmapText number = new BitmapText(font, false);
-                    number.setText(String.valueOf(stack.getAmount()));
-                    number.setSize(font.getCharSet().getRenderedSize() * 0.7f);
-                    number.setColor(ColorRGBA.White);
                     number.setLocalTranslation(x+24, y + 23, 0);
-                    inventoryNode.attachChild(number);
                 } else {
-                    BitmapText number = new BitmapText(font, false);
-                    number.setText(String.valueOf(stack.getAmount()));
-                    number.setSize(font.getCharSet().getRenderedSize() * 0.7f);
-                    number.setColor(ColorRGBA.White);
                     number.setLocalTranslation(x+18, y + 23, 0);
-                    inventoryNode.attachChild(number);
                 }
+
+                if (item.getName() == "Sand"){
+                    number.setColor(ColorRGBA.Black);
+                }
+                inventoryNode.attachChild(number);
             }
         }
 

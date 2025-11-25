@@ -93,23 +93,6 @@ public class Inventory {
         }
     }
 
-    public void clearSlot(int index) {
-        if (index >= 0 && index < inventorySize) {
-            inventoryArray[index] = null;
-        }
-    }
-
-    public boolean isFull() {
-        return findEmptySlot() == -1;
-    }
-
-    public boolean isEmpty() {
-        for (Stacks stack : inventoryArray) {
-            if (stack != null) return false;
-        }
-        return true;
-    }
-
     public int getSelectedSlot() {
         return selectedSlot;
     }

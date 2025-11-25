@@ -125,6 +125,11 @@ public class VoxelWorld {
         setBlock(pos.x + 4, pos.y + 1, pos.z, VoxelPalette.METALORE_ID);
         setBlock(pos.x - 4, pos.y + 1, pos.z, VoxelPalette.WOOD_ID);
 
+        setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.STONE_ID);  // suporte
+        setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.SAND_ID);   // areia em cima
+        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.SAND_ID);   // mais areia
+        setBlock(pos.x, groundY + 4, pos.z + 5, VoxelPalette.SAND_ID);
+
     }
 
     public int getTopSolidY(int x, int z) {

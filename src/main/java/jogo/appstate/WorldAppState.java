@@ -29,6 +29,7 @@ public class WorldAppState extends BaseAppState {
     // Adicionado do inventário
     private Player player;
 
+
     // world root for easy cleanup
     private Node worldNode;
     private VoxelWorld voxelWorld;
@@ -47,6 +48,7 @@ public class WorldAppState extends BaseAppState {
     public void registerPlayerAppState(PlayerAppState playerAppState) {
         this.playerAppState = playerAppState;
     }
+
 
     @Override
     protected void initialize(Application app) {
@@ -85,6 +87,7 @@ public class WorldAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
+
         if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
             pick.ifPresent(hit -> {
@@ -185,6 +188,8 @@ public class WorldAppState extends BaseAppState {
             worldNode = null;
         }
     }
+
+
 
     @Override
     protected void onEnable() { }

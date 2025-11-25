@@ -5,7 +5,7 @@ import com.jme3.texture.Texture;
 import jogo.voxel.VoxelPalette;
 
 public class WoodBlockItem extends PlaceableItem {
-    public WoodBlockItem(AssetManager assetManager) {
+    public WoodBlockItem() {
         super("Wood", VoxelPalette.WOOD_ID);
     }
 
