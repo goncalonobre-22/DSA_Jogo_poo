@@ -202,7 +202,7 @@ public class HudAppState extends BaseAppState {
                     iconGeom.setMaterial(iconMat);
 
                     // Ícone centrado no slot
-                    iconGeom.setLocalTranslation(x + 4, startY + 4, -5);
+                    iconGeom.setLocalTranslation(x + 4, startY + 4, 0);
 
                     hotbarNode.attachChild(iconGeom);
                 }
@@ -215,11 +215,7 @@ public class HudAppState extends BaseAppState {
                     amountText.setColor(ColorRGBA.White);
 
                     // canto inferior direito
-                    amountText.setLocalTranslation(
-                            x + SLOT_SIZE - 15,
-                            startY + 12,
-                            2
-                    );
+                    amountText.setLocalTranslation(x + SLOT_SIZE - 15, startY + 20, 2);
 
                     hotbarNode.attachChild(amountText);
                 }
@@ -299,12 +295,28 @@ public class HudAppState extends BaseAppState {
             Stacks stack = inv.getSlot(i);
             if (stack != null) {
                 Item item = stack.getItem();
-                BitmapText text = new BitmapText(font, false);
-                text.setText(item.getName() + "\nx" + stack.getAmount());
-                text.setSize(font.getCharSet().getRenderedSize() * 0.6f);
-                text.setColor(ColorRGBA.White);
-                text.setLocalTranslation(x + 3, y + 25, 0);
-                inventoryNode.attachChild(text);
+                Texture iconTex = item.getIcon(assetManager);
+                if (iconTex != null) {
+                    Quad iconQuad = new Quad(SLOT_SIZE - 8, SLOT_SIZE - 8);
+                    Geometry iconGeom = new Geometry("Icon" + i, iconQuad);
+
+                    Material iconMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+                    iconMat.setTexture("ColorMap", iconTex);
+
+                    iconGeom.setMaterial(iconMat);
+
+                    // Ícone centrado no slot
+                    iconGeom.setLocalTranslation(x + 4, startY + 4, 0);
+
+                    inventoryNode.attachChild(iconGeom);
+                }
+
+                BitmapText number = new BitmapText(font, false);
+                number.setText(String.valueOf(stack.getAmount()));
+                number.setSize(font.getCharSet().getRenderedSize() * 0.7f);
+                number.setColor(ColorRGBA.White);
+                number.setLocalTranslation(x+24, y + 23, 0);
+                inventoryNode.attachChild(number);
             }
         }
 
