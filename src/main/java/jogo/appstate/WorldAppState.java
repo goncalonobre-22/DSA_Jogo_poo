@@ -11,7 +11,10 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
+import jogo.engine.GameRegistry;
 import jogo.gameobject.character.Player;
+import jogo.gameobject.item.Item;
+import jogo.gameobject.item.PlaceableItem;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
@@ -38,7 +41,7 @@ public class WorldAppState extends BaseAppState {
         this.cam = cam;
         this.input = input;
         // Adicionado do inventário (Experimentar tirar depois)
-        this.player = this.player;
+        this.player = player;
     }
 
     public void registerPlayerAppState(PlayerAppState playerAppState) {
@@ -89,13 +92,18 @@ public class WorldAppState extends BaseAppState {
                 byte blockId = voxelWorld.getBlock(cell.x, cell.y, cell.z);
 
                 if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
-                    // Adiciona o bloco ao inventário
+                    // Cria o item correspondente ao bloco
                     if (player != null && blockId != VoxelPalette.AIR_ID) {
-                        boolean added = player.getInventory().addItem(blockId, 1);
-                        if (added) {
-                            System.out.println("Bloco adicionado ao inventário!");
+                        PlaceableItem item = GameRegistry.createItemFromBlock(blockId);
+                        if (item != null) { // ITEM CRIADO COM SUCESSO
+                            boolean added = player.getInventory().addItem(item, 1);
+                            if (added) {
+                                System.out.println("✅ " + item.getName() + " adicionado ao inventário!");
+                            } else {
+                                System.out.println("❌ Inventário cheio!");
+                            }
                         } else {
-                            System.out.println("Inventário cheio!");
+                            System.out.println("❌ Falha na criação do item para bloco ID: " + blockId); // 🛑 NOVO LOG
                         }
                     }
 
@@ -106,11 +114,10 @@ public class WorldAppState extends BaseAppState {
         }
 
         // Adicionado por causa do inventário
-        // COLOCAR BLOCO (clique direito)
+
         if (input != null && input.isMouseCaptured() && input.consumePlaceRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
             pick.ifPresent(hit -> {
-                // Coloca o bloco na face do bloco atingido
                 VoxelWorld.Vector3i cell = hit.cell;
                 Vector3f normal = hit.normal;
 
@@ -118,33 +125,49 @@ public class WorldAppState extends BaseAppState {
                 int placeY = cell.y + (int)normal.y;
                 int placeZ = cell.z + (int)normal.z;
 
-                // Verifica se tem bloco selecionado no inventário
                 if (player != null) {
-                    var selectedItem = player.getInventory().getSelectedItem();
-                    if (selectedItem != null && selectedItem.getAmount() > 0) {
-                        byte blockId = selectedItem.getBlockId();
+                    var selectedStack = player.getInventory().getSelectedItem();
 
-                        // Verifica se a posição está vazia
-                        if (voxelWorld.getBlock(placeX, placeY, placeZ) == VoxelPalette.AIR_ID) {
-                            voxelWorld.setBlock(placeX, placeY, placeZ, blockId);
-
-                            // Remove 1 item do inventário
-                            player.getInventory().removeItem(blockId, 1);
-                            System.out.println("Bloco colocado!");
-
-                            voxelWorld.rebuildDirtyChunks(physicsSpace);
-                            playerAppState.refreshPhysics();
-                        }
-                    } else {
-                        System.out.println("Nenhum bloco selecionado!");
+                    // 1. Verificar se existe item selecionado
+                    if (selectedStack == null || selectedStack.getAmount() <= 0) {
+                        System.out.println("Nenhum item selecionado ou pilha vazia!");
+                        return; // 🛑 Falha
                     }
+
+                    Item item = selectedStack.getItem();
+
+                    // 2. Verificar se o item é colocável
+                    if (!(item instanceof PlaceableItem placeableItem)) {
+                        System.out.println("❌ Item selecionado '" + item.getName() + "' não é um bloco colocável.");
+                        return; // 🛑 Falha
+                    }
+
+                    byte blockId = placeableItem.getBlockId();
+
+                    // 3. Verificar se o local de colocação está ocupado
+                    if (voxelWorld.getBlock(placeX, placeY, placeZ) != VoxelPalette.AIR_ID) {
+                        System.out.println("❌ Não é possível colocar: Local já ocupado.");
+                        return; // 🛑 Falha
+                    }
+
+                    // SUCESSO: Colocar o Bloco e remover do inventário
+                    voxelWorld.setBlock(placeX, placeY, placeZ, blockId);
+
+                    player.getInventory().removeItem(item, 1);
+                    System.out.println("✅ Bloco '" + item.getName() + "' colocado!");
+
+                    voxelWorld.rebuildDirtyChunks(physicsSpace);
+                    playerAppState.refreshPhysics();
                 }
             });
+
         }
 
         if (input != null && input.consumeToggleShadingRequested()) {
             voxelWorld.toggleRenderDebug();
         }
+
+
     }
 
     @Override

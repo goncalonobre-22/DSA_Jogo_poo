@@ -2,8 +2,6 @@ package jogo.util;
 
 import jogo.gameobject.item.Item;
 
-import java.util.ArrayList;
-
 public class Inventory {
     private final Stacks[] inventoryArray;
     private final int inventorySize;
@@ -20,10 +18,11 @@ public class Inventory {
 
 
 
-    public boolean addItem(Byte blockId, int amount) {
+    public boolean addItem(Item item, int amount) {
+        if (item == null) return false;
         for (int i = 0; i < this.inventorySize; i++) {
             Stacks inv = inventoryArray[i];
-            if (inv != null && inv.getBlockId() == blockId){
+            if (inv != null && inv.isSameItem(item)) {
                 if (inv.getAmount() < Stacks.MAX_STACK_SIZE) {
                     int space  = Stacks.MAX_STACK_SIZE - inv.getAmount();
                     int toAdd = Math.min(space, amount);
@@ -37,16 +36,17 @@ public class Inventory {
             int emptySlot = findEmptySlot();
             if (emptySlot == -1) return false;
             int stackAmount = Math.min(amount, Stacks.MAX_STACK_SIZE);
-            inventoryArray[emptySlot] = new Stacks(blockId, stackAmount);
+            inventoryArray[emptySlot] = new Stacks(item, stackAmount);
             amount -= stackAmount;
         } return true;
     }
 
-    public boolean removeItem(Byte blockId, int amount) {
+    public boolean removeItem(Item item, int amount) {
+        if (item == null) return false;
         int remainingAmount = amount;
         for (int i = 0; i < this.inventorySize; i++) {
             Stacks stacks = inventoryArray[i];
-            if (stacks != null && stacks.getBlockId() == blockId){
+            if (stacks != null && stacks.isSameItem(item)) {
                 if (stacks.getAmount() <= remainingAmount) {
                     remainingAmount -= stacks.getAmount();
                     inventoryArray[i] = null;
@@ -60,14 +60,19 @@ public class Inventory {
         return remainingAmount == 0;
     }
 
-    public int countItem(byte blockId) {
+    public int countItem(Item item) {
+        if (item == null) return 0;
         int count = 0;
         for (Stacks stack : inventoryArray) {
-            if (stack != null && stack.getBlockId() == blockId) {
+            if (stack != null && stack.isSameItem(item)) {
                 count += stack.getAmount();
             }
         }
         return count;
+    }
+
+    public boolean hasItem(Item item) {
+        return countItem(item) > 0;
     }
 
     private int findEmptySlot() {

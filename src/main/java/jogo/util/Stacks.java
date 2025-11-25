@@ -1,17 +1,19 @@
 package jogo.util;
 
+import jogo.gameobject.item.Item;
+
 public class Stacks {
     public static final int MAX_STACK_SIZE = 64;
     private int amount;
-    private byte blockId;
+    private Item item;
 
-    public Stacks(byte blockId, int amount) {
+    public Stacks(Item item, int amount) {
         this.amount = Math.min(amount, MAX_STACK_SIZE);
-        this.blockId = blockId;
+        this.item = item;
     }
 
-    public byte getBlockId() {
-        return blockId;
+    public Item getItem() {
+        return item;
     }
 
     public int getAmount() {
@@ -38,7 +40,12 @@ public class Stacks {
         return amount >= MAX_STACK_SIZE;
     }
 
+    public boolean isSameItem(Item other) {
+        if (other == null) return false;
+        return item.getName().equals(other.getName());
+    }
+
     public Stacks copy() {
-        return new Stacks(blockId, amount);
+        return new Stacks(item, amount);
     }
 }

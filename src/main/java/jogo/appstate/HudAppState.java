@@ -7,18 +7,17 @@ import com.jme3.asset.AssetManager;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
-import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 
 // Coisas adicionadas 1
 
-import com.jme3.font.BitmapFont;
-import com.jme3.font.BitmapText;
 import com.jme3.scene.shape.Quad;
+import com.jme3.texture.Texture;
+import com.jme3.texture.Texture2D;
 import jogo.gameobject.character.Player;
+import jogo.gameobject.item.Item;
 import jogo.util.Inventory;
 import jogo.util.Stacks;
 import jogo.voxel.VoxelPalette;
@@ -134,8 +133,8 @@ public class HudAppState extends BaseAppState {
 
 
     private BitmapText createItemText(Stacks stack, int x, int y) {
-        String blockName = getBlockName(stack.getBlockId());
-        String text = blockName + "\nx" + stack.getAmount();
+        Item item = stack.getItem();
+        String text = item.getName() + "\nx" + stack.getAmount();
 
         BitmapText bt = new BitmapText(font);
         bt.setText(text);
@@ -164,9 +163,10 @@ public class HudAppState extends BaseAppState {
 
             Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
             mat.setColor("Color", ColorRGBA.LightGray);
-            // Contorno apenas quando selecionado
+
+            // Contorno selecionado
             if (selected) {
-                int border = 3; // espessura do contorno
+                int border = 3;
 
                 Quad borderQuad = new Quad(SLOT_SIZE + border * 2, SLOT_SIZE + border * 2);
                 Geometry borderGeom = new Geometry("Border" + i, borderQuad);
@@ -184,27 +184,57 @@ public class HudAppState extends BaseAppState {
             slot.setLocalTranslation(x, startY, 0);
             hotbarNode.attachChild(slot);
 
-            // Item
+            // ITEM DO INVENTÁRIO
             Stacks stack = inv.getSlot(i);
             if (stack != null) {
-                String blockName = getBlockName(stack.getBlockId());
-                BitmapText text = new BitmapText(font, false);
-                text.setText(blockName + "\nx" + stack.getAmount());
-                text.setSize(font.getCharSet().getRenderedSize() * 0.6f);
-                text.setColor(ColorRGBA.White);
-                text.setLocalTranslation(x + 3, startY + 25, 0);
-                hotbarNode.attachChild(text);
+
+                Item item = stack.getItem();
+                Texture iconTex = item.getIcon(assetManager);
+
+                // Desenhar ícone
+                if (iconTex != null) {
+                    Quad iconQuad = new Quad(SLOT_SIZE - 8, SLOT_SIZE - 8);
+                    Geometry iconGeom = new Geometry("Icon" + i, iconQuad);
+
+                    Material iconMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+                    iconMat.setTexture("ColorMap", iconTex);
+
+                    iconGeom.setMaterial(iconMat);
+
+                    // Ícone centrado no slot
+                    iconGeom.setLocalTranslation(x + 4, startY + 4, -5);
+
+                    hotbarNode.attachChild(iconGeom);
+                }
+
+                // Texto da quantidade
+                if (stack.getAmount() > 1) {
+                    BitmapText amountText = new BitmapText(font, false);
+                    amountText.setText(String.valueOf(stack.getAmount()));
+                    amountText.setSize(font.getCharSet().getRenderedSize() - 4);
+                    amountText.setColor(ColorRGBA.White);
+
+                    // canto inferior direito
+                    amountText.setLocalTranslation(
+                            x + SLOT_SIZE - 15,
+                            startY + 12,
+                            2
+                    );
+
+                    hotbarNode.attachChild(amountText);
+                }
             }
 
-            // Número
+            // NÚMERO DA SLOT
             BitmapText number = new BitmapText(font, false);
             number.setText(String.valueOf(i + 1));
-            number.setSize(font.getCharSet().getRenderedSize()- 3);
+            number.setSize(font.getCharSet().getRenderedSize() - 3);
             number.setColor(ColorRGBA.DarkGray);
             number.setLocalTranslation(x + 3, startY + SLOT_SIZE - 2, 0);
             hotbarNode.attachChild(number);
         }
     }
+
 
     // MODIFICAR o updateFullInventory() para garantir Z correto:
     private void updateFullInventory() {
@@ -268,8 +298,9 @@ public class HudAppState extends BaseAppState {
 
             Stacks stack = inv.getSlot(i);
             if (stack != null) {
+                Item item = stack.getItem();
                 BitmapText text = new BitmapText(font, false);
-                text.setText(getBlockName(stack.getBlockId()) + "\nx" + stack.getAmount());
+                text.setText(item.getName() + "\nx" + stack.getAmount());
                 text.setSize(font.getCharSet().getRenderedSize() * 0.6f);
                 text.setColor(ColorRGBA.White);
                 text.setLocalTranslation(x + 3, y + 25, 0);
@@ -279,20 +310,11 @@ public class HudAppState extends BaseAppState {
 
         // Título
         BitmapText title = new BitmapText(font, false);
-        title.setText("Inventario - Pressiona I para fechar");
-        title.setSize(font.getCharSet().getRenderedSize() * 1.5f);
-        title.setColor(ColorRGBA.White);
-        title.setLocalTranslation(startX, screenHeight - 100, 0);
+        title.setText("Inventario - Pressiona Tab para fechar");
+        title.setSize(font.getCharSet().getRenderedSize());
+        title.setColor(ColorRGBA.Black);
+        title.setLocalTranslation(startX, screenHeight - 408, 0);
         inventoryNode.attachChild(title);
-    }
-
-    private String getBlockName(byte blockId) {
-        if (blockId == VoxelPalette.STONE_ID) return "stone";
-        if (blockId == VoxelPalette.DIRT_ID) return "dirt";
-        if (blockId == VoxelPalette.SAND_ID) return "sand";
-        if (blockId == VoxelPalette.METALORE_ID) return "metal ore";
-        if (blockId == VoxelPalette.WOOD_ID) return "wood";
-        return "Block " + blockId;
     }
 
     public void toggleInventory() {
