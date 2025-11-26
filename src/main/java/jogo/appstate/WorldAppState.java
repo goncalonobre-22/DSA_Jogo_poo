@@ -29,6 +29,10 @@ public class WorldAppState extends BaseAppState {
     // Adicionado do inventário
     private Player player;
 
+    private VoxelWorld.Vector3i targetBlock = null; // As coordenadas do bloco atualmente debaixo da mira.
+    private float currentDurability = 0;           // A durabilidade/vida restante do bloco.
+    private static final float STONE_DURABILITY = 3.0f; // Exemplo: 3 acertos para a Pedra
+
 
     // world root for easy cleanup
     private Node worldNode;

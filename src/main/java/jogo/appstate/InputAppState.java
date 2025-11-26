@@ -32,6 +32,14 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean inventoryUpRequested;
     private volatile boolean inventoryDownRequested;
     private volatile int hotbarNumberPressed = 0;
+    private volatile boolean takeRequested;
+    private volatile boolean putRequested;
+    private volatile boolean craftMenuRequested;
+    private volatile boolean exitCraftRequested;
+    private volatile boolean craftArrowUp;
+    private volatile boolean craftArrowDown;
+    private volatile boolean craftArrowLeft;
+    private volatile boolean craftArrowRight;
 
 
 
@@ -85,6 +93,15 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.addMapping("Hotbar9", new KeyTrigger(KeyInput.KEY_9));
         im.addMapping("Hotbar10", new KeyTrigger(KeyInput.KEY_0));
 
+        im.addMapping("Take", new KeyTrigger(KeyInput.KEY_T));
+        im.addMapping("Put", new KeyTrigger(KeyInput.KEY_P));
+        im.addMapping("CraftMenu", new KeyTrigger(KeyInput.KEY_RETURN)); // ENTER
+        im.addMapping("ExitCraft", new KeyTrigger(KeyInput.KEY_LMENU)); // ALT
+        im.addMapping("CraftUp", new KeyTrigger(KeyInput.KEY_UP));
+        im.addMapping("CraftDown", new KeyTrigger(KeyInput.KEY_DOWN));
+        im.addMapping("CraftLeft", new KeyTrigger(KeyInput.KEY_LEFT));
+        im.addMapping("CraftRight", new KeyTrigger(KeyInput.KEY_RIGHT));
+
         im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
         im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-");
         // Adicionado do inventário pt.2
@@ -93,6 +110,8 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-", "MouseWheelUp", "MouseWheelDown");
         im.addListener(this, "InvLeft", "InvRight", "InvUp", "InvDown");
         im.addListener(this, "Hotbar1","Hotbar2","Hotbar3","Hotbar4","Hotbar5","Hotbar6","Hotbar7","Hotbar8","Hotbar9", "Hotbar10");
+        im.addListener(this, "Take", "Put", "CraftMenu", "ExitCraft",
+                "CraftUp", "CraftDown", "CraftLeft", "CraftRight");
     }
 
     @Override
@@ -121,6 +140,15 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.deleteMapping("MouseWheelDown");
         im.deleteMapping("Place");
         im.deleteMapping("ToggleInventory");
+
+        im.deleteMapping("Take");
+        im.deleteMapping("Put");
+        im.deleteMapping("CraftMenu");
+        im.deleteMapping("ExitCraft");
+        im.deleteMapping("CraftUp");
+        im.deleteMapping("CraftDown");
+        im.deleteMapping("CraftLeft");
+        im.deleteMapping("CraftRight");
     }
 
     @Override
@@ -188,6 +216,31 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
             case "Hotbar8" -> { if (isPressed) hotbarNumberPressed = 8; }
             case "Hotbar9" -> { if (isPressed) hotbarNumberPressed = 9; }
             case  "Hotbar10" -> { if (isPressed) hotbarNumberPressed = 10; }
+
+            case "Take" -> {
+                if (isPressed) takeRequested = true;
+            }
+            case "Put" -> {
+                if (isPressed) putRequested = true;
+            }
+            case "CraftMenu" -> {
+                if (isPressed) craftMenuRequested = true;
+            }
+            case "ExitCraft" -> {
+                if (isPressed) exitCraftRequested = true;
+            }
+            case "CraftUp" -> {
+                if (isPressed) craftArrowUp = true;
+            }
+            case "CraftDown" -> {
+                if (isPressed) craftArrowDown = true;
+            }
+            case "CraftLeft" -> {
+                if (isPressed) craftArrowLeft = true;
+            }
+            case "CraftRight" -> {
+                if (isPressed) craftArrowRight = true;
+            }
 
         }
     }
@@ -312,6 +365,54 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     public int consumeHotbarNumber() {
         int r = hotbarNumberPressed;
         hotbarNumberPressed = 0;
+        return r;
+    }
+
+    public boolean consumeTakeRequested() {
+        boolean r = takeRequested;
+        takeRequested = false;
+        return r;
+    }
+
+    public boolean consumePutRequested() {
+        boolean r = putRequested;
+        putRequested = false;
+        return r;
+    }
+
+    public boolean consumeCraftMenuRequested() {
+        boolean r = craftMenuRequested;
+        craftMenuRequested = false;
+        return r;
+    }
+
+    public boolean consumeExitCraftRequested() {
+        boolean r = exitCraftRequested;
+        exitCraftRequested = false;
+        return r;
+    }
+
+    public boolean consumeCraftArrowUp() {
+        boolean r = craftArrowUp;
+        craftArrowUp = false;
+        return r;
+    }
+
+    public boolean consumeCraftArrowDown() {
+        boolean r = craftArrowDown;
+        craftArrowDown = false;
+        return r;
+    }
+
+    public boolean consumeCraftArrowLeft() {
+        boolean r = craftArrowLeft;
+        craftArrowLeft = false;
+        return r;
+    }
+
+    public boolean consumeCraftArrowRight() {
+        boolean r = craftArrowRight;
+        craftArrowRight = false;
         return r;
     }
 

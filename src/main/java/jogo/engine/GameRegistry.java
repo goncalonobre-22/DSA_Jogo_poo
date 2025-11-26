@@ -10,6 +10,7 @@ public class GameRegistry {
     private final List<GameObject> objects = new ArrayList<>();
     private static final Map<Byte, Class<? extends PlaceableItem>> blockToItem = new HashMap<>();
     private static final Map<String, Class<? extends Item>> nameToItem = new HashMap<>();
+    private static final List<Class<? extends Item>> recipeClasses = new ArrayList<>();
 
     public synchronized void add(GameObject obj) {
         if (obj != null && !objects.contains(obj)) {
@@ -32,6 +33,8 @@ public class GameRegistry {
         registerBlockItem(VoxelPalette.WOOD_ID, WoodBlockItem.class);
         registerBlockItem(VoxelPalette.METALORE_ID, MetalOreBlockItem.class);
         registerBlockItem(VoxelPalette.SAND_ID, SandBlockItem.class);
+
+        registerNonBlockItem(WoodStick.class);
     }
 
     private static void registerBlockItem(byte blockId, Class<? extends PlaceableItem> itemClass) {
@@ -88,6 +91,20 @@ public class GameRegistry {
      */
     public static boolean hasItemForBlock(byte blockId) {
         return blockToItem.containsKey(blockId);
+    }
+
+    private static void registerNonBlockItem(Class<? extends Item> itemClass) { // <-- NOVO MÉTODO
+        try {
+            // Cria uma instância para registar o nome
+            Item instance = itemClass.getDeclaredConstructor().newInstance();
+            nameToItem.put(instance.getName(), itemClass);
+
+            // Adiciona à lista de receitas
+            recipeClasses.add(itemClass);
+        } catch (Exception e) {
+            System.err.println("Erro ao registar item não-bloco: " + itemClass.getName());
+            e.printStackTrace();
+        }
     }
 }
 
