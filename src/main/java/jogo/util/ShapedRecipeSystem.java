@@ -2,16 +2,13 @@ package jogo.util;
 
 import jogo.gameobject.item.Item;
 
-import java.util.Map; // Importação necessária
+import java.util.Map;
 
 public class ShapedRecipeSystem extends RecipeSystem {
-    private final String[] pattern; // 3 strings de 3 chars cada
-    private final Map<Character, Item> ingredientsMap; // Mapeamento de char → Item
+    private final String[] pattern;
+    private final Map<Character, Item> ingredientsMap;
 
-    /**
-     * O construtor agora recebe um Map de caracteres para Item.
-     * Exemplo: Map.of('S', new StoneBlockItem(), 'D', new WoodStick())
-     */
+    // O construtor recebe um map de caracteres a idetificar o item para não ter de alterar os nomes dos itens quando uso itens com a mesma letra inicial
     public ShapedRecipeSystem(Item result, int resultAmount, String[] pattern, Map<Character, Item> ingredientsMap) {
         super(result, resultAmount);
         this.pattern = pattern;
@@ -64,7 +61,7 @@ public class ShapedRecipeSystem extends RecipeSystem {
         }
     }
 
-    // MODIFICADO: Busca o item diretamente pelo caractere no mapa.
+    // Procura o item diretamente pelo caractere no mapa.
     private Item getItemForChar(char c) {
         return ingredientsMap.get(c);
     }

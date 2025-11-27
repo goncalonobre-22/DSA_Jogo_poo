@@ -18,29 +18,29 @@ public class RecipeRegistry {
     }
 
     private static void registerRecipes() {
-        // Receita 1: WoodStick (usa W=WoodBlockItem)
+        // Receita 1: WoodStick
         recipes.add(new ShapedRecipeSystem(
                 new WoodStick(),
                 4,
                 new String[]{
                         " W ",
                         " W ",
-                        "   " // Usa 2 madeiras para 4 sticks
+                        "   "
                 },
-                Map.of('W', new WoodBlockItem()) // Mapeamento: 'W' -> WoodBlockItem
+                // W corresponde ao bloco de madeira
+                Map.of('W', new WoodBlockItem())
         ));
 
-        // Receita 2: Stone Pickaxe (Picareta de Pedra)
-        // Padrão: S=Stone Block, D=Stick
+        // Receita 2: Pickaxe de pedra
         recipes.add(new ShapedRecipeSystem(
                 new StonePickaxe(),
                 1,
                 new String[]{
-                        "SSS", // 3 Blocos de Pedra
-                        " W ", // 1 Stick
-                        " W "  // 1 Stick
+                        "SSS",
+                        " W ",
+                        " W "
                 },
-                // Mapeamento explícito: 'S' mapeia para StoneBlockItem, 'D' mapeia para WoodStick (Stick)
+                // S corresponde à pedra e W corresponde ao Stick
                 Map.of(
                         'S', new StoneBlockItem(),
                         'W', new WoodStick()
@@ -58,9 +58,5 @@ public class RecipeRegistry {
             }
         }
         return null;
-    }
-
-    public static void registerRecipe(RecipeSystem recipe) {
-        recipes.add(recipe);
     }
 }

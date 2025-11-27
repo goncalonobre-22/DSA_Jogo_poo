@@ -110,7 +110,7 @@ public class HudAppState extends BaseAppState {
             if (craftMenuOpen) {
                 updateCraftingInterface(input);
             } else{
-                updateInventoryInterface(input);
+                updateInventoryAndCrafting();
             }
         } else {
             updateHotbar();
@@ -164,7 +164,7 @@ public class HudAppState extends BaseAppState {
             parentNode.attachChild(borderGeom);
         }
 
-        // 2. Draw Slot Background
+        // Background dos Slots
         Quad quad = new Quad(SLOT_SIZE, SLOT_SIZE);
         Geometry slot = new Geometry("InvSlot" + slotIndex, quad);
 
@@ -175,7 +175,7 @@ public class HudAppState extends BaseAppState {
         slot.setLocalTranslation(x, y, -1);
         parentNode.attachChild(slot);
 
-        // 3. Draw Item Icon and Amount
+        // Ícone e quantidade do item
         if (stack != null && stack.getAmount() > 0) {
             Item item = stack.getItem();
             Texture iconTex = item.getIcon(assetManager);
@@ -190,7 +190,7 @@ public class HudAppState extends BaseAppState {
 
                 iconGeom.setMaterial(iconMat);
 
-                // Ícone centrado no slot (Z=1 para estar acima do slot Z=0)
+                // Centrar o ícone no slot
                 iconGeom.setLocalTranslation(x + 4, y + 4, 1);
                 parentNode.attachChild(iconGeom);
             }
@@ -202,12 +202,12 @@ public class HudAppState extends BaseAppState {
                 amountText.setSize(font.getCharSet().getRenderedSize() * 0.7f);
                 ColorRGBA textColor = ColorRGBA.White;
 
-                if (Objects.equals(item.getName(), "Sand")) {
+                if (Objects.equals(item.getName(), "Sand") && Objects.equals(item.getName(), "Stick")) {
                     textColor = ColorRGBA.Black;
                 }
                 amountText.setColor(textColor);
 
-                // Ajuste de posição
+                // Ajustar posição quando a quantidade passa de 10
                 if (stack.getAmount() < 10) {
                     amountText.setLocalTranslation(x + 24, y + 23, 2);
                 } else {
@@ -228,8 +228,6 @@ public class HudAppState extends BaseAppState {
         int startX = (screenWidth - (HOTBAR_SLOTS * SLOT_SPACING)) / 2;
         int startY = 50;
 
-        // --- INÍCIO DA REUTILIZAÇÃO DE drawInventorySlot ---
-
         for (int i = 0; i < HOTBAR_SLOTS; i++) {
             int x = startX + i * SLOT_SPACING;
             int y = startY;
@@ -238,7 +236,6 @@ public class HudAppState extends BaseAppState {
             Stacks stack = inv.getSlot(i);
 
             // Desenha Slot, Borda, Ícone e Quantidade
-            // Nota: O slot da hotbar é cinzento claro
             drawInventorySlot(hotbarNode, stack, i, x, y, ColorRGBA.LightGray, selected);
 
 
@@ -250,7 +247,6 @@ public class HudAppState extends BaseAppState {
             number.setLocalTranslation(x + 3, startY + SLOT_SIZE - 2, 2); // Z=2 para estar acima do ícone
             hotbarNode.attachChild(number);
         }
-        // --- FIM DA REUTILIZAÇÃO DE drawInventorySlot ---
     }
 
 
@@ -262,7 +258,6 @@ public class HudAppState extends BaseAppState {
         int screenWidth = getApplication().getCamera().getWidth();
         int screenHeight = getApplication().getCamera().getHeight();
 
-        // --- 1. CONFIGURAÇÃO DO LAYOUT ---
         int invCols = INVENTORY_COLS;
         int invRows = INVENTORY_ROWS;
         int craftGridCols = 3;
@@ -271,14 +266,13 @@ public class HudAppState extends BaseAppState {
         int innerSpacing = 40; // Espaço entre inventário e grid de craft
         int craftResultSpace = SLOT_SPACING * 3; // Espaço para a seta e o slot de resultado
 
-        // Calculo da largura total (Inventário + Espaço + Crafting + Resultado)
+        // Largura total
         int totalDisplayWidth = invCols * SLOT_SPACING + innerSpacing + craftGridCols * SLOT_SPACING + craftResultSpace + 20;
 
         // Posição inicial da área do inventário/crafting
         int invStartX = (screenWidth - totalDisplayWidth) / 2 + 10;
         int invStartY = 250;
 
-        // --- 2. BACKGROUND (único) ---
         int bgWidth = totalDisplayWidth - 20;
         int bgHeight = invRows * SLOT_SPACING + 50;
 
@@ -290,7 +284,7 @@ public class HudAppState extends BaseAppState {
         bg.setLocalTranslation(invStartX - 10, invStartY - invRows * SLOT_SPACING + 25, -2); // Z=-2 for BG
         inventoryNode.attachChild(bg);
 
-        // --- 3. INVENTORY SLOTS ---
+        //Slots do inventário
         for (int i = 0; i < inv.getSize(); i++) { // Tamanho do inventário (40 slots)
             int col = i % invCols;
             int row = i / invCols;
@@ -298,7 +292,7 @@ public class HudAppState extends BaseAppState {
             int x = invStartX + col * SLOT_SPACING;
             int y = invStartY - row * SLOT_SPACING;
 
-            // Highlight no modo Inventário. Não highlight no modo Crafting (para focar no craft).
+            // Highlight no modo Inventário.
             boolean selected = (!craftMenuOpen && i == inv.getSelectedSlot());
             Stacks stack = inv.getSlot(i);
 
@@ -306,7 +300,7 @@ public class HudAppState extends BaseAppState {
             drawInventorySlot(inventoryNode, stack, i, x, y, ColorRGBA.Gray, selected);
         }
 
-        // --- 4. TÍTULO ---
+        // Informação dos botões
         BitmapText title = new BitmapText(font, false);
         // O título reflete o modo atual
         String titleText = craftMenuOpen
@@ -320,9 +314,9 @@ public class HudAppState extends BaseAppState {
         inventoryNode.attachChild(title);
 
 
-        // --- 5. CRAFTING GRID ---
+        // Grid de crafting
         int craftGridStartX = invStartX + invCols * SLOT_SPACING + innerSpacing;
-        int craftGridStartY = invStartY - 20; // Posição vertical mais agradável
+        int craftGridStartY = invStartY - 20;
 
         Stacks[] grid = player.getCraftingGrid();
 
@@ -356,10 +350,10 @@ public class HudAppState extends BaseAppState {
 
             Stacks resultStack = new Stacks(recipe.getResult(), recipe.getResultAmount());
             drawInventorySlot(inventoryNode, resultStack, 200, resultX, resultY,
-                    ColorRGBA.Gray, true); // Z=-1
+                    ColorRGBA.Gray, true);
         }
 
-        // Item selecionado (cursor) - SÓ no modo Crafting
+        // Item selecionado no modo crafting
         if (craftMenuOpen && selectedItem != null) {
             SimpleApplication sapp = (SimpleApplication) getApplication();
             float mouseX = sapp.getInputManager().getCursorPosition().x;
@@ -374,14 +368,6 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-
-    private void updateInventoryInterface(InputAppState input) {
-        // Quando SÓ o inventário está aberto (craftMenuOpen é falso).
-        // A navegação (setas e scroll) é tratada em update(tpf).
-
-        // Apenas chamamos a função de desenho combinada.
-        updateInventoryAndCrafting();
-    }
 
     private void updateCraftingInterface(InputAppState input) {
         // ALT → Sai do menu de craft
@@ -506,13 +492,13 @@ public class HudAppState extends BaseAppState {
         Stacks stack = player.getInventory().getSlot(slot);
 
         if (stack != null && stack.getAmount() > 0) {
-            // 1. Seleciona o item (tipo)
+            //Seleciona o ite
             selectedItem = stack.getItem();
-            // 2. Transiciona para o modo de crafting
+            //Transiciona para o modo de crafting
             enterCraftMenu(); // Sets craftMenuOpen = true
             System.out.println("Entrou no crafting e selecionou item: " + selectedItem.getName() + " (T)");
         } else {
-            // Slot vazio: Transiciona para o modo de crafting (satisfaz a parte de "enter sem item" via T)
+            // Slot vazio: Transiciona para o modo de crafting
             enterCraftMenu(); // Sets craftMenuOpen = true
             System.out.println("Entrou no crafting (T no slot vazio).");
         }
@@ -520,7 +506,6 @@ public class HudAppState extends BaseAppState {
 
     private void handleTakeForCrafting() {
         if (selectedItem != null) {
-            // O jogador está a "segurar" um tipo de item (selectedItem != null)
             // Clica em T novamente para cancelar a seleção de tipo.
             selectedItem = null;
             System.out.println("Seleção de Item cancelada (T)");
@@ -530,7 +515,7 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // ADICIONAR lógica P (Put):
+    // Lõgica do P:
     private void handlePutInCraftGrid() {
         if (selectedItem == null) {
             System.out.println("Nenhum item selecionado para colocar!");
@@ -580,7 +565,7 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // ADICIONAR lógica de crafting:
+    // Lógica de crafting:
     private void handleCrafting() {
         RecipeSystem recipe = RecipeRegistry.findRecipe(player.getCraftingGrid());
 
@@ -595,7 +580,7 @@ public class HudAppState extends BaseAppState {
         boolean added = player.getInventory().addItem(result, amount);
 
         if (added) {
-            // Consome ingredientes E limpa os slots vazios da grid
+            // Consome ingredientes e limpa os slots vazios da grid
             recipe.consumeIngredients(player.getCraftingGrid());
             System.out.println("Crafting realizado: " + amount + "x " + result.getName());
         } else {
@@ -603,7 +588,7 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // ADICIONAR navegação na grid:
+    // Navegação na grid:
     private void moveCraftSelection(int deltaX, int deltaY) {
         int current = player.getSelectedCraftSlot();
         int col = current % 3;

@@ -71,10 +71,6 @@ public class Inventory {
         return count;
     }
 
-    public boolean hasItem(Item item) {
-        return countItem(item) > 0;
-    }
-
     private int findEmptySlot() {
         for (int i = 0; i < inventorySize; i++) {
             if (inventoryArray[i] == null) return i;
@@ -85,12 +81,6 @@ public class Inventory {
     public Stacks getSlot(int index) {
         if (index < 0 || index >= inventorySize) return null;
         return inventoryArray[index];
-    }
-
-    public void setSlot(int index, Stacks stack) {
-        if (index >= 0 && index < inventorySize) {
-            inventoryArray[index] = stack;
-        }
     }
 
     public int getSelectedSlot() {

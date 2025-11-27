@@ -131,6 +131,7 @@ public class VoxelWorld {
         setBlock(pos.x, groundY + 4, pos.z + 5, VoxelPalette.SAND_ID);
         setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.WOOD_ID);
         setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.WOOD_ID);
+        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.WOOD_ID);
 
     }
 

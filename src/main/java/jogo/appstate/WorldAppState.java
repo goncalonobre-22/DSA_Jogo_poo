@@ -15,6 +15,7 @@ import jogo.engine.GameRegistry;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.PlaceableItem;
+import jogo.util.ItemRegistry;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
@@ -26,12 +27,9 @@ public class WorldAppState extends BaseAppState {
     private final Camera cam;
     private final InputAppState input;
     private PlayerAppState playerAppState;
+
     // Adicionado do inventário
     private Player player;
-
-    private VoxelWorld.Vector3i targetBlock = null; // As coordenadas do bloco atualmente debaixo da mira.
-    private float currentDurability = 0;           // A durabilidade/vida restante do bloco.
-    private static final float STONE_DURABILITY = 3.0f; // Exemplo: 3 acertos para a Pedra
 
 
     // world root for easy cleanup
@@ -45,7 +43,7 @@ public class WorldAppState extends BaseAppState {
         this.physicsSpace = physicsSpace;
         this.cam = cam;
         this.input = input;
-        // Adicionado do inventário (Experimentar tirar depois)
+        // Adicionado do inventário
         this.player = player;
     }
 
@@ -101,16 +99,16 @@ public class WorldAppState extends BaseAppState {
                 if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
                     // Cria o item correspondente ao bloco
                     if (player != null && blockId != VoxelPalette.AIR_ID) {
-                        PlaceableItem item = GameRegistry.createItemFromBlock(blockId);
+                        PlaceableItem item = ItemRegistry.createItemFromBlock(blockId);
                         if (item != null) { // ITEM CRIADO COM SUCESSO
                             boolean added = player.getInventory().addItem(item, 1);
                             if (added) {
-                                System.out.println("✅ " + item.getName() + " adicionado ao inventário!");
+                                System.out.println(item.getName() + " adicionado ao inventário!");
                             } else {
-                                System.out.println("❌ Inventário cheio!");
+                                System.out.println("Inventário cheio!");
                             }
                         } else {
-                            System.out.println("❌ Falha na criação do item para bloco ID: " + blockId); // 🛑 NOVO LOG
+                            System.out.println("Falha na criação do item para bloco ID: " + blockId);
                         }
                     }
 
@@ -138,30 +136,30 @@ public class WorldAppState extends BaseAppState {
                     // 1. Verificar se existe item selecionado
                     if (selectedStack == null || selectedStack.getAmount() <= 0) {
                         System.out.println("Nenhum item selecionado ou pilha vazia!");
-                        return; // 🛑 Falha
+                        return;
                     }
 
                     Item item = selectedStack.getItem();
 
                     // 2. Verificar se o item é colocável
                     if (!(item instanceof PlaceableItem placeableItem)) {
-                        System.out.println("❌ Item selecionado '" + item.getName() + "' não é um bloco colocável.");
-                        return; // 🛑 Falha
+                        System.out.println(item.getName() + "' não é um bloco colocável.");
+                        return;
                     }
 
                     byte blockId = placeableItem.getBlockId();
 
                     // 3. Verificar se o local de colocação está ocupado
                     if (voxelWorld.getBlock(placeX, placeY, placeZ) != VoxelPalette.AIR_ID) {
-                        System.out.println("❌ Não é possível colocar: Local já ocupado.");
-                        return; // 🛑 Falha
+                        System.out.println("Não é possível colocar: Local já ocupado.");
+                        return;
                     }
 
                     // SUCESSO: Colocar o Bloco e remover do inventário
                     voxelWorld.setBlock(placeX, placeY, placeZ, blockId);
 
                     player.getInventory().removeItem(item, 1);
-                    System.out.println("✅ Bloco '" + item.getName() + "' colocado!");
+                    System.out.println("Bloco '" + item.getName() + "' colocado!");
 
                     voxelWorld.rebuildDirtyChunks(physicsSpace);
                     playerAppState.refreshPhysics();

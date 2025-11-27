@@ -32,10 +32,6 @@ public class Stacks {
         this.amount = Math.max(0, amount - remove);
     }
 
-    public boolean isEmpty() {
-        return amount <= 0;
-    }
-
     public boolean isFull() {
         return amount >= MAX_STACK_SIZE;
     }
@@ -43,9 +39,5 @@ public class Stacks {
     public boolean isSameItem(Item other) {
         if (other == null) return false;
         return item.getName().equals(other.getName());
-    }
-
-    public Stacks copy() {
-        return new Stacks(item, amount);
     }
 }
