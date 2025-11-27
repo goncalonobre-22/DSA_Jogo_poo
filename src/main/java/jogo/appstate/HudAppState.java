@@ -332,7 +332,7 @@ public class HudAppState extends BaseAppState {
         // Seta e resultado
         BitmapText arrow = new BitmapText(font, false);
         arrow.setText("=>");
-        arrow.setSize(font.getCharSet().getRenderedSize() * 2f);
+        arrow.setSize(font.getCharSet().getRenderedSize() * 1.6f);
         arrow.setColor(ColorRGBA.Black);
         arrow.setLocalTranslation(craftGridStartX + craftGridCols * SLOT_SPACING + 10, craftGridStartY - SLOT_SPACING + 40, -1);
         inventoryNode.attachChild(arrow);
