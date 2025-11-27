@@ -6,11 +6,11 @@ import jogo.voxel.VoxelPalette;
 
 public class MetalOreBlockItem extends PlaceableItem {
     public MetalOreBlockItem() {
-        super("Metal Ore", VoxelPalette.METALORE_ID);
+        super("Iron Ore", VoxelPalette.METALORE_ID);
     }
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        return assetManager.loadTexture("Textures/metalOre.png");
+        return assetManager.loadTexture("Textures/ironOreItem.png");
     }
 }

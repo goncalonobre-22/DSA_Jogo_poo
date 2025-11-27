@@ -12,6 +12,6 @@ public class DirtBlockItem extends PlaceableItem {
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        return assetManager.loadTexture("Textures/dirt.png");
+        return assetManager.loadTexture("Textures/dirtItem.png");
     }
 }

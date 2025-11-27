@@ -11,6 +11,6 @@ public class SandBlockItem extends PlaceableItem {
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        return assetManager.loadTexture("Textures/sand.png");
+        return assetManager.loadTexture("Textures/sandBlockItem.png");
     }
 }

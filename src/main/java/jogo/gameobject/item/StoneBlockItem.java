@@ -13,6 +13,6 @@ public class StoneBlockItem extends PlaceableItem{
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        return assetManager.loadTexture("Textures/stone.png");
+        return assetManager.loadTexture("Textures/stoneBlockItem.png");
     }
 }

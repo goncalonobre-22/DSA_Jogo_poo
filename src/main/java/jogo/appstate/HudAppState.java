@@ -148,7 +148,7 @@ public class HudAppState extends BaseAppState {
 
     private void drawInventorySlot(Node parentNode, Stacks stack, int slotIndex, int x, int y, ColorRGBA bgColor, boolean isSelected) {
 
-        // 1. Draw Selection Border (if selected)
+        // 1. Draw Selection Border
         if (isSelected) {
             int border = 3;
             Quad borderQuad = new Quad(SLOT_SIZE + border * 2, SLOT_SIZE + border * 2);
@@ -156,7 +156,7 @@ public class HudAppState extends BaseAppState {
 
             Material borderMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
             // A cor do contorno é DarkGray se o slot for de inventário/crafting, mas Gray se for da Hotbar
-            borderMat.setColor("Color", parentNode.getName().equals("Hotbar") ? ColorRGBA.Gray : ColorRGBA.DarkGray);
+            borderMat.setColor("Color", ColorRGBA.Black);
 
             // Z=-1: Behind the slot
             borderGeom.setMaterial(borderMat);
@@ -188,10 +188,17 @@ public class HudAppState extends BaseAppState {
                 Material iconMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
                 iconMat.setTexture("ColorMap", iconTex);
 
+                iconMat.setTransparent(true);
+                iconMat.getAdditionalRenderState().setBlendMode(com.jme3.material.RenderState.BlendMode.Alpha);
+
                 iconGeom.setMaterial(iconMat);
 
                 // Centrar o ícone no slot
-                iconGeom.setLocalTranslation(x + 4, y + 4, 1);
+                if (stack.getAmount() > 1) {
+                    iconGeom.setLocalTranslation(x + 3, y + 7, 1);
+                } else {
+                    iconGeom.setLocalTranslation(x + 4, y + 4, 1);
+                }
                 parentNode.attachChild(iconGeom);
             }
 
@@ -199,19 +206,16 @@ public class HudAppState extends BaseAppState {
             if (stack.getAmount() > 1) {
                 BitmapText amountText = new BitmapText(font, false);
                 amountText.setText(String.valueOf(stack.getAmount()));
-                amountText.setSize(font.getCharSet().getRenderedSize() * 0.7f);
-                ColorRGBA textColor = ColorRGBA.White;
+                amountText.setSize(font.getCharSet().getRenderedSize() * 0.8f);
+                ColorRGBA textColor = ColorRGBA.Black;
 
-                if (Objects.equals(item.getName(), "Sand") && Objects.equals(item.getName(), "Stick")) {
-                    textColor = ColorRGBA.Black;
-                }
                 amountText.setColor(textColor);
 
                 // Ajustar posição quando a quantidade passa de 10
                 if (stack.getAmount() < 10) {
-                    amountText.setLocalTranslation(x + 24, y + 23, 2);
+                    amountText.setLocalTranslation(x + 30, y + 15, 2);
                 } else {
-                    amountText.setLocalTranslation(x + 18, y + 23, 2);
+                    amountText.setLocalTranslation(x + 20, y + 15, 2);
                 }
 
                 parentNode.attachChild(amountText);
@@ -236,16 +240,7 @@ public class HudAppState extends BaseAppState {
             Stacks stack = inv.getSlot(i);
 
             // Desenha Slot, Borda, Ícone e Quantidade
-            drawInventorySlot(hotbarNode, stack, i, x, y, ColorRGBA.LightGray, selected);
-
-
-            // NÚMERO DA SLOT
-            BitmapText number = new BitmapText(font, false);
-            number.setText(String.valueOf(i + 1));
-            number.setSize(font.getCharSet().getRenderedSize() - 3);
-            number.setColor(ColorRGBA.DarkGray);
-            number.setLocalTranslation(x + 3, startY + SLOT_SIZE - 2, 2); // Z=2 para estar acima do ícone
-            hotbarNode.attachChild(number);
+            drawInventorySlot(hotbarNode, stack, i, x, y, ColorRGBA.Gray, selected);
         }
     }
 
@@ -305,7 +300,7 @@ public class HudAppState extends BaseAppState {
         // O título reflete o modo atual
         String titleText = craftMenuOpen
                 ? "CRAFTING MODE (ALT: Sair | T: Seleciona/Cancela | P: Coloca | ENTER: Craft)"
-                : "INVENTARIO (TAB: Fechar | T ou ENTER: Crafting)";
+                : "INVENTARIO (TAB: Fechar | T: Entrar no craft com bloco | ENTER: Entrar no craft sem bloco)";
 
         title.setText(titleText);
         title.setSize(font.getCharSet().getRenderedSize() * 0.9f);
