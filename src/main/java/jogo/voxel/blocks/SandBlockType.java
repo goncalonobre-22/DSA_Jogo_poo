@@ -18,6 +18,11 @@ public class SandBlockType extends VoxelBlockType {
         return 3;
     }
 
+    @Override
+    public String getMiningCategory() {
+        return "GRANULAR";
+    }
+
     // isSolid() inherits true from base
 
     @Override

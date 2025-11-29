@@ -5,25 +5,23 @@ import jogo.voxel.VoxelWorld.Vector3i;
 /** Armazena o progresso de quebra de um único bloco. */
 public class BreakBlockProgress {
     public static final float RESET_TIME = 2.0f; // Tempo em segundos para resetar o progresso
-    private final int requiredHits;
-    private int hitCount = 0;
+    private final float maxHardness; // Dureza total (float)
+    private float currentDamage = 0.0f; // Dano total recebido
     private float timeSinceLastHit = 0f;
 
-    public BreakBlockProgress(Vector3i position, int requiredHits) {
-        // A posição é apenas armazenada no BreakingBlockSystem (como chave)
-        this.requiredHits = requiredHits;
+    public BreakBlockProgress(float maxHardness) { // <--- AGORA RECEBE float
+        this.maxHardness = maxHardness;
     }
 
-    /** Adiciona um hit e verifica se o bloco deve quebrar. */
-    public boolean addHit() {
-        hitCount++;
-        timeSinceLastHit = 0f; // Resetar o temporizador após o hit
-        return hitCount >= requiredHits;
+    /** Adiciona dano e verifica se o bloco deve quebrar. */
+    public boolean addDamage(float damage) {
+        currentDamage += damage;
+        timeSinceLastHit = 0f;
+        return currentDamage >= maxHardness;
     }
 
-    /** * Atualiza o temporizador e retorna true se o progresso deve ser resetado (timeout).
-     * @param tpf Tempo por frame.
-     */
+
+    /** * Atualiza o temporizador e retorna true se o progresso deve ser resetado (timeout). */
     public boolean update(float tpf) {
         timeSinceLastHit += tpf;
         if (timeSinceLastHit >= RESET_TIME) {
@@ -32,6 +30,6 @@ public class BreakBlockProgress {
         return false;
     }
 
-    public int getRequiredHits() { return requiredHits; }
-    public int getHitCount() { return hitCount; }
+    public float getMaxHardness() { return maxHardness; }
+    public float getCurrentDamage() { return currentDamage; }
 }

@@ -18,6 +18,11 @@ public class StoneBlockType extends VoxelBlockType {
         return 10;
     }
 
+    @Override
+    public String getMiningCategory() {
+        return "COMPACT";
+    }
+
     // isSolid() inherits true from base
 
     @Override

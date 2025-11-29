@@ -2,6 +2,8 @@ package jogo.util;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.scene.Node;
+import jogo.gameobject.item.Item;
+import jogo.gameobject.item.Tool;
 import jogo.voxel.VoxelWorld;
 import jogo.voxel.VoxelWorld.Vector3i;
 import jogo.voxel.VoxelBlockType;
@@ -13,41 +15,54 @@ import java.util.Iterator;
 public class BreakingBlockSystem {
 
     private final VoxelWorld world;
-    // Usar String como chave para garantir unicidade e corrigir o crash
     private final Map<String, BreakBlockProgress> breakingBlocks = new HashMap<>();
 
     public BreakingBlockSystem(VoxelWorld world) {
         this.world = world;
-        // AssetManager e Node não são mais necessários neste sistema.
     }
 
-    /**
-     * Regista um hit num bloco e determina se deve quebrar.
-     * @return true se o bloco deve quebrar, false caso contrário.
-     */
-    public boolean hitBlock(int x, int y, int z) {
-        String key = x + "," + y + "," + z; // Chave única e estável para a posição
+    public boolean hitBlock(int x, int y, int z, Item heldItem) {
+        String key = x + "," + y + "," + z;
         VoxelBlockType blockType = world.getPalette().get(world.getBlock(x, y, z));
-        int hardness = blockType.getHardness();
 
         if (!blockType.isSolid()) {
             return false;
         }
 
-        if (hardness <= 1) {
+        // Dureza do bloco, convertida para float
+        float hardness = (float) blockType.getHardness();
+
+        // 1. Determinar o multiplicador (1.0x é o padrão da "mão")
+        float multiplier = 1.0f;
+        if (heldItem instanceof Tool tool) {
+            multiplier = tool.getMiningSpeed(blockType);
+        }
+
+        // Dano efetivo: 1.0f de dano base por clique * multiplicador da ferramenta
+        float damage = 1.0f * multiplier;
+
+        // Se o dano for maior ou igual à dureza (quebra no 1º hit com bónus)
+        if (damage >= hardness) {
             breakingBlocks.remove(key);
             return true;
         }
 
+        // 2. Inicializar ou atualizar progresso
         BreakBlockProgress progress = breakingBlocks.get(key);
         if (progress == null) {
-            progress = new BreakBlockProgress(new Vector3i(x, y, z), hardness);
+            // Cria um novo registo com a dureza original do bloco
+            progress = new BreakBlockProgress(hardness);
             breakingBlocks.put(key, progress);
         }
 
-        boolean shouldBreak = progress.addHit();
-        System.out.println("Hit no bloco '" + blockType.getName() + "'. Hits: "
-                + progress.getHitCount() + "/" + hardness);
+        // 3. Aplicar o dano float
+        boolean shouldBreak = progress.addDamage(damage);
+
+        System.out.println("Hit no bloco '" + blockType.getName() +
+                "' (Categoria: " + blockType.getMiningCategory() +
+                "). Dano/Clique: " + String.format("%.2f", damage) +
+                ". Progresso: " + String.format("%.2f", progress.getCurrentDamage()) +
+                " / " + String.format("%.2f", progress.getMaxHardness()));
 
         if (shouldBreak) {
             breakingBlocks.remove(key);

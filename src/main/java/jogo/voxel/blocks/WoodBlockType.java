@@ -17,6 +17,11 @@ public class WoodBlockType extends VoxelBlockType {
     }
 
     @Override
+    public String getMiningCategory() {
+        return "NATURAL";
+    }
+
+    @Override
     public Material getMaterial(AssetManager assetManager) {
         Texture2D tex = (Texture2D) assetManager.loadTexture("Textures/wood.png");
         Material s = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");

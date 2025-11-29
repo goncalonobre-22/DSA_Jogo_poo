@@ -17,6 +17,11 @@ public class DirtBlockType extends VoxelBlockType {
         return 3;
     }
 
+    @Override
+    public String getMiningCategory() {
+        return "GRANULAR";
+    }
+
     // isSolid() inherits true from base
 
     @Override

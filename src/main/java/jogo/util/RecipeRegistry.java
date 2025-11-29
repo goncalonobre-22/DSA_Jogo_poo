@@ -1,9 +1,6 @@
 package jogo.util;
 
-import jogo.gameobject.item.WoodBlockItem;
-import jogo.gameobject.item.WoodStick;
-import jogo.gameobject.item.StoneBlockItem; // Importação adicionada
-import jogo.gameobject.item.StonePickaxe; // Importação adicionada
+import jogo.gameobject.item.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +28,23 @@ public class RecipeRegistry {
                 Map.of('W', new WoodBlockItem())
         ));
 
-        // Receita 2: Pickaxe de pedra
+        // Receita 2: Pickaxe de madeira
+        recipes.add(new ShapedRecipeSystem(
+                new WoodPickaxe(),
+                1,
+                new String[]{
+                        "WWW",
+                        " S ",
+                        " S "
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'W', new WoodBlockItem(),
+                        'S', new WoodStick()
+                )
+        ));
+
+        // Receita 3: Pickaxe de pedra
         recipes.add(new ShapedRecipeSystem(
                 new StonePickaxe(),
                 1,

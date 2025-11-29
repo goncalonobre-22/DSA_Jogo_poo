@@ -18,6 +18,8 @@ public abstract class VoxelBlockType {
     public boolean isSolid() { return true; }
 
     public int getHardness() { return 1; }
+
+    public String getMiningCategory() { return "DEFAULT"; }
     /**
      * Returns the Material for this block type. Override in subclasses for custom materials.
      */

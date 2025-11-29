@@ -103,7 +103,15 @@ public class WorldAppState extends BaseAppState {
             pick.ifPresent(hit -> {
                 VoxelWorld.Vector3i cell = hit.cell;
                 byte blockId = voxelWorld.getBlock(cell.x, cell.y, cell.z);
-                boolean shouldBreak = breakingBlockSystem.hitBlock(cell.x, cell.y, cell.z);
+                Item heldItem = null;
+                if (player != null) {
+                    var selectedStack = player.getInventory().getSelectedItem();
+                    if (selectedStack != null && selectedStack.getAmount() > 0) {
+                        heldItem = selectedStack.getItem();
+                    }
+                }
+
+                boolean shouldBreak = breakingBlockSystem.hitBlock(cell.x, cell.y, cell.z, heldItem);
 
                 if (shouldBreak) {
                     if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
