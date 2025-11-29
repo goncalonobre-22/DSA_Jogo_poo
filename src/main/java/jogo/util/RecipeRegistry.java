@@ -59,6 +59,21 @@ public class RecipeRegistry {
                         'W', new WoodStick()
                 )
         ));
+
+        // Receita 4: Pão
+        recipes.add(new ShapedRecipeSystem(
+                new Bread(),
+                1,
+                new String[]{
+                        "   ",
+                        "   ",
+                        "WWW"
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'W', new WoodBlockItem()
+                )
+        ));
     }
 
     /**

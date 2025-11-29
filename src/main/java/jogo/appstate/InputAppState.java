@@ -23,6 +23,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean interactRequested;
     private float mouseDX, mouseDY;
     private boolean mouseCaptured = true;
+    private boolean movementEnabled = true;
     // Adicionado do  inventário 1
     private volatile boolean placeRequested;
     private volatile boolean toggleInventoryRequested;
@@ -40,6 +41,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean craftArrowDown;
     private volatile boolean craftArrowLeft;
     private volatile boolean craftArrowRight;
+
 
 
 
@@ -102,6 +104,8 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.addMapping("CraftLeft", new KeyTrigger(KeyInput.KEY_LEFT));
         im.addMapping("CraftRight", new KeyTrigger(KeyInput.KEY_RIGHT));
 
+        im.addMapping("RespawnButton", new KeyTrigger(KeyInput.KEY_RETURN));
+
         im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
         im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-");
         // Adicionado do inventário pt.2
@@ -161,6 +165,11 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
+        if (!movementEnabled && name.startsWith("Move")) {
+            forward = backward = left = right = false;
+            return;
+        }
+
         switch (name) {
             case "MoveForward" -> forward = isPressed;
             case "MoveBackward" -> backward = isPressed;
@@ -168,7 +177,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
             case "MoveRight" -> right = isPressed;
             case "Sprint" -> sprint = isPressed;
             case "Jump" -> {
-                if (isPressed) jumpRequested = true;
+                if (isPressed && movementEnabled) jumpRequested = true;
             }
             case "ToggleMouse" -> {
                 if (isPressed) setMouseCaptured(!mouseCaptured);
@@ -183,39 +192,39 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
                 if (isPressed) respawnRequested = true;
             }
             case "Interact" -> {
-                if (isPressed && mouseCaptured) interactRequested = true;
+                if (isPressed && mouseCaptured && movementEnabled) interactRequested = true;
             }
 
             // Adicionado do inventário pt.4
             case "Place" -> {
-                if (isPressed && mouseCaptured) placeRequested = true;
+                if (isPressed && mouseCaptured && movementEnabled) placeRequested = true;
             }
             case "ToggleInventory" -> {
-                if (isPressed) toggleInventoryRequested = true;
+                if (isPressed && movementEnabled) toggleInventoryRequested = true;
             }
 
             case "InvLeft"  -> {
-                if (isPressed) inventoryLeftRequested  = true;
+                if (isPressed && movementEnabled) inventoryLeftRequested  = true;
             }
             case "InvRight" -> {
-                if (isPressed) inventoryRightRequested = true;
+                if (isPressed && movementEnabled) inventoryRightRequested = true;
             }
             case "InvUp"    -> {
-                if (isPressed) inventoryUpRequested    = true;
+                if (isPressed && movementEnabled) inventoryUpRequested    = true;
             }
             case "InvDown"  -> {
-                if (isPressed) inventoryDownRequested  = true;
+                if (isPressed && movementEnabled) inventoryDownRequested  = true;
             }
-            case "Hotbar1" -> { if (isPressed) hotbarNumberPressed = 1; }
-            case "Hotbar2" -> { if (isPressed) hotbarNumberPressed = 2; }
-            case "Hotbar3" -> { if (isPressed) hotbarNumberPressed = 3; }
-            case "Hotbar4" -> { if (isPressed) hotbarNumberPressed = 4; }
-            case "Hotbar5" -> { if (isPressed) hotbarNumberPressed = 5; }
-            case "Hotbar6" -> { if (isPressed) hotbarNumberPressed = 6; }
-            case "Hotbar7" -> { if (isPressed) hotbarNumberPressed = 7; }
-            case "Hotbar8" -> { if (isPressed) hotbarNumberPressed = 8; }
-            case "Hotbar9" -> { if (isPressed) hotbarNumberPressed = 9; }
-            case  "Hotbar10" -> { if (isPressed) hotbarNumberPressed = 10; }
+            case "Hotbar1" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 1; }
+            case "Hotbar2" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 2; }
+            case "Hotbar3" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 3; }
+            case "Hotbar4" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 4; }
+            case "Hotbar5" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 5; }
+            case "Hotbar6" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 6; }
+            case "Hotbar7" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 7; }
+            case "Hotbar8" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 8; }
+            case "Hotbar9" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 9; }
+            case  "Hotbar10" -> { if (isPressed && movementEnabled) hotbarNumberPressed = 10; }
 
             case "Take" -> {
                 if (isPressed) takeRequested = true;
@@ -247,7 +256,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
     @Override
     public void onAnalog(String name, float value, float tpf) {
-        if (!mouseCaptured) return;
+        if (!mouseCaptured || !movementEnabled) return;
         switch (name) {
             case "MouseX+" -> mouseDX += value;
             case "MouseX-" -> mouseDX -= value;
@@ -414,6 +423,13 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         boolean r = craftArrowRight;
         craftArrowRight = false;
         return r;
+    }
+
+    public void setMovementEnabled(boolean enabled) {
+        this.movementEnabled = enabled;
+        if (!enabled) {
+            forward = backward = left = right = sprint = false;
+        }
     }
 
 

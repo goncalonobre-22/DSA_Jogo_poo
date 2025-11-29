@@ -217,6 +217,9 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    public Player getPlayer() {
+        return player;
+    }
 
 
     @Override

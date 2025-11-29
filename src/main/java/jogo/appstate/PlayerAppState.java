@@ -94,6 +94,27 @@ public class PlayerAppState extends BaseAppState {
     public void update(float tpf) {
         handleInventoryInput();  // ADICIONAR esta linha
 
+        if (player != null) {
+            player.updateHunger(tpf, input.isSprinting());
+        }
+
+        if (player != null && player.getHealth() <= 0) {
+            // Se morreu nesta frame, desativamos imediatamente o controlo
+            setControlEnabled(false);
+
+            // Congela e retorna imediatamente, prevenindo a execução do código de movimento/física
+            characterControl.setWalkDirection(Vector3f.ZERO);
+            if (playerLight != null) playerLight.setPosition(playerNode.getWorldTranslation().add(0, eyeHeight, 0));
+            return;
+        }
+
+        if (!isEnabled()) {
+            // Se desativado, congela a personagem
+            characterControl.setWalkDirection(Vector3f.ZERO);
+            if (playerLight != null) playerLight.setPosition(playerNode.getWorldTranslation().add(0, eyeHeight, 0));
+            return;
+        }
+
         // respawn on request
         if (input.consumeRespawnRequested()) {
             // refresh spawn from world in case terrain changed
@@ -233,5 +254,44 @@ public class PlayerAppState extends BaseAppState {
     // Adicionado do inventário
     public Player getPlayer() {
         return player;
+    }
+
+    public void triggerRespawn() {
+        // 1. Atualiza a posição de spawn
+        if (world != null) {
+            spawnPosition = world.getRecommendedSpawnPosition();
+        }
+        // 2. Reseta estatísticas (Vida e Fome no máximo)
+        player.resetStats();
+        // 3. Teleporta
+        respawn();
+        // 4. Re-ativa o controlo e o input
+        setControlEnabled(true);
+        // 5. Captura o mouse (necessário para sair do estado de morte)
+        input.setMouseCaptured(true);
+    }
+
+    public void setControlEnabled(boolean enabled) {
+        // 1. Controla o AppState (CORREÇÃO DE sintaxe)
+        setEnabled(enabled);
+
+        if (characterControl != null) {
+            characterControl.setWalkDirection(Vector3f.ZERO);
+            // 2. Controla o componente de física do JME
+            characterControl.setEnabled(enabled);
+
+            // 3. [CORREÇÃO FINAL DO CRASH] Adicionar/Remover do PhysicsSpace
+            if (physicsSpace != null) {
+                if (enabled) {
+                    // Adicionar de volta quando ativado (respawn)
+                    physicsSpace.add(characterControl);
+                } else {
+                    // Remover imediatamente do PhysicsSpace quando desativado (morte/congelamento)
+                    physicsSpace.remove(characterControl);
+                }
+            }
+        }
+        // 4. Controla o input
+        input.setMovementEnabled(enabled);
     }
 }

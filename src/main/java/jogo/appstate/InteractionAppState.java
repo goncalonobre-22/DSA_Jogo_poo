@@ -10,6 +10,8 @@ import com.jme3.scene.Spatial;
 import com.jme3.collision.CollisionResults;
 import jogo.engine.RenderIndex;
 import jogo.gameobject.GameObject;
+import jogo.gameobject.character.Player;
+import jogo.gameobject.item.Bread;
 import jogo.gameobject.item.Item;
 import jogo.voxel.VoxelWorld;
 
@@ -37,6 +39,29 @@ public class InteractionAppState extends BaseAppState {
     public void update(float tpf) {
         if (!input.isMouseCaptured()) return;
         if (!input.consumeInteractRequested()) return;
+
+        Player player = world != null ? world.getPlayer() : null;
+
+        if (player != null) {
+            var selectedStack = player.getInventory().getSelectedItem();
+
+            if (selectedStack != null && selectedStack.getAmount() > 0) {
+                Item selectedItem = selectedStack.getItem();
+
+                // 1. Injeta a referência do Player em itens que a necessitam (via Downcasting/Polimorfismo)
+                if (selectedItem instanceof Bread bread) {
+                    bread.player = player;
+                }
+
+                // 2. Chama o método de interação para QUALQUER item selecionado
+                selectedItem.onInteract();
+                System.out.println("Interagiu com o item selecionado: " + selectedItem.getName());
+
+                // A lógica de consumo agora está dentro do onInteract() do item (ex.: Bread.java).
+
+                return; // O item selecionado foi ativado. Interrompe as interações com o mundo.
+            }
+        }
 
         Vector3f origin = cam.getLocation();
         Vector3f dir = cam.getDirection().normalize();

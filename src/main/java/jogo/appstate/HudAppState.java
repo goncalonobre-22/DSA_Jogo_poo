@@ -37,15 +37,33 @@ public class HudAppState extends BaseAppState {
     private boolean inventoryOpen = false;
     private BitmapFont font;
 
-    private static final int SLOT_SIZE = 40;
-    private static final int SLOT_SPACING = 45;
+    private Node heartNode;
+    private Node hungerNode;
+
+    private static final int SLOT_SIZE = 35;
+    private static final int SLOT_SPACING = 38;
     private static final int HOTBAR_SLOTS = 10;
     private static final int INVENTORY_COLS = 10;
     private static final int INVENTORY_ROWS = 4; // 40 slots total
 
+    private static final int MAX_HEARTS = 10;
+    private static final int HEART_SIZE = 15;
+    private static final int HEART_SPACING = 17;
+    private static final int HEALTH_PER_HEART = 10;
+
+    private static final int MAX_FOODS = 10;
+    private static final int FOOD_SIZE = 15;
+    private static final int FOOD_SPACING = 17;
+    private static final int HUNGER_PER_FOOD = 10;
+
+
     private boolean craftMenuOpen = false;
     private Item selectedItem = null; // Item selecionado com T
     private Node craftingNode;
+
+    private boolean gameOverOpen = false;
+    private Node gameOverNode;
+    private PlayerAppState playerAppState;
 
     public HudAppState(Node guiNode, AssetManager assetManager) {
         this.guiNode = guiNode;
@@ -61,6 +79,8 @@ public class HudAppState extends BaseAppState {
     protected void initialize(Application app) {
         font = assetManager.loadFont("Interface/Fonts/Default.fnt");
 
+        this.playerAppState = getStateManager().getState(PlayerAppState.class);
+
 
         crosshair = new BitmapText(font, false);
         crosshair.setText("+");
@@ -74,6 +94,14 @@ public class HudAppState extends BaseAppState {
         guiNode.attachChild(hotbarNode);
         System.out.println("HudAppState initialized: hotbarNode attached");
 
+        heartNode = new Node("HeartDisplay");
+        guiNode.attachChild(heartNode);
+        System.out.println("HudAppState initialized: heartNode attached");
+
+        hungerNode = new Node("HungerDisplay");
+        guiNode.attachChild(hungerNode);
+        System.out.println("HudAppState initialized: hungerNode attached");
+
         // Inventário
         inventoryNode = new Node("Inventory");
         System.out.println("HudAppState initialized: inventoryNode created");
@@ -81,6 +109,9 @@ public class HudAppState extends BaseAppState {
         //Sistema de Crafting
         craftingNode = new Node("Crafting");
         System.out.println("HudAppState initialized: craftingNode created");
+
+        gameOverNode = new Node("GameOverScreen");
+        System.out.println("HudAppState initialized: gameOverNode created");
     }
 
     private void centerCrosshair() {
@@ -99,6 +130,20 @@ public class HudAppState extends BaseAppState {
         if (font == null || player == null) return; // Espera pelo player
 
         InputAppState input = getStateManager().getState(InputAppState.class);
+
+        if (player.getHealth() <= 0 && !gameOverOpen) {
+            // JOGADOR MORREU: Trava o jogo e mostra a tela de Game Over
+            showGameOver(true);
+            return;
+        } else if (gameOverOpen) {
+            // JOGADOR MORTO: Verifica o Respawn pela tecla 'R' e retorna
+            updateGameOverScreen(input);
+            return;
+        }
+
+        updateHealthDisplay();
+
+        updateHungerDisplay();
 
         if (inventoryOpen) {
             // A interface é sempre a combinada, mas a lógica de input é que muda.
@@ -208,9 +253,9 @@ public class HudAppState extends BaseAppState {
 
                 // Ajustar posição quando a quantidade passa de 10
                 if (stack.getAmount() < 10) {
-                    amountText.setLocalTranslation(x + 30, y + 15, 2);
+                    amountText.setLocalTranslation(x + 25, y + 15, 2);
                 } else {
-                    amountText.setLocalTranslation(x + 20, y + 15, 2);
+                    amountText.setLocalTranslation(x + 15, y + 15, 2);
                 }
 
                 parentNode.attachChild(amountText);
@@ -425,6 +470,18 @@ public class HudAppState extends BaseAppState {
         if (inventoryNode != null) {
             inventoryNode.removeFromParent();
         }
+
+        if (heartNode != null) { // [NOVO] Limpar o nó de vida
+            heartNode.removeFromParent();
+        }
+
+        if (hungerNode != null) { // [NOVO] Limpar o nó de fome
+            hungerNode.removeFromParent();
+        }
+
+        if (gameOverNode != null) { // Limpar o nó de Game Over
+            gameOverNode.removeFromParent();
+        }
     }
 
     public void moveInventorySelection(String dir) {
@@ -596,6 +653,206 @@ public class HudAppState extends BaseAppState {
 
         int newSlot = newRow * 3 + newCol;
         player.setSelectedCraftSlot(newSlot);
+    }
+
+    private void drawHeartIcon(Node parentNode, String texturePath, int x, int y) {
+        Quad quad = new Quad(HEART_SIZE, HEART_SIZE);
+        Geometry heartGeom = new Geometry("HeartIcon", quad);
+
+        Material heartMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture iconTex = assetManager.loadTexture(texturePath);
+
+        if (iconTex != null) {
+            heartMat.setTexture("ColorMap", iconTex);
+            heartMat.setTransparent(true);
+            heartMat.getAdditionalRenderState().setBlendMode(com.jme3.material.RenderState.BlendMode.Alpha);
+        } else {
+            // Fallback: usar uma cor sólida se a textura falhar
+            heartMat.setColor("Color", ColorRGBA.Red.mult(0.5f));
+        }
+
+        heartGeom.setMaterial(heartMat);
+        heartGeom.setLocalTranslation(x - 105, y - 8, 0); // Z=0
+        parentNode.attachChild(heartGeom);
+    }
+
+    // [NOVO MÉTODO] Atualiza e desenha o display de vida
+    private void updateHealthDisplay() {
+        heartNode.detachAllChildren();
+
+        int currentHealth = player.getHealth(); // Assume 100 de vida máxima (10 corações * 10/coração)
+
+        int screenWidth = getApplication().getCamera().getWidth();
+        // Centrar os corações
+        int startX = (screenWidth - (MAX_HEARTS * HEART_SPACING)) / 2;
+        // Posicionar acima da Hotbar (que está em y=50, com slots de 40px)
+        int startY = 100;
+
+        for (int i = 0; i < MAX_HEARTS; i++) {
+            int x = startX + i * HEART_SPACING;
+            int y = startY;
+
+            // O limite de vida que este coração representa (e.g., 10, 20, 30, ...)
+            int heartValue = (i + 1) * HEALTH_PER_HEART;
+
+            String texturePath;
+
+            if (currentHealth >= heartValue) {
+                // Coração Cheio: vida atual é maior ou igual ao limite superior do coração (ex: vida 90, coração 9)
+                texturePath = "Interface/full_heart.png";
+            } else if (currentHealth >= (heartValue - 5)) {
+                // Meio Coração: vida atual está no intervalo de 5 (ex: vida 85, coração 9)
+                texturePath = "Interface/half_heart.png";
+            } else {
+                // Coração Vazio: vida atual abaixo do intervalo de 5 (ex: vida 84, coração 9)
+                texturePath = "Interface/empty_heart.png";
+            }
+
+            drawHeartIcon(heartNode, texturePath, x, y);
+        }
+    }
+
+    private void drawHungerIcon(Node parentNode, String texturePath, int x, int y) {
+        Quad quad = new Quad(FOOD_SIZE, FOOD_SIZE);
+        Geometry hungerGeom = new Geometry("FoodIcon", quad);
+
+        Material hungerMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture iconTex = assetManager.loadTexture(texturePath);
+
+        if (iconTex != null) {
+            hungerMat.setTexture("ColorMap", iconTex);
+            hungerMat.setTransparent(true);
+            hungerMat.getAdditionalRenderState().setBlendMode(com.jme3.material.RenderState.BlendMode.Alpha);
+        } else {
+            // Fallback: usar uma cor sólida se a textura falhar (laranja para fome)
+            hungerMat.setColor("Color", ColorRGBA.Orange.mult(0.5f));
+        }
+
+        hungerGeom.setMaterial(hungerMat);
+        hungerGeom.setLocalTranslation(x - 435, y - 8, 0); // Z=0
+        parentNode.attachChild(hungerGeom);
+    }
+
+    private void updateHungerDisplay() {
+        hungerNode.detachAllChildren();
+
+        int currentHunger = player.getHunger(); // 100 de fome máxima
+
+        int screenWidth = getApplication().getCamera().getWidth();
+        // Colocar na mesma altura dos corações (y=100) mas alinhados à direita.
+        // O startX é calculado da direita para a esquerda.
+        int totalWidth = MAX_FOODS * FOOD_SPACING;
+        int startX = screenWidth - totalWidth - 20; // 20px de margem à direita
+        int startY = 100; // Mesma altura da barra de vida
+
+        for (int i = 0; i < MAX_FOODS; i++) {
+            // Desenho da esquerda para a direita (ícone 1 ao 10)
+            int x = startX + i * FOOD_SPACING;
+            int y = startY;
+
+            // O limite de fome que este ícone representa (e.g., 10, 20, 30, ...)
+            int foodValue = (i + 1) * HUNGER_PER_FOOD;
+
+            String texturePath;
+
+            if (currentHunger >= foodValue) {
+                // Ícone Cheio
+                texturePath = "Interface/full_food.png";
+            } else if (currentHunger >= (foodValue - 5)) {
+                // Meio Ícone
+                texturePath = "Interface/half_food.png";
+            } else {
+                // Ícone Vazio
+                texturePath = "Interface/empty_food.png";
+            }
+
+            drawHungerIcon(hungerNode, texturePath, x, y); // Reutiliza a função de desenho
+        }
+    }
+
+    private void updateGameOverScreen(InputAppState input) {
+        // Consumir 'R' (RespawnRequested) que foi deixado passar pelo InputAppState
+        if (input.consumeRespawnRequested()) {
+            handleRespawn();
+            return;
+        }
+    }
+
+    public void showGameOver(boolean show) {
+        if (show == gameOverOpen) return;
+
+        gameOverOpen = show;
+
+        if (show) {
+            // 1. DESATIVA CONTROLO DO JOGADOR
+            playerAppState.setControlEnabled(false);
+            // 2. FORÇA O RATO A SER LIBERTADO
+            getStateManager().getState(InputAppState.class).setMouseCaptured(false);
+
+            // 3. ESCONDE HUDs NORMAIS
+            if(hotbarNode.getParent() != null) hotbarNode.removeFromParent();
+            if(inventoryNode.getParent() != null) inventoryNode.removeFromParent();
+            if(heartNode.getParent() != null) heartNode.removeFromParent();
+            if(hungerNode.getParent() != null) hungerNode.removeFromParent();
+
+            // 4. CONFIGURA A TELA DE GAME OVER
+            gameOverNode.detachAllChildren();
+
+            SimpleApplication sapp = (SimpleApplication) getApplication();
+            int w = sapp.getCamera().getWidth();
+            int h = sapp.getCamera().getHeight();
+
+            // Overlay Vermelho
+            Quad bgQuad = new Quad(w, h);
+            Geometry bg = new Geometry("GameOverOverlay", bgQuad);
+            Material bgMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            bgMat.setColor("Color", new ColorRGBA(1.0f, 0.0f, 0.0f, 0.7f));
+            bgMat.setTransparent(true);
+            bgMat.getAdditionalRenderState().setBlendMode(com.jme3.material.RenderState.BlendMode.Alpha);
+            bg.setMaterial(bgMat);
+            bg.setLocalTranslation(0, 0, -10);
+            gameOverNode.attachChild(bg);
+
+            // Texto "Morreste"
+            BitmapText title = new BitmapText(font, false);
+            title.setText("MORRESTE");
+            title.setSize(font.getCharSet().getRenderedSize() * 3f);
+            title.setColor(ColorRGBA.White);
+            float titleX = (w - title.getLineWidth()) / 2f;
+            float titleY = h * 0.7f;
+            title.setLocalTranslation(titleX, titleY, 0);
+            gameOverNode.attachChild(title);
+
+            // Botão "Respawn" [EDITADO]
+            String buttonText = "Para dar Respawn clique na tecla R"; // Agora é o R
+            BitmapText button = new BitmapText(font, false);
+            button.setText(buttonText);
+            button.setSize(font.getCharSet().getRenderedSize() * 1.5f);
+            button.setColor(ColorRGBA.White.mult(0.9f));
+            float buttonX = (w - button.getLineWidth()) / 2f;
+            float buttonY = h * 0.4f;
+            button.setLocalTranslation(buttonX, buttonY, 0);
+            gameOverNode.attachChild(button);
+
+            guiNode.attachChild(gameOverNode);
+
+        } else {
+            // Esconde a tela de morte e restaura HUDs normais
+            guiNode.detachChild(gameOverNode);
+            guiNode.attachChild(hotbarNode);
+            guiNode.attachChild(heartNode);
+            guiNode.attachChild(hungerNode);
+        }
+    }
+
+    private void handleRespawn() {
+        if (playerAppState == null) return;
+
+        // Aciona o respawn completo (reset stats e teleport)
+        playerAppState.triggerRespawn();
+
+        // Esconde a tela de Game Over e reativa o jogo
+        showGameOver(false);
     }
 
 

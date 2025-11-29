@@ -13,4 +13,8 @@ public abstract class Character extends GameObject {
 
     public int getHealth() { return health; }
     public void setHealth(int health) { this.health = health; }
+
+    public void takeDamage(int damage) {
+        this.health = Math.max(0, this.health - damage);
+    }
 }
