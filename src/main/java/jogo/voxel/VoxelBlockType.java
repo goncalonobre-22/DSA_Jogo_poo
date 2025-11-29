@@ -20,6 +20,9 @@ public abstract class VoxelBlockType {
     public int getHardness() { return 1; }
 
     public String getMiningCategory() { return "DEFAULT"; }
+
+    public float getSpeedMultiplier() { return 1f; }
+
     /**
      * Returns the Material for this block type. Override in subclasses for custom materials.
      */

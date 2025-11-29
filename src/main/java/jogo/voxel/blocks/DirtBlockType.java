@@ -22,6 +22,8 @@ public class DirtBlockType extends VoxelBlockType {
         return "GRANULAR";
     }
 
+
+
     // isSolid() inherits true from base
 
     @Override

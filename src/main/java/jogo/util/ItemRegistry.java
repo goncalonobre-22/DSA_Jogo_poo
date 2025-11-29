@@ -19,6 +19,7 @@ public class ItemRegistry {
         registerBlockItem(VoxelPalette.WOOD_ID, WoodBlockItem.class);
         registerBlockItem(VoxelPalette.METALORE_ID, MetalOreBlockItem.class);
         registerBlockItem(VoxelPalette.SAND_ID, SandBlockItem.class);
+        registerBlockItem(VoxelPalette.SOULSAND_ID, SoulSandBlockItem.class);
 
         registerNonBlockItem(WoodStick.class);
     }

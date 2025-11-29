@@ -12,6 +12,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import jogo.gameobject.character.Player;
+import jogo.voxel.VoxelBlockType;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
@@ -125,7 +126,23 @@ public class PlayerAppState extends BaseAppState {
         if (wish.lengthSquared() > 0f) {
             dir = computeWorldMove(wish).normalizeLocal();
         }
-        float speed = moveSpeed * (input.isSprinting() ? sprintMultiplier : 1f);
+
+        float blockMultiplier = 1.0f;
+        if (characterControl.isOnGround() && world != null && world.getVoxelWorld() != null) {
+            Vector3f playerWorldPos = playerNode.getWorldTranslation();
+
+            // O bloco sob o jogador (y da base - um pequeno delta)
+            int blockX = (int) Math.floor(playerWorldPos.x);
+            int blockY = (int) Math.floor(playerWorldPos.y - 0.1f); // 0.1f para garantir que está no bloco de baixo
+            int blockZ = (int) Math.floor(playerWorldPos.z);
+
+            byte blockId = world.getVoxelWorld().getBlock(blockX, blockY, blockZ);
+            VoxelBlockType blockType = world.getVoxelWorld().getPalette().get(blockId);
+            blockMultiplier = blockType.getSpeedMultiplier(); // <- LER O VALOR DO BLOCO
+        }
+
+        // 2. Aplicar o multiplicador no cálculo da velocidade
+        float speed = moveSpeed * (input.isSprinting() ? sprintMultiplier : 1f) * blockMultiplier;
         characterControl.setWalkDirection(dir.mult(speed));
 
 
