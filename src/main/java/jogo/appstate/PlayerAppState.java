@@ -12,6 +12,8 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import jogo.gameobject.character.Player;
+import jogo.voxel.VoxelPalette;
+import jogo.voxel.VoxelWorld;
 
 public class PlayerAppState extends BaseAppState {
 
@@ -32,7 +34,7 @@ public class PlayerAppState extends BaseAppState {
 
     // tuning
     private float moveSpeed = 8.0f; // m/s
-    private float sprintMultiplier = 1.7f;
+    private float sprintMultiplier = 1.7f; //1.7f
     private float mouseSensitivity = 30f; // degrees per mouse analog unit
     private float eyeHeight = 1.7f;
 
@@ -125,6 +127,8 @@ public class PlayerAppState extends BaseAppState {
         }
         float speed = moveSpeed * (input.isSprinting() ? sprintMultiplier : 1f);
         characterControl.setWalkDirection(dir.mult(speed));
+
+
 
         // jump
         if (input.consumeJumpRequested() && characterControl.isOnGround()) {

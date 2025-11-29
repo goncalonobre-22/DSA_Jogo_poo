@@ -11,6 +11,6 @@ public class WoodBlockItem extends PlaceableItem {
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        return assetManager.loadTexture("Textures/woodItem.png");
+        return assetManager.loadTexture("Interface/woodItem.png");
     }
 }

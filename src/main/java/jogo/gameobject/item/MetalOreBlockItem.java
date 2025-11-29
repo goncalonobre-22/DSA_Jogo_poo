@@ -11,6 +11,6 @@ public class MetalOreBlockItem extends PlaceableItem {
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        return assetManager.loadTexture("Textures/ironOreItem.png");
+        return assetManager.loadTexture("Interface/ironOreItem.png");
     }
 }

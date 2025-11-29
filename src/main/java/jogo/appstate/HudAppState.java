@@ -15,18 +15,13 @@ import com.jme3.scene.Node;
 
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
-import com.jme3.texture.Texture2D;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
-import jogo.gameobject.item.PlaceableItem;
-import jogo.gameobject.item.SandBlockItem;
 import jogo.util.Inventory;
 import jogo.util.RecipeRegistry;
 import jogo.util.RecipeSystem;
 import jogo.util.Stacks;
-import jogo.voxel.VoxelPalette;
 
-import java.util.Objects;
 
 public class HudAppState extends BaseAppState {
 

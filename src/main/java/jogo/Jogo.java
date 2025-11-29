@@ -94,7 +94,7 @@ public class Jogo extends SimpleApplication {
         hudAppState.setPlayer(player_inv);
         stateManager.attach(hudAppState);
 
-// Handler para toggle do inventário
+        // Handler para toggle do inventário
         stateManager.attach(new BaseAppState() {
             @Override
             protected void initialize(com.jme3.app.Application app) {}

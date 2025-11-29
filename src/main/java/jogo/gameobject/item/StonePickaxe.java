@@ -14,6 +14,6 @@ public class StonePickaxe extends Item{
     @Override
     public Texture getIcon(AssetManager assetManager) {
         // Crie e adicione Textures/sticks.png ao seu projeto
-        return assetManager.loadTexture("Textures/StonePickaxe.png");
+        return assetManager.loadTexture("Interface/StonePickaxe.png");
     }
 }

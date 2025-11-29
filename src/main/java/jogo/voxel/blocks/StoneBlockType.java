@@ -11,6 +11,7 @@ public class StoneBlockType extends VoxelBlockType {
     public StoneBlockType() {
         super("stone");
     }
+
     // isSolid() inherits true from base
 
     @Override

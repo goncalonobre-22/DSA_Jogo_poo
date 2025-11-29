@@ -6,11 +6,9 @@ import jogo.util.Stacks;
 
 public class WoodStick extends Item {
 
-    public static final String NAME = "Stick";
-
     // Construtor sem argumentos para o GameRegistry
     public WoodStick() {
-        super(NAME);
+        super("Stick");
     }
 
     @Override
