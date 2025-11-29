@@ -15,6 +15,7 @@ import jogo.engine.GameRegistry;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.PlaceableItem;
+import jogo.util.BreakingBlockSystem;
 import jogo.util.ItemRegistry;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
@@ -30,6 +31,8 @@ public class WorldAppState extends BaseAppState {
 
     // Adicionado do inventário
     private Player player;
+
+    private BreakingBlockSystem breakingBlockSystem;
 
 
     // world root for easy cleanup
@@ -75,6 +78,8 @@ public class WorldAppState extends BaseAppState {
         worldNode.attachChild(voxelWorld.getNode());
         voxelWorld.buildPhysics(physicsSpace);
 
+        breakingBlockSystem = new BreakingBlockSystem(voxelWorld);
+
         // compute recommended spawn
         spawnPosition = voxelWorld.getRecommendedSpawn();
     }
@@ -89,31 +94,38 @@ public class WorldAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
+        if (breakingBlockSystem != null) {
+            breakingBlockSystem.update(tpf);
+        }
 
         if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
             pick.ifPresent(hit -> {
                 VoxelWorld.Vector3i cell = hit.cell;
                 byte blockId = voxelWorld.getBlock(cell.x, cell.y, cell.z);
+                boolean shouldBreak = breakingBlockSystem.hitBlock(cell.x, cell.y, cell.z);
 
-                if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
-                    // Cria o item correspondente ao bloco
-                    if (player != null && blockId != VoxelPalette.AIR_ID) {
-                        PlaceableItem item = ItemRegistry.createItemFromBlock(blockId);
-                        if (item != null) { // ITEM CRIADO COM SUCESSO
-                            boolean added = player.getInventory().addItem(item, 1);
-                            if (added) {
-                                System.out.println(item.getName() + " adicionado ao inventário!");
+                if (shouldBreak) {
+                    if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
+                        // Cria o item correspondente ao bloco
+                        if (player != null && blockId != VoxelPalette.AIR_ID) {
+                            PlaceableItem item = ItemRegistry.createItemFromBlock(blockId);
+                            if (item != null) { // ITEM CRIADO COM SUCESSO
+                                boolean added = player.getInventory().addItem(item, 1);
+                                if (added) {
+                                    System.out.println(item.getName() + " adicionado ao inventário!");
+                                } else {
+                                    System.out.println("Inventário cheio!");
+                                }
                             } else {
-                                System.out.println("Inventário cheio!");
+                                System.out.println("Falha na criação do item para bloco ID: " + blockId);
                             }
-                        } else {
-                            System.out.println("Falha na criação do item para bloco ID: " + blockId);
                         }
+
+                        voxelWorld.rebuildDirtyChunks(physicsSpace);
+                        playerAppState.refreshPhysics();
                     }
 
-                    voxelWorld.rebuildDirtyChunks(physicsSpace);
-                    playerAppState.refreshPhysics();
                 }
             });
         }
@@ -177,6 +189,7 @@ public class WorldAppState extends BaseAppState {
 
     @Override
     protected void cleanup(Application app) {
+
         if (worldNode != null) {
             // Remove all physics controls under worldNode
             worldNode.depthFirstTraversal(spatial -> {
@@ -188,6 +201,11 @@ public class WorldAppState extends BaseAppState {
             });
             worldNode.removeFromParent();
             worldNode = null;
+        }
+
+        if (breakingBlockSystem != null) {
+            breakingBlockSystem.cleanup();
+            breakingBlockSystem = null;
         }
     }
 

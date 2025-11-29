@@ -13,6 +13,11 @@ public class SandBlockType extends VoxelBlockType {
         super("sand");
     }
 
+    @Override
+    public int getHardness() {
+        return 3;
+    }
+
     // isSolid() inherits true from base
 
     @Override

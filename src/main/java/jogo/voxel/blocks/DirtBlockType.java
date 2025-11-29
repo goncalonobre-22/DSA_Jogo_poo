@@ -11,6 +11,12 @@ public class DirtBlockType extends VoxelBlockType {
     public DirtBlockType() {
         super("dirt");
     }
+
+    @Override
+    public int getHardness() {
+        return 3;
+    }
+
     // isSolid() inherits true from base
 
     @Override
