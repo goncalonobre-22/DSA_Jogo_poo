@@ -74,6 +74,22 @@ public class RecipeRegistry {
                         'W', new WoodBlockItem()
                 )
         ));
+
+        // Receita 5: Machado de madeira
+        recipes.add(new ShapedRecipeSystem(
+                new WoodAxe(),
+                1,
+                new String[]{
+                        "WW ",
+                        "WS ",
+                        " S "
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'W', new WoodBlockItem(),
+                        'S', new WoodStick()
+                )
+        ));
     }
 
     /**

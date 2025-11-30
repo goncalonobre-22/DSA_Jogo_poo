@@ -13,6 +13,7 @@ import jogo.gameobject.GameObject;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Bread;
 import jogo.gameobject.item.Item;
+import jogo.gameobject.item.WoodAxe;
 import jogo.voxel.VoxelWorld;
 
 public class InteractionAppState extends BaseAppState {
@@ -51,6 +52,11 @@ public class InteractionAppState extends BaseAppState {
                 // 1. Injeta a referência do Player em itens que a necessitam (via Downcasting/Polimorfismo)
                 if (selectedItem instanceof Bread bread) {
                     bread.player = player;
+                }
+
+                if (selectedItem instanceof WoodAxe woodAxe) {
+                    woodAxe.worldAppState = world; // Injeta WorldAppState
+                    woodAxe.camera = cam; // Injeta Camera
                 }
 
                 // 2. Chama o método de interação para QUALQUER item selecionado

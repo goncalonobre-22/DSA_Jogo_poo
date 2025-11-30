@@ -139,6 +139,7 @@ public class VoxelWorld {
         setBlock(pos.x + 2, groundY + 1, pos.z - 1, VoxelPalette.SAND_ID);
         setBlock(pos.x - 2, groundY + 1, pos.z - 1, VoxelPalette.SOULSAND_ID);
         setBlock(pos.x -2, groundY + 1, pos.z -2, VoxelPalette.SOULSAND_ID);
+        setBlock(pos.x + 3,  groundY + 1, pos.z + 1, VoxelPalette.WOOD_ID);
     }
 
     public int getTopSolidY(int x, int z) {

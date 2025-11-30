@@ -20,8 +20,7 @@ public class ItemRegistry {
         registerBlockItem(VoxelPalette.METALORE_ID, MetalOreBlockItem.class);
         registerBlockItem(VoxelPalette.SAND_ID, SandBlockItem.class);
         registerBlockItem(VoxelPalette.SOULSAND_ID, SoulSandBlockItem.class);
-
-        registerNonBlockItem(WoodStick.class);
+        registerBlockItem(VoxelPalette.PLANK_ID, PlankBlockItem.class);
     }
 
     private static void registerBlockItem(byte blockId, Class<? extends PlaceableItem> itemClass) {
@@ -49,39 +48,6 @@ public class ItemRegistry {
             System.err.println("Erro ao criar item para bloco " + blockId);
             e.printStackTrace();
             return null;
-        }
-    }
-
-    /**
-     * Cria um item pelo nome.
-     */
-    public static Item createItemByName(String name) {
-        Class<? extends Item> itemClass = nameToItem.get(name);
-        if (itemClass == null) {
-            System.err.println("Nenhum item com nome: " + name);
-            return null;
-        }
-
-        try {
-            return itemClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            System.err.println("Erro ao criar item " + name);
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private static void registerNonBlockItem(Class<? extends Item> itemClass) { // <-- NOVO MÉTODO
-        try {
-            // Cria uma instância para registar o nome
-            Item instance = itemClass.getDeclaredConstructor().newInstance();
-            nameToItem.put(instance.getName(), itemClass);
-
-            // Adiciona à lista de receitas
-            recipeClasses.add(itemClass);
-        } catch (Exception e) {
-            System.err.println("Erro ao registar item não-bloco: " + itemClass.getName());
-            e.printStackTrace();
         }
     }
 }
