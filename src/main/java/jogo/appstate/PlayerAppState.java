@@ -294,4 +294,8 @@ public class PlayerAppState extends BaseAppState {
         // 4. Controla o input
         input.setMovementEnabled(enabled);
     }
+
+    public Vector3f getPlayerPosition() {
+        return playerNode.getWorldTranslation();
+    }
 }

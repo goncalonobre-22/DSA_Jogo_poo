@@ -17,6 +17,7 @@ import jogo.gameobject.item.Item;
 import jogo.gameobject.item.PlaceableItem;
 import jogo.util.BreakingBlockSystem;
 import jogo.util.ItemRegistry;
+import jogo.voxel.VoxelBlockType;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
@@ -33,6 +34,8 @@ public class WorldAppState extends BaseAppState {
     private Player player;
 
     private BreakingBlockSystem breakingBlockSystem;
+
+    private static final int GRAVITY_RADIUS = 24;
 
 
     // world root for easy cleanup
@@ -97,6 +100,8 @@ public class WorldAppState extends BaseAppState {
         if (breakingBlockSystem != null) {
             breakingBlockSystem.update(tpf);
         }
+
+        checkFallingBlocks();
 
         if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
@@ -219,6 +224,112 @@ public class WorldAppState extends BaseAppState {
 
     public Player getPlayer() {
         return player;
+    }
+
+//    private void checkFallingBlocks() {
+//        if (voxelWorld == null || physicsSpace == null) return;
+//
+//        boolean worldChanged = false;
+//
+//        // Obtém os tamanhos para iterar sobre todos os blocos (ou sobre uma área relevante)
+//        int sizeX = 170; // Assumindo o tamanho do mundo (aqui 320)
+//        int sizeY = 32;  // Assumindo o tamanho do mundo (aqui 32)
+//        int sizeZ = 170; // Assumindo o tamanho do mundo (aqui 320)
+//
+//        // Itera de Y=1 para cima, para garantir que blocos de cima caem primeiro.
+//        for (int y = 1; y < sizeY; y++) {
+//            for (int x = 0; x < sizeX; x++) {
+//                for (int z = 0; z < sizeZ; z++) {
+//                    byte currentId = voxelWorld.getBlock(x, y, z);
+//                    if (currentId == VoxelPalette.AIR_ID) continue;
+//
+//                    VoxelBlockType currentType = voxelWorld.getPalette().get(currentId);
+//
+//                    // 1. Verifica se o bloco é afetado pela gravidade
+//                    if (currentType.isAffectedByGravity()) {
+//                        // 2. Verifica o bloco abaixo (y-1)
+//                        byte belowId = voxelWorld.getBlock(x, y - 1, z);
+//                        VoxelBlockType belowType = voxelWorld.getPalette().get(belowId);
+//
+//                        // 3. Verifica se o bloco abaixo não é sólido
+//                        if (!belowType.isSolid()) {
+//                            // Faz o bloco cair 1 unidade (troca com o bloco abaixo)
+//                            voxelWorld.setBlock(x, y, z, VoxelPalette.AIR_ID);
+//                            voxelWorld.setBlock(x, y - 1, z, currentId);
+//                            worldChanged = true;
+//                            // Decrementa y em 1 para garantir que o bloco recém-movido é verificado
+//                            // na próxima iteração do ciclo (para propagação da queda no mesmo frame)
+//                            y--;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (worldChanged) {
+//            // Rebuild the necessary chunks and update physics
+//            voxelWorld.rebuildDirtyChunks(physicsSpace);
+//            if (playerAppState != null) {
+//                playerAppState.refreshPhysics();
+//            }
+//        }
+//    }
+
+    private void checkFallingBlocks() {
+        if (voxelWorld == null || physicsSpace == null) return;
+
+        boolean worldChanged = false;
+
+        // Posição do jogador
+        Vector3f playerPos = playerAppState.getPlayerPosition();
+
+        // Converte para coords de bloco
+        int px = (int) playerPos.x;
+        int py = (int) playerPos.y;
+        int pz = (int) playerPos.z;
+
+        // Limites da área a processar
+        int minX = Math.max(0, px - GRAVITY_RADIUS);
+        int maxX = Math.min(voxelWorld.getSizeX() - 1, px + GRAVITY_RADIUS);
+
+        int minY = Math.max(1, py - GRAVITY_RADIUS);
+        int maxY = Math.min(voxelWorld.getSizeY() - 1, py + GRAVITY_RADIUS);
+
+        int minZ = Math.max(0, pz - GRAVITY_RADIUS);
+        int maxZ = Math.min(voxelWorld.getSizeZ() - 1, pz + GRAVITY_RADIUS);
+
+        // Itera somente nos blocos perto do jogador
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+
+                    byte id = voxelWorld.getBlock(x, y, z);
+                    if (id == VoxelPalette.AIR_ID) continue;
+
+                    VoxelBlockType type = voxelWorld.getPalette().get(id);
+
+                    if (type.isAffectedByGravity()) {
+                        byte belowId = voxelWorld.getBlock(x, y - 1, z);
+                        VoxelBlockType belowType = voxelWorld.getPalette().get(belowId);
+
+                        if (!belowType.isSolid()) {
+                            // Faz o bloco cair
+                            voxelWorld.setBlock(x, y, z, VoxelPalette.AIR_ID);
+                            voxelWorld.setBlock(x, y - 1, z, id);
+                            worldChanged = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Só reconstrói se realmente mudou algo
+        if (worldChanged) {
+            voxelWorld.rebuildDirtyChunks(physicsSpace);
+            if (playerAppState != null) {
+                playerAppState.refreshPhysics();
+            }
+        }
     }
 
 

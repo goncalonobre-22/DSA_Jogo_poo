@@ -5,6 +5,7 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.texture.Texture2D;
 import jogo.util.BreakBlockProgress;
+import jogo.util.BreakingBlockSystem;
 import jogo.util.ProcTextures;
 import jogo.voxel.VoxelBlockType;
 

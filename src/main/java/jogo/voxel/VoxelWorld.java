@@ -370,6 +370,19 @@ public class VoxelWorld {
                     chunks[cx][cy][cz].clearDirty();
     }
 
+    public int getSizeX() {
+        return  sizeX;
+    }
+
+    public int getSizeY() {
+        return  sizeY;
+    }
+
+    public int getSizeZ() {
+        return  sizeZ;
+    }
+
+
     // simple int3
     public static class Vector3i {
         public final int x, y, z;

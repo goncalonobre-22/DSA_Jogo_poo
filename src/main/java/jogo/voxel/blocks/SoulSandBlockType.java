@@ -23,7 +23,7 @@ public class SoulSandBlockType extends VoxelBlockType {
 
     @Override
     public float getSpeedMultiplier() {
-        return 0.5f;
+        return 0.25f;
     }
 
     // isSolid() inherits true from base

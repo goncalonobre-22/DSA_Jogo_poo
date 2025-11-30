@@ -89,5 +89,4 @@ public class Player extends Character {
         this.hungerTimer = 0.0f;
         this.starvationTimer = 0.0f;
     }
-
 }

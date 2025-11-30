@@ -17,6 +17,10 @@ public abstract class VoxelBlockType {
     /** Whether this block is physically solid (collides/occludes). */
     public boolean isSolid() { return true; }
 
+    public boolean isAffectedByGravity() {
+        return false;
+    }
+
     public int getHardness() { return 1; }
 
     public String getMiningCategory() { return "DEFAULT"; }
