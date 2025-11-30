@@ -2,6 +2,7 @@ package jogo;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.system.AppSettings;
@@ -38,6 +39,8 @@ public class Jogo extends SimpleApplication {
 
     private BulletAppState bulletAppState;
 
+    private AudioNode hurtSound;
+
     @Override
     public void simpleInitApp() {
         // disable flyCam, we manage camera ourselves
@@ -66,13 +69,21 @@ public class Jogo extends SimpleApplication {
         stateManager.attach(new RenderAppState(rootNode, assetManager, registry, renderIndex));
         stateManager.attach(new InteractionAppState(rootNode, cam, input, renderIndex, world));
 
-        // Demo objects
-        // Chest chest = new Chest();
-        // chest.setPosition(26.5f, world.getRecommendedSpawnPosition().y - 2f, 26.5f);
-        // registry.add(chest);
+        try {
+            hurtSound = new AudioNode(assetManager, "Sounds/hurtPlayer.ogg", false);
+            hurtSound.setPositional(false); // Som não posicional (global)
+            hurtSound.setLooping(false);
+            hurtSound.setVolume(2);
+        } catch (Exception e) {
+            System.err.println("Erro ao carregar o som de dano (hurt.ogg): " + e.getMessage());
+        }
 
         PlayerAppState player = new PlayerAppState(rootNode, assetManager, cam, input, physicsSpace, world, player_inv);
         stateManager.attach(player);
+
+        if (hurtSound != null) {
+            player.setHurtSound(hurtSound);
+        }
 
         // Post-processing: SSAO for subtle contact shadows
         try {

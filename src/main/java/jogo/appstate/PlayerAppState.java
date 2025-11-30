@@ -3,6 +3,7 @@ package jogo.appstate;
 import com.jme3.app.Application;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.light.PointLight;
@@ -28,6 +29,11 @@ public class PlayerAppState extends BaseAppState {
     private Node playerNode;
     private BetterCharacterControl characterControl;
     private Player player;
+
+    private float playerDamageTimer = 0.0f;
+    private static final float DAMAGE_TICK_RATE = 1f;
+
+    private AudioNode hurtSound;
 
     // view angles
     private float yaw = 0f;
@@ -98,6 +104,10 @@ public class PlayerAppState extends BaseAppState {
             player.updateHunger(tpf, input.isSprinting());
         }
 
+        if (player != null && player.consumeDamageFlag()) {
+            playHurtSound();
+        }
+
         if (player != null && player.getHealth() <= 0) {
             // Se morreu nesta frame, desativamos imediatamente o controlo
             setControlEnabled(false);
@@ -148,18 +158,32 @@ public class PlayerAppState extends BaseAppState {
             dir = computeWorldMove(wish).normalizeLocal();
         }
 
+        // 1. CONSOLIDADO: OBTEM O TIPO DE BLOCO SOB O JOGADOR
+        VoxelBlockType blockType = getVoxelBlockTypeUnderPlayer();
+
+
+        // NOVO: LÓGICA DE DANO DO BLOCO (REUTILIZAÇÃO DO blockType)
+        playerDamageTimer += tpf;
+        if (blockType != null && playerDamageTimer >= DAMAGE_TICK_RATE) {
+
+            // Aplica dano se o bloco for perigoso
+            if (blockType.doesDamage()) {
+                int damage = blockType.getDamageAmount();
+                player.takeDamage(damage);
+                System.out.println("Dano do bloco '" + blockType.getName() + "': -" + damage + " | Vida atual: " + player.getHealth());
+            }
+
+            playerDamageTimer = 0.0f;
+        }
+        // FIM LÓGICA DE DANO DO BLOCO
+
+
+        // LÓGICA DE VELOCIDADE (REUTILIZAÇÃO DO blockType)
         float blockMultiplier = 1.0f;
-        if (characterControl.isOnGround() && world != null && world.getVoxelWorld() != null) {
-            Vector3f playerWorldPos = playerNode.getWorldTranslation();
 
-            // O bloco sob o jogador (y da base - um pequeno delta)
-            int blockX = (int) Math.floor(playerWorldPos.x);
-            int blockY = (int) Math.floor(playerWorldPos.y - 0.1f); // 0.1f para garantir que está no bloco de baixo
-            int blockZ = (int) Math.floor(playerWorldPos.z);
-
-            byte blockId = world.getVoxelWorld().getBlock(blockX, blockY, blockZ);
-            VoxelBlockType blockType = world.getVoxelWorld().getPalette().get(blockId);
-            blockMultiplier = blockType.getSpeedMultiplier(); // <- LER O VALOR DO BLOCO
+        // Verifica se está no chão E se o bloco foi encontrado
+        if (characterControl.isOnGround() && blockType != null) {
+            blockMultiplier = blockType.getSpeedMultiplier(); // <- REUTILIZA O VALOR DO BLOCO
         }
 
         // 2. Aplicar o multiplicador no cálculo da velocidade
@@ -178,6 +202,25 @@ public class PlayerAppState extends BaseAppState {
 
         // update light to follow head
         if (playerLight != null) playerLight.setPosition(playerNode.getWorldTranslation().add(0, eyeHeight, 0));
+    }
+
+    private VoxelBlockType getVoxelBlockTypeUnderPlayer() {
+        if (world == null || world.getVoxelWorld() == null || playerNode == null) {
+            return null;
+        }
+
+        Vector3f playerWorldPos = playerNode.getWorldTranslation();
+        VoxelWorld vw = world.getVoxelWorld();
+
+        // O bloco sob o jogador (y da base - um pequeno delta)
+        int blockX = (int) Math.floor(playerWorldPos.x);
+        int blockY = (int) Math.floor(playerWorldPos.y - 0.1f); // 0.1f para garantir que está no bloco de baixo
+        int blockZ = (int) Math.floor(playerWorldPos.z);
+
+        byte blockId = vw.getBlock(blockX, blockY, blockZ);
+        // A Palette garante que retorna um VoxelBlockType (AirBlockType para IDs inválidos),
+        // que é seguro de usar.
+        return vw.getPalette().get(blockId);
     }
 
     private void respawn() {
@@ -293,6 +336,16 @@ public class PlayerAppState extends BaseAppState {
         }
         // 4. Controla o input
         input.setMovementEnabled(enabled);
+    }
+
+    public void setHurtSound(AudioNode hurtSound) {
+        this.hurtSound = hurtSound;
+    }
+
+    private void playHurtSound() {
+        if (hurtSound != null) {
+            hurtSound.playInstance();
+        }
     }
 
     public Vector3f getPlayerPosition() {

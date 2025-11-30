@@ -16,6 +16,8 @@ public class Player extends Character {
     private static final float BASE_DECAY_TIME = 120.0f; // 2 minutos = 120 segundos
     private static final float STARVATION_DAMAGE_TIME = 2.0f;
 
+    private boolean justTookDamage = false;
+
     public Player() {
         super("Player");
         this.inventory = new Inventory(40);
@@ -56,7 +58,7 @@ public class Player extends Character {
 
     public void updateHunger(float tpf, boolean isSprinting) {
         // Multiplicador de 4x se estiver a correr
-        float decayMultiplier = isSprinting ? 400.0f : 1.0f;
+        float decayMultiplier = isSprinting ? 4.0f : 1.0f; // Corrigido para 4.0f
 
         // 1. Atualiza o timer de fome (decay)
         hungerTimer += tpf * decayMultiplier;
@@ -72,7 +74,10 @@ public class Player extends Character {
         if (hunger <= 0) {
             starvationTimer += tpf;
             if (starvationTimer >= STARVATION_DAMAGE_TIME) {
-                takeDamage(2); // Perde 2 de vida
+
+                // NOVO: Chama takeDamage para acionar o som e a lógica centralizada
+                takeDamage(2);
+
                 // System.out.println("Inanição! Vida atual: " + getHealth());
                 starvationTimer = 0.0f; // Reseta o timer de dano
             }
@@ -88,5 +93,29 @@ public class Player extends Character {
         // Reseta timers para evitar ticks imediatos
         this.hungerTimer = 0.0f;
         this.starvationTimer = 0.0f;
+    }
+
+    @Override
+    public void takeDamage(int damage) {
+        int oldHealth = getHealth();
+        super.takeDamage(damage); // Chama o takeDamage de Character, que aplica Math.max(0, health - damage)
+        int newHealth = getHealth();
+
+        // Se a vida diminuiu e o jogador não morreu
+        if (newHealth < oldHealth && newHealth > 0) {
+            this.justTookDamage = true; // Aciona o flag para o AppState ler
+            System.out.println("Player sofreu dano. Vida: " + newHealth);
+        }
+        // Nota: A lógica de dano por inanição em updateHunger() deve ser alterada
+        // para chamar takeDamage() em vez de takeDamage(2) diretamente.
+    }
+
+    /** NOVO: Para o AppState verificar se o jogador sofreu dano. */
+    public boolean consumeDamageFlag() {
+        if (justTookDamage) {
+            justTookDamage = false;
+            return true;
+        }
+        return false;
     }
 }

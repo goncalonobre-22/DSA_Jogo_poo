@@ -27,6 +27,15 @@ public abstract class VoxelBlockType {
 
     public float getSpeedMultiplier() { return 1f; }
 
+    public boolean doesDamage() {
+        return false; // Falso por padrão (não causa dano)
+    }
+
+    //Quantidade de dano que o bloco causa
+    public int getDamageAmount() {
+        return 2;
+    }
+
     /**
      * Returns the Material for this block type. Override in subclasses for custom materials.
      */

@@ -32,7 +32,8 @@ public class VoxelPalette {
         p.register(new MetalOreBlockType()); //id 4
         p.register(new WoodBlockType()); //id 5
         p.register(new SoulSandBlockType()); // id 6
-        p.register(new PlankBlockType());
+        p.register(new PlankBlockType()); // id 7
+        p.register(new HotBlockType());
         return p;
     }
 
@@ -44,4 +45,5 @@ public class VoxelPalette {
     public static final byte WOOD_ID = 5;
     public static final byte SOULSAND_ID = 6;
     public static final byte PLANK_ID = 7;
+    public static final byte HOTBLOCK_ID = 8;
 }
