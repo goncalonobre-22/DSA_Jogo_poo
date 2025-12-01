@@ -21,6 +21,7 @@ public class ItemRegistry {
         registerBlockItem(VoxelPalette.SAND_ID, SandBlockItem.class);
         registerBlockItem(VoxelPalette.SOULSAND_ID, SoulSandBlockItem.class);
         registerBlockItem(VoxelPalette.PLANK_ID, PlankBlockItem.class);
+        registerBlockItem(VoxelPalette.GRASS_ID, GrassBlockItem.class);
     }
 
     private static void registerBlockItem(byte blockId, Class<? extends PlaceableItem> itemClass) {

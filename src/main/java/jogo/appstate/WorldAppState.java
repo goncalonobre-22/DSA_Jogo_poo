@@ -37,6 +37,9 @@ public class WorldAppState extends BaseAppState {
 
     private static final int GRAVITY_RADIUS = 24;
 
+    private float worldTickTimer = 0.0f; // NOVO: Temporizador para o tick do mundo
+    private static final float WORLD_TICK_RATE = 240.0f; // NOVO: Tenta o tick a cada 1.0 segundos
+
 
     // world root for easy cleanup
     private Node worldNode;
@@ -195,6 +198,15 @@ public class WorldAppState extends BaseAppState {
 
         if (input != null && input.consumeToggleShadingRequested()) {
             voxelWorld.toggleRenderDebug();
+        }
+
+        worldTickTimer += tpf;
+        if (worldTickTimer >= WORLD_TICK_RATE) {
+            // Chama a iteração do mundo para fazer os "ticks" nos blocos
+            if (playerAppState != null && playerAppState.getPlayerPosition() != null) {
+                voxelWorld.updateTickableBlocks(playerAppState.getPlayerPosition(), WORLD_TICK_RATE, physicsSpace);
+            }
+            worldTickTimer = 0.0f; // Reinicia o timer
         }
 
 

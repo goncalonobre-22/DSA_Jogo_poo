@@ -66,7 +66,6 @@ public class Player extends Character {
         if (hungerTimer >= BASE_DECAY_TIME) {
             int decayAmount = 2;
             setHunger(hunger - decayAmount);
-            // System.out.println("Fome diminuiu para: " + hunger);
             hungerTimer = 0.0f; // Reseta o timer
         }
 
@@ -74,15 +73,12 @@ public class Player extends Character {
         if (hunger <= 0) {
             starvationTimer += tpf;
             if (starvationTimer >= STARVATION_DAMAGE_TIME) {
-
                 // NOVO: Chama takeDamage para acionar o som e a lógica centralizada
-                takeDamage(2);
-
-                // System.out.println("Inanição! Vida atual: " + getHealth());
+                takeDamage(5);
                 starvationTimer = 0.0f; // Reseta o timer de dano
             }
         } else {
-            // Garante que o timer de inanição é resetado se a fome subir
+            // Garante que o timer é resetado se a fome subir
             starvationTimer = 0.0f;
         }
     }

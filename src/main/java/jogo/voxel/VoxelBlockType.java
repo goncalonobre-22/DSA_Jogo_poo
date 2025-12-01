@@ -36,6 +36,14 @@ public abstract class VoxelBlockType {
         return 2;
     }
 
+    public boolean isTickable() {
+        return false; // Falso por padrão (a maioria dos blocos não precisa de update)
+    }
+
+    public boolean onTick(int x, int y, int z, VoxelWorld world, float tpf) {
+        return false;
+    }
+
     /**
      * Returns the Material for this block type. Override in subclasses for custom materials.
      */

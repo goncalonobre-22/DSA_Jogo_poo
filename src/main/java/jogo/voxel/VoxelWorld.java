@@ -32,6 +32,8 @@ public class VoxelWorld {
     private boolean culling = true;   // Culling: On by default
     private int groundHeight = 8; // baseline Y level
 
+    private static final int TICKET_RADIUS = 8;
+
     // Chunked world data
     private final int chunkSize = Chunk.SIZE;
     private final int chunkCountX, chunkCountY, chunkCountZ;
@@ -382,6 +384,49 @@ public class VoxelWorld {
 
     public int getSizeZ() {
         return  sizeZ;
+    }
+
+    public void updateTickableBlocks(Vector3f center, float tpf, PhysicsSpace physicsSpace) {
+        if (physicsSpace == null) return;
+
+        boolean worldChanged = false;
+
+        // Converte a posição central para coordenadas de bloco
+        int px = (int) Math.floor(center.x);
+        int py = (int) Math.floor(center.y);
+        int pz = (int) Math.floor(center.z);
+
+        // Limites da área a processar
+        int minX = Math.max(0, px - TICKET_RADIUS);
+        int maxX = Math.min(sizeX - 1, px + TICKET_RADIUS);
+
+        int minY = Math.max(1, py - TICKET_RADIUS);
+        int maxY = Math.min(sizeY - 1, py + TICKET_RADIUS);
+
+        int minZ = Math.max(0, pz - TICKET_RADIUS);
+        int maxZ = Math.min(sizeZ - 1, pz + TICKET_RADIUS);
+
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+
+                    byte currentId = getBlock(x, y, z);
+                    VoxelBlockType type = palette.get(currentId);
+
+                    // Chama a lógica polimórfica APENAS se o bloco for tickable
+                    if (type.isTickable()) {
+                        if (type.onTick(x, y, z, this, tpf)) {
+                            worldChanged = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (worldChanged) {
+            // Rebuild e update da física apenas se houve alterações
+            rebuildDirtyChunks(physicsSpace);
+        }
     }
 
 
