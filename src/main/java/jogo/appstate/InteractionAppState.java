@@ -11,9 +11,9 @@ import com.jme3.collision.CollisionResults;
 import jogo.engine.RenderIndex;
 import jogo.gameobject.GameObject;
 import jogo.gameobject.character.Player;
-import jogo.gameobject.item.Bread;
+import jogo.gameobject.item.food.Bread;
 import jogo.gameobject.item.Item;
-import jogo.gameobject.item.WoodAxe;
+import jogo.gameobject.item.tools.WoodAxe;
 import jogo.voxel.VoxelWorld;
 
 public class InteractionAppState extends BaseAppState {

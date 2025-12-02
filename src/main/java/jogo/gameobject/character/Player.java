@@ -1,7 +1,7 @@
 package jogo.gameobject.character;
 
-import jogo.util.Inventory;
-import jogo.util.Stacks;
+import jogo.util.inventory.Inventory;
+import jogo.util.inventory.Stacks;
 
 public class Player extends Character {
     private final Inventory inventory;

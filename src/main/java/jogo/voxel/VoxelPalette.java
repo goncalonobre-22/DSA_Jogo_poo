@@ -1,6 +1,16 @@
 package jogo.voxel;
 
 import jogo.voxel.blocks.*;
+import jogo.voxel.blocks.compact.FurnaceBlockType;
+import jogo.voxel.blocks.compact.HotBlockType;
+import jogo.voxel.blocks.compact.MetalOreBlockType;
+import jogo.voxel.blocks.compact.StoneBlockType;
+import jogo.voxel.blocks.granular.DirtBlockType;
+import jogo.voxel.blocks.granular.GrassBlockType;
+import jogo.voxel.blocks.granular.SandBlockType;
+import jogo.voxel.blocks.granular.SoulSandBlockType;
+import jogo.voxel.blocks.natural.PlankBlockType;
+import jogo.voxel.blocks.natural.WoodBlockType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +45,7 @@ public class VoxelPalette {
         p.register(new PlankBlockType()); // id 7
         p.register(new HotBlockType()); // id 8
         p.register(new GrassBlockType()); // id 9
+        p.register(new FurnaceBlockType());
         return p;
     }
 
@@ -48,4 +59,5 @@ public class VoxelPalette {
     public static final byte PLANK_ID = 7;
     public static final byte HOTBLOCK_ID = 8;
     public static final byte GRASS_ID = 9;
+    public static final byte FURNACE_ID = 10;
 }

@@ -1,0 +1,130 @@
+package jogo.util.crafting;
+
+import jogo.gameobject.item.food.Bread;
+import jogo.gameobject.item.normalitems.WoodStick;
+import jogo.gameobject.item.placeableitems.FurnaceBlockItem;
+import jogo.gameobject.item.placeableitems.StoneBlockItem;
+import jogo.gameobject.item.placeableitems.WoodBlockItem;
+import jogo.gameobject.item.tools.StonePickaxe;
+import jogo.gameobject.item.tools.WoodAxe;
+import jogo.gameobject.item.tools.WoodPickaxe;
+import jogo.util.inventory.Stacks;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map; // Importação adicionada
+
+public class RecipeRegistry {
+    private static final List<RecipeSystem> recipes = new ArrayList<>();
+
+    static {
+        // Registar receitas aqui
+        registerRecipes();
+    }
+
+    private static void registerRecipes() {
+        // Receita 1: WoodStick
+        recipes.add(new ShapedRecipeSystem(
+                new WoodStick(),
+                4,
+                new String[]{
+                        " W ",
+                        " W ",
+                        "   "
+                },
+                // W corresponde ao bloco de madeira
+                Map.of('W', new WoodBlockItem())
+        ));
+
+        // Receita 2: Pickaxe de madeira
+        recipes.add(new ShapedRecipeSystem(
+                new WoodPickaxe(),
+                1,
+                new String[]{
+                        "WWW",
+                        " S ",
+                        " S "
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'W', new WoodBlockItem(),
+                        'S', new WoodStick()
+                )
+        ));
+
+        // Receita 3: Pickaxe de pedra
+        recipes.add(new ShapedRecipeSystem(
+                new StonePickaxe(),
+                1,
+                new String[]{
+                        "SSS",
+                        " W ",
+                        " W "
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'S', new StoneBlockItem(),
+                        'W', new WoodStick()
+                )
+        ));
+
+        // Receita 4: Pão
+        recipes.add(new ShapedRecipeSystem(
+                new Bread(),
+                1,
+                new String[]{
+                        "   ",
+                        "   ",
+                        "WWW"
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'W', new WoodBlockItem()
+                )
+        ));
+
+        // Receita 5: Machado de madeira
+        recipes.add(new ShapedRecipeSystem(
+                new WoodAxe(),
+                1,
+                new String[]{
+                        "WW ",
+                        "WS ",
+                        " S "
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'W', new WoodBlockItem(),
+                        'S', new WoodStick()
+                )
+        ));
+
+        // Receita 6: Fornalha
+        recipes.add(new ShapedRecipeSystem(
+                new FurnaceBlockItem(),
+                1,
+                new String[]{
+                        "SSS",
+                        "S S",
+                        "SSS"
+                },
+                // S corresponde à pedra e W corresponde ao Stick
+                Map.of(
+                        'S', new StoneBlockItem()
+
+                )
+        ));
+    }
+
+    /**
+     * Encontra uma receita que corresponda à grid.
+     */
+    public static RecipeSystem findRecipe(Stacks[] grid) {
+        for (RecipeSystem recipe : recipes) {
+            if (recipe.matches(grid)) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+}

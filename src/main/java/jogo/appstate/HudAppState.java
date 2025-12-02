@@ -17,10 +17,10 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
-import jogo.util.Inventory;
-import jogo.util.RecipeRegistry;
-import jogo.util.RecipeSystem;
-import jogo.util.Stacks;
+import jogo.util.inventory.Inventory;
+import jogo.util.crafting.RecipeRegistry;
+import jogo.util.crafting.RecipeSystem;
+import jogo.util.inventory.Stacks;
 
 
 public class HudAppState extends BaseAppState {
