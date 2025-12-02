@@ -38,7 +38,7 @@ public class WorldAppState extends BaseAppState {
     private static final int GRAVITY_RADIUS = 24;
 
     private float worldTickTimer = 0.0f; // NOVO: Temporizador para o tick do mundo
-    private static final float WORLD_TICK_RATE = 240.0f; // NOVO: Tenta o tick a cada 1.0 segundos
+    private static final float WORLD_TICK_RATE = 180.0f; // Troca de terra para relva ao fim de 3 minutos
 
 
     // world root for easy cleanup

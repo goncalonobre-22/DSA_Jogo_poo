@@ -30,7 +30,7 @@ public class GrassBlockType extends VoxelBlockType {
         d.setBoolean("UseMaterialColors", true);
         d.setColor("Diffuse", ColorRGBA.White);
         d.setColor("Specular", ColorRGBA.White.mult(0.02f)); // reduced specular
-        d.setFloat("Shininess", 100f); // tighter, less intense highlight
+        d.setFloat("Shininess", 30f); // tighter, less intense highlight
         return d;
     }
 }
