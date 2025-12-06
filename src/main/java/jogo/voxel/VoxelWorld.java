@@ -23,6 +23,17 @@ public class VoxelWorld {
     private final AssetManager assetManager;
     private final int sizeX, sizeY, sizeZ;
     private final VoxelPalette palette;
+    private final long seed = 12;
+    private final int baseHeight = 20;
+    private final int amplitude = 10;
+    private final float frequency = 0.05f;
+    private final int dirtLayers = 3;
+    private final int ironMaxHeight = 12;
+    private final float ironChance = 0.02f;
+    private static final byte AIR = 0;
+    private static final byte GRASS = 9;
+    private static final byte WOOD = 5;
+    private static final byte LEAVES = 8;
 
     private final Node node = new Node("VoxelWorld");
     private final Map<Byte, Geometry> geoms = new HashMap<>();
@@ -113,45 +124,120 @@ public class VoxelWorld {
 
     public Node getNode() { return node; }
 
+    public static class Noise {
+        private final long seed;
+
+        public Noise(long seed) {
+            this.seed = seed;
+        }
+
+        private float rawNoise(int x, int z) { /* mesmo código acima */
+            return 0;
+        }
+
+        private float lerp(float a, float b, float t) {
+            return a + (b - a) * t;
+        }
+
+        private float smooth(int x, int z) { /* mesmo código acima */
+            return 0;
+        }
+
+        public float noise(float x, float z) { /* mesmo código acima */
+            return x;
+        }
+    }
+
     //TODO this is where you'll generate your world
     public void generateLayers() {
         //generate a SINGLE block under the player:
-        Vector3i pos = new Vector3i(getRecommendedSpawn());
-        int groundY = pos.y;
+//        Vector3i pos = new Vector3i(getRecommendedSpawn());
+//        int groundY = pos.y;
+//
+//        int width = 50;
+//        int depth = 50;
+//        int startX = pos.x - (width / 2);
+//        int startZ = pos.z - (depth / 2);
+//
+//        for (int x = startX; x < startX + width; x++) {
+//            for (int z = startZ; z < startZ + depth; z++) {
+//                setBlock(x, groundY, z, VoxelPalette.STONE_ID);
+//            }
+//        }
+//
+//        setBlock(pos.x + 2, pos.y + 1, pos.z, VoxelPalette.DIRT_ID);
+//        setBlock(pos.x - 2, pos.y + 3, pos.z, VoxelPalette.SAND_ID);
+//        setBlock(pos.x + 4, pos.y + 1, pos.z, VoxelPalette.METALORE_ID);
+//        setBlock(pos.x - 4, pos.y + 1, pos.z, VoxelPalette.WOOD_ID);
+//
+//        setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.STONE_ID);
+//        setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.SAND_ID);
+//        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.SAND_ID);
+//        setBlock(pos.x, groundY + 4, pos.z + 5, VoxelPalette.SAND_ID);
+//        setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.WOOD_ID);
+//        setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.WOOD_ID);
+//        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.WOOD_ID);
+//        setBlock(pos.x, groundY + 1, pos.z + 4, VoxelPalette.WOOD_ID);
+//        setBlock(pos.x, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
+//        setBlock(pos.x + 1, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
+//        setBlock(pos.x - 1, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
+//        setBlock(pos.x + 2, groundY + 1, pos.z - 1, VoxelPalette.SAND_ID);
+//        setBlock(pos.x - 2, groundY + 1, pos.z - 1, VoxelPalette.SOULSAND_ID);
+//        setBlock(pos.x -2, groundY + 1, pos.z -2, VoxelPalette.SOULSAND_ID);
+//        setBlock(pos.x + 3,  groundY + 1, pos.z + 1, VoxelPalette.WOOD_ID);
+//        setBlock(pos.x,  groundY + 1, pos.z - 1, VoxelPalette.HOTBLOCK_ID);
+//        setBlock(pos.x, groundY + 1, pos.z - 1, VoxelPalette.FURNACE_ID);
+//        setBlock(pos.x + 4, groundY + 1, pos.z - 4, VoxelPalette.HOTBLOCK_ID);
 
-        int width = 50;
-        int depth = 50;
-        int startX = pos.x - (width / 2);
-        int startZ = pos.z - (depth / 2);
+        SimpleNoise noise = new SimpleNoise(12345);
 
-        for (int x = startX; x < startX + width; x++) {
-            for (int z = startZ; z < startZ + depth; z++) {
-                setBlock(x, groundY, z, VoxelPalette.STONE_ID);
+        int width = sizeX;
+        int depth = sizeZ;
+
+        int baseHeight = 20;
+        int amplitude = 8;
+
+        for (int x = 0; x < width; x++) {
+            for (int z = 0; z < depth; z++) {
+
+                // Altura baseada no noise (entre -1 e 1)
+                float n = noise.noise(x * 0.02f, z * 0.02f);
+                int height = baseHeight + (int) (n * amplitude);
+
+                // Limites verticais
+                if (height < 3) height = 3;
+                if (height >= sizeY - 1) height = sizeY - 2;
+
+// GRASS no topo
+                setBlock(x, height, z, GRASS);
+
+// Gerar árvore ocasionalmente
+                if (getBlock(x, height + 1, z) == AIR) {
+                    if (Math.random() < 0.005) {   // 3% chance
+                        generateTree(x, height + 1, z);
+                    }
+                }
+                // DIRT logo abaixo
+                for (int y = height - 1; y >= height - 3 && y >= 0; y--) {
+                    setBlock(x, y, z, (byte) 2);
+                }
+
+                // STONE + ORE
+                for (int y = height - 3; y >= 0; y--) {
+
+                    if (y < baseHeight - 4 && Math.random() < 0.015) {
+                        setBlock(x, y, z, (byte) 4); // minério
+                    } else {
+                        setBlock(x, y, z, (byte) 1); // pedra
+                    }
+                }
             }
         }
+    }
 
-        setBlock(pos.x + 2, pos.y + 1, pos.z, VoxelPalette.DIRT_ID);
-        setBlock(pos.x - 2, pos.y + 3, pos.z, VoxelPalette.SAND_ID);
-        setBlock(pos.x + 4, pos.y + 1, pos.z, VoxelPalette.METALORE_ID);
-        setBlock(pos.x - 4, pos.y + 1, pos.z, VoxelPalette.WOOD_ID);
-
-        setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.STONE_ID);
-        setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.SAND_ID);
-        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.SAND_ID);
-        setBlock(pos.x, groundY + 4, pos.z + 5, VoxelPalette.SAND_ID);
-        setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.WOOD_ID);
-        setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.WOOD_ID);
-        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.WOOD_ID);
-        setBlock(pos.x, groundY + 1, pos.z + 4, VoxelPalette.WOOD_ID);
-        setBlock(pos.x, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
-        setBlock(pos.x + 1, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
-        setBlock(pos.x - 1, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
-        setBlock(pos.x + 2, groundY + 1, pos.z - 1, VoxelPalette.SAND_ID);
-        setBlock(pos.x - 2, groundY + 1, pos.z - 1, VoxelPalette.SOULSAND_ID);
-        setBlock(pos.x -2, groundY + 1, pos.z -2, VoxelPalette.SOULSAND_ID);
-        setBlock(pos.x + 3,  groundY + 1, pos.z + 1, VoxelPalette.WOOD_ID);
-        setBlock(pos.x,  groundY + 1, pos.z - 1, VoxelPalette.HOTBLOCK_ID);
-        setBlock(pos.x, groundY + 1, pos.z - 1, VoxelPalette.FURNACE_ID);
+    private int getHeightAt(int x, int z, SimpleNoise noise) {
+        float n = noise.noise((int) (x * frequency), (int) (z * frequency));
+        return baseHeight + (int) (n * amplitude);
     }
 
     public int getTopSolidY(int x, int z) {
@@ -161,6 +247,14 @@ public class VoxelWorld {
         }
         return -1;
     }
+
+//    public int getTopSolidY(int x, int z) {
+//        if (x < 0 || z < 0 || x >= sizeX || z >= sizeZ) return -1;
+//        for (int y = sizeY - 1; y >= 0; y--) {
+//            if (palette.get(getBlock(x, y, z)).isSolid()) return y;
+//        }
+//        return -1;
+//    }
 
     public Vector3f getRecommendedSpawn() {
         int cx = sizeX / 2;
@@ -490,5 +584,108 @@ public class VoxelWorld {
             result = 31 * result + z;
             return result;
         }
+    }
+
+    public static class SimpleNoise {
+
+        private final long seed;
+
+        public SimpleNoise(long seed) {
+            this.seed = seed;
+        }
+
+        // =======================
+        //   NOISE SUAVE 2D
+        // =======================
+
+        public float noise(float x, float z) {
+            // Coordenadas de grid
+            int x0 = (int) Math.floor(x);
+            int z0 = (int) Math.floor(z);
+            int x1 = x0 + 1;
+            int z1 = z0 + 1;
+
+            // Interpoladores (entre 0 e 1)
+            float sx = smooth(x - x0);
+            float sz = smooth(z - z0);
+
+            // Valores de noise nos 4 cantos
+            float n00 = rawNoise(x0, z0);
+            float n10 = rawNoise(x1, z0);
+            float n01 = rawNoise(x0, z1);
+            float n11 = rawNoise(x1, z1);
+
+            // Interpolação horizontal
+            float ix0 = lerp(n00, n10, sx);
+            float ix1 = lerp(n01, n11, sx);
+
+            // Interpolação vertical final
+            return lerp(ix0, ix1, sz);
+        }
+
+        // =======================
+        //   FUNÇÕES AUXILIARES
+        // =======================
+
+        // Noise bruto (0–1 → -1..1)
+        private float rawNoise(int x, int z) {
+            return (hash(x, z) & 0xFFFF) / 32768f - 1f;
+        }
+
+        // Interpolação linear
+        private float lerp(float a, float b, float t) {
+            return a + (b - a) * t;
+        }
+
+        // Função smoothstep (suaviza transições)
+        private float smooth(float t) {
+            return t * t * (3 - 2 * t);
+        }
+
+        // =======================
+        //   HASH DETERMINÍSTICO
+        // =======================
+
+        private int hash(int x, int z) {
+            long h = seed;
+
+            h ^= x * 374761393L;
+            h ^= z * 668265263L;
+
+            h = (h ^ (h >> 13)) * 1274126177L;
+            return (int) (h ^ (h >> 16));
+        }
+    }
+
+    private void generateTree(int x, int y, int z) {
+
+        int trunkHeight = 4 + (int) (Math.random() * 3);
+
+        // Tronco
+        for (int i = 0; i < trunkHeight; i++) {
+            safeSetBlock(x, y + i, z, WOOD);
+        }
+
+        int topY = y + trunkHeight;
+
+        // Folhas
+        for (int lx = -2; lx <= 2; lx++) {
+            for (int lz = -2; lz <= 2; lz++) {
+                for (int ly = -1; ly <= 2; ly++) {
+
+                    float dist = Math.abs(lx) + Math.abs(lz) + Math.abs(ly);
+                    if (dist <= 3) {
+                        safeSetBlock(x + lx, topY + ly, z + lz, LEAVES);
+                    }
+                }
+            }
+        }
+    }
+    private void safeSetBlock(int x, int y, int z, byte id) {
+        if (x < 0 || x >= sizeX) return;
+        if (y < 0 || y >= sizeY) return;
+        if (z < 0 || z >= sizeZ) return;
+
+        setBlock(x, y, z, id);
     }
 }
