@@ -13,6 +13,7 @@ import com.jme3.scene.Node;
 import com.jme3.texture.Texture2D;
 import jogo.util.Hit;
 import jogo.util.ProcTextures;
+import jogo.util.furnace.FurnaceState;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,8 @@ public class VoxelWorld {
     private int groundHeight = 8; // baseline Y level
 
     private static final int TICKET_RADIUS = 8;
+
+    private final Map<Vector3i, FurnaceState> furnaceStates = new HashMap<>();
 
     // Chunked world data
     private final int chunkSize = Chunk.SIZE;
@@ -99,6 +102,11 @@ public class VoxelWorld {
 
     public boolean breakAt(int x, int y, int z) {
         if (!inBounds(x,y,z)) return false;
+
+        if (getBlock(x, y, z) == VoxelPalette.FURNACE_ID) {
+            removeFurnaceState(x, y, z); // Limpa o estado persistente
+        }
+
         setBlock(x, y, z, VoxelPalette.AIR_ID);
         return true;
     }
@@ -143,6 +151,7 @@ public class VoxelWorld {
         setBlock(pos.x -2, groundY + 1, pos.z -2, VoxelPalette.SOULSAND_ID);
         setBlock(pos.x + 3,  groundY + 1, pos.z + 1, VoxelPalette.WOOD_ID);
         setBlock(pos.x,  groundY + 1, pos.z - 1, VoxelPalette.HOTBLOCK_ID);
+        setBlock(pos.x, groundY + 1, pos.z - 1, VoxelPalette.FURNACE_ID);
     }
 
     public int getTopSolidY(int x, int z) {
@@ -429,6 +438,31 @@ public class VoxelWorld {
         }
     }
 
+    public FurnaceState getFurnaceState(int x, int y, int z) {
+        Vector3i key = new Vector3i(x, y, z);
+        if (getBlock(x, y, z) != VoxelPalette.FURNACE_ID) {
+            furnaceStates.remove(key);
+            return null;
+        }
+        return furnaceStates.computeIfAbsent(key, k -> new FurnaceState());
+    }
+
+    // Novo: Adicionar método para remover estado (chamar ao quebrar bloco)
+    public FurnaceState removeFurnaceState(int x, int y, int z) {
+        return furnaceStates.remove(new Vector3i(x, y, z));
+    }
+
+    public void updateAllFurnaces(float tpf, PhysicsSpace physicsSpace) {
+        // Usa um HashSet das keys para evitar ConcurrentModificationException
+        for (Vector3i key : new java.util.HashSet<>(furnaceStates.keySet())) {
+            FurnaceState state = furnaceStates.get(key);
+
+            if (state != null) {
+                state.updateMelt(tpf);
+            }
+        }
+    }
+
 
     // simple int3
     public static class Vector3i {
@@ -439,6 +473,22 @@ public class VoxelWorld {
             this.x = (int) vec3f.x;
             this.y = (int) vec3f.y;
             this.z = (int) vec3f.z;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Vector3i vector3i = (Vector3i) o;
+            return x == vector3i.x && y == vector3i.y && z == vector3i.z;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = x;
+            result = 31 * result + y;
+            result = 31 * result + z;
+            return result;
         }
     }
 }

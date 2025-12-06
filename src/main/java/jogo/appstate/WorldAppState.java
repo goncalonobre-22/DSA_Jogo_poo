@@ -39,6 +39,9 @@ public class WorldAppState extends BaseAppState {
     private float worldTickTimer = 0.0f; // NOVO: Temporizador para o tick do mundo
     private static final float WORLD_TICK_RATE = 180.0f; // Troca de terra para relva ao fim de 3 minutos
 
+    private float furnaceUpdateTimer = 0.0f; // NOVO: Timer para o update da fornalha
+    private static final float FURNACE_UPDATE_RATE = 0.1f; // Tenta o update mais vezes (10x por seg)
+
 
     // world root for easy cleanup
     private Node worldNode;
@@ -206,6 +209,15 @@ public class WorldAppState extends BaseAppState {
                 voxelWorld.updateTickableBlocks(playerAppState.getPlayerPosition(), WORLD_TICK_RATE, physicsSpace);
             }
             worldTickTimer = 0.0f; // Reinicia o timer
+        }
+
+        furnaceUpdateTimer += tpf;
+        if (furnaceUpdateTimer >= FURNACE_UPDATE_RATE) {
+            if (voxelWorld != null) {
+                // O VoxelWorld gere o tick em todos os FurnaceState
+                voxelWorld.updateAllFurnaces(furnaceUpdateTimer, physicsSpace);
+            }
+            furnaceUpdateTimer = 0.0f; // Reinicia o timer
         }
 
 

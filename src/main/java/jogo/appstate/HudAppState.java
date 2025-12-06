@@ -7,6 +7,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -17,10 +18,13 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
+import jogo.util.furnace.FurnaceRegistry;
+import jogo.util.furnace.FurnaceState;
 import jogo.util.inventory.Inventory;
 import jogo.util.crafting.RecipeRegistry;
 import jogo.util.crafting.RecipeSystem;
 import jogo.util.inventory.Stacks;
+import jogo.voxel.VoxelWorld;
 
 
 public class HudAppState extends BaseAppState {
@@ -56,10 +60,21 @@ public class HudAppState extends BaseAppState {
     private static final int FOOD_SPACING = 17;
     private static final int HUNGER_PER_FOOD = 10;
 
+    private static final int FURNACE_SLOT_INPUT = 1;
+    private static final int FURNACE_SLOT_FUEL = 2;
+    private static final int FURNACE_SLOT_OUTPUT = 3;
+
+    private int selectedFurnaceSlot = FURNACE_SLOT_INPUT;
+
 
     private boolean craftMenuOpen = false;
     private Item selectedItem = null; // Item selecionado com T
     private Node craftingNode;
+
+    private VoxelWorld.Vector3i currentFurnaceCell = null; // <--- NOVO
+    private FurnaceState currentFurnaceState = null; // <--- NOVO
+    private boolean furnaceMenuOpen = false;
+    private Item selectedItemForFurnace = null;
 
     private boolean gameOverOpen = false;
     private Node gameOverNode;
@@ -149,6 +164,8 @@ public class HudAppState extends BaseAppState {
             // A interface é sempre a combinada, mas a lógica de input é que muda.
             if (craftMenuOpen) {
                 updateCraftingInterface(input);
+            } else if (furnaceMenuOpen) { // <--- NOVO: Prioridade à Fornalha
+                updateFurnaceInterface(input);
             } else{
                 updateInventoryAndCrafting();
             }
@@ -158,8 +175,8 @@ public class HudAppState extends BaseAppState {
 
         // Se inventário está aberto → teclas movem seleção / acionam transição
         if (inventoryOpen) {
-            // Navegação nas setas do Inventário (só funciona se o Crafting não estiver aberto)
-            if (!craftMenuOpen) {
+            // Navegação nas setas do Inventário (só funciona se o Crafting NÃO estiver aberto E Fornalha NÃO estiver aberta)
+            if (!craftMenuOpen && !furnaceMenuOpen) { // <--- ALTERADO
                 if (input.consumeInventoryLeft())  moveInventorySelection("Left");
                 if (input.consumeInventoryRight()) moveInventorySelection("Right");
                 if (input.consumeInventoryUp())    moveInventorySelection("Up");
@@ -167,11 +184,13 @@ public class HudAppState extends BaseAppState {
             }
 
             // **Transição para Crafting (T e ENTER)**
-            if (!craftMenuOpen) {
+            if (inventoryOpen && !craftMenuOpen && !furnaceMenuOpen) {
                 // 1. T (Take): Tenta selecionar item e transiciona (implementa a transição e a seleção)
                 if (input.consumeTakeRequested()) handleTakeFromInventory();
                 // 2. ENTER: Transiciona diretamente para o craft sem precisar de item (satisfaz a regra)
                 if (input.consumeCraftMenuRequested()) enterCraftMenu();
+
+                //if (input.consumePutInFurnaceRequested()) handleTakeForFurnace(input);
             }
 
         } else {
@@ -444,6 +463,8 @@ public class HudAppState extends BaseAppState {
             guiNode.attachChild(inventoryNode);
             craftMenuOpen = false;
             selectedItem = null;
+            furnaceMenuOpen = false;
+            selectedItemForFurnace = null;
             player.getInventory().setSelectedSlot(0);
             player.setSelectedCraftSlot(0); // Começa no slot 0
         } else {
@@ -454,6 +475,8 @@ public class HudAppState extends BaseAppState {
             }
             craftMenuOpen = false;
             selectedItem = null;
+            furnaceMenuOpen = false;
+            selectedItemForFurnace = null;
         }
     }
 
@@ -469,6 +492,10 @@ public class HudAppState extends BaseAppState {
         }
         if (inventoryNode != null) {
             inventoryNode.removeFromParent();
+        }
+
+        if (craftingNode != null) {
+            craftingNode.removeFromParent();
         }
 
         if (heartNode != null) { // [NOVO] Limpar o nó de vida
@@ -853,6 +880,369 @@ public class HudAppState extends BaseAppState {
 
         // Esconde a tela de Game Over e reativa o jogo
         showGameOver(false);
+    }
+
+    public void enterFurnaceMode(VoxelWorld.Vector3i cell) {
+        WorldAppState worldAppState = getStateManager().getState(WorldAppState.class);
+        VoxelWorld vw = worldAppState.getVoxelWorld();
+
+        currentFurnaceCell = cell;
+        currentFurnaceState = vw.getFurnaceState(cell.x, cell.y, cell.z);
+        furnaceMenuOpen = true;
+        inventoryOpen = true;
+
+        craftMenuOpen = false;
+        selectedItem = null;
+        selectedItemForFurnace = null;
+
+        // CORREÇÃO: Não alterar o slot principal com um marcador. Apenas inicializar o slot da fornalha.
+        this.selectedFurnaceSlot = FURNACE_SLOT_INPUT;
+        player.getInventory().setSelectedSlot(0); // Garante que o slot do inventário principal é válido (0-39)
+
+        guiNode.attachChild(inventoryNode);
+    }
+
+    private void exitFurnaceMode() {
+        if (currentFurnaceCell != null) {
+            // Limpar o target do InteractionAppState, para que a próxima interação "E" seja nova.
+            getStateManager().getState(InteractionAppState.class).clearTargetFurnace();
+        }
+        currentFurnaceCell = null;
+        currentFurnaceState = null;
+        furnaceMenuOpen = false;
+        selectedItemForFurnace = null;
+        player.getInventory().setSelectedSlot(0);
+    }
+
+    private void handlePutInFurnace(int slotType) {
+        if (currentFurnaceState == null || selectedItemForFurnace == null) return;
+
+        Inventory inv = player.getInventory();
+        Item itemToPut = selectedItemForFurnace;
+
+        if (inv.countItem(itemToPut) == 0) {
+            System.out.println("Não tens esse item no inventário!");
+            selectedItemForFurnace = null;
+            return;
+        }
+
+        boolean canPlace = false;
+        String slotName = "";
+
+        // Tenta colocar 1x no slot.
+        if (slotType == FURNACE_SLOT_INPUT) {
+            if (currentFurnaceState.inputStack == null && FurnaceRegistry.findRecipe(itemToPut) != null) {
+                if (inv.removeItem(itemToPut, 1)) {
+                    canPlace = currentFurnaceState.setInput(itemToPut); // Coloca e inicia melt (se não estiver a derreter)
+                }
+            }
+            slotName = "Input";
+        } else if (slotType == FURNACE_SLOT_FUEL) {
+            if (currentFurnaceState.fuelStack == null && FurnaceRegistry.getFuelEfficiency(itemToPut) > 0.0f) {
+                if (inv.removeItem(itemToPut, 1)) {
+                    canPlace = currentFurnaceState.setFuel(itemToPut);
+                }
+            } else if (currentFurnaceState.fuelStack != null && currentFurnaceState.fuelStack.isSameItem(itemToPut) && !currentFurnaceState.fuelStack.isFull()) {
+                if (inv.removeItem(itemToPut, 1)) {
+                    currentFurnaceState.fuelStack.addAmount(1); // Empilha
+                    canPlace = true;
+                }
+            }
+            slotName = "Combustível";
+        }
+
+        if (canPlace) {
+            System.out.println("Colocado 1x " + itemToPut.getName() + " no slot " + slotName);
+        } else {
+            System.out.println("Não foi possível colocar. Slot ocupado ou item inválido.");
+        }
+
+        if (inv.countItem(selectedItemForFurnace) == 0) {
+            selectedItemForFurnace = null;
+        }
+    }
+
+    private void handleRetrieveOutput() {
+        if (currentFurnaceState == null || currentFurnaceState.outputStack == null) return;
+
+        Stacks outputStack = currentFurnaceState.outputStack;
+        Item outputItem = outputStack.getItem();
+        int amount = outputStack.getAmount();
+
+        boolean added = player.getInventory().addItem(outputItem, amount);
+
+        if (added) {
+            currentFurnaceState.outputStack = null;
+            System.out.println("Retirado " + amount + "x " + outputItem.getName() + " da fornalha.");
+        } else {
+            System.out.println("Inventário cheio! Não foi possível retirar o item.");
+        }
+    }
+
+    private void updateFurnaceInterface(InputAppState input) {
+        if (currentFurnaceState == null) {
+            exitFurnaceMode();
+            return;
+        }
+
+        // ALT → Sai do menu de fornalha (volta para a vista de inventário)
+        if (input.consumeExitCraftRequested()) {
+            exitFurnaceMode();
+            return;
+        }
+
+        // --- Lógica de Seleção / Colocação (O) ---
+        if (input.consumePutInFurnaceRequested()) {
+            int selectedSlot = player.getInventory().getSelectedSlot();
+            if (selectedItemForFurnace == null) {
+                // MODO 1: Seleciona Item (a partir do slot do Inventário)
+                Stacks stack = player.getInventory().getSlot(selectedSlot);
+
+                if (stack != null && stack.getAmount() > 0 &&
+                        (FurnaceRegistry.findRecipe(stack.getItem()) != null || FurnaceRegistry.getFuelEfficiency(stack.getItem()) > 0.0f)) {
+                    selectedItemForFurnace = stack.getItem();
+                    // Seleciona o slot de Input (1) para começar a colocação (CORRIGIDO)
+                    this.selectedFurnaceSlot = FURNACE_SLOT_INPUT;
+                    System.out.println("Item selecionado para fornalha: " + selectedItemForFurnace.getName());
+                } else {
+                    System.out.println("Nenhum item selecionado ou item não é fundível/combustível no slot selecionado.");
+                }
+            } else {
+                // MODO 2: Coloca Item (no slot da Fornalha) ou Cancela Seleção (noutros slots)
+                // Usa this.selectedFurnaceSlot para determinar onde colocar/cancelar (CORRIGIDO)
+                if (this.selectedFurnaceSlot == FURNACE_SLOT_INPUT) handlePutInFurnace(FURNACE_SLOT_INPUT);
+                else if (this.selectedFurnaceSlot == FURNACE_SLOT_FUEL) handlePutInFurnace(FURNACE_SLOT_FUEL);
+                else {
+                    // Cancelar seleção (se clicar O no Output, ou noutros slots que não Input/Fuel)
+                    selectedItemForFurnace = null;
+                    this.selectedFurnaceSlot = FURNACE_SLOT_INPUT;
+                    System.out.println("Seleção de Item para fornalha cancelada (O)");
+                }
+            }
+        }
+
+        // ENTER → Retira o item cozinhado (Output)
+        if (input.consumeCraftMenuRequested()) {
+            handleRetrieveOutput();
+        }
+
+        if (selectedItemForFurnace != null) {
+            // MODO 2: COLOCAÇÃO - Navega APENAS entre slots da fornalha (1, 2, 3) (CORRIGIDO)
+
+            int currentFurnaceSlot = this.selectedFurnaceSlot;
+            int newFurnaceSlot = currentFurnaceSlot;
+
+            // Lógica de navegação entre slots da fornalha (Input: 1, Fuel: 2, Output: 3)
+            if (input.consumeInventoryUp()) {
+                if (currentFurnaceSlot == FURNACE_SLOT_INPUT) newFurnaceSlot = FURNACE_SLOT_FUEL;
+                else if (currentFurnaceSlot == FURNACE_SLOT_FUEL) newFurnaceSlot = FURNACE_SLOT_INPUT;
+                else if (currentFurnaceSlot == FURNACE_SLOT_OUTPUT) newFurnaceSlot = FURNACE_SLOT_INPUT;
+            } else if (input.consumeInventoryDown()) {
+                if (currentFurnaceSlot == FURNACE_SLOT_INPUT) newFurnaceSlot = FURNACE_SLOT_FUEL;
+                else if (currentFurnaceSlot == FURNACE_SLOT_FUEL) newFurnaceSlot = FURNACE_SLOT_INPUT;
+                else if (currentFurnaceSlot == FURNACE_SLOT_OUTPUT) newFurnaceSlot = FURNACE_SLOT_FUEL;
+            }
+
+            if (input.consumeInventoryRight()) {
+                if (currentFurnaceSlot != FURNACE_SLOT_OUTPUT) newFurnaceSlot = FURNACE_SLOT_OUTPUT;
+            } else if (input.consumeInventoryLeft()) {
+                if (currentFurnaceSlot == FURNACE_SLOT_OUTPUT) newFurnaceSlot = FURNACE_SLOT_FUEL;
+            }
+
+
+            if (newFurnaceSlot != currentFurnaceSlot) {
+                this.selectedFurnaceSlot = newFurnaceSlot;
+            }
+
+        } else {
+            // MODO 1: SELEÇÃO DE ITEM (DEFAULT) - Navega no INVENTÁRIO PRINCIPAL (0-39) (CORRIGIDO)
+
+            // Delegamos para a função de navegação de inventário que manipula os slots 0-39
+            if (input.consumeInventoryLeft())  moveInventorySelection("Left");
+            if (input.consumeInventoryRight()) moveInventorySelection("Right");
+            if (input.consumeInventoryUp())    moveInventorySelection("Up");
+            if (input.consumeInventoryDown())  moveInventorySelection("Down");
+        }
+
+        // Desenho (simplificado)
+        drawInventoryAndFurnace();
+    }
+
+
+    private void drawInventoryAndFurnace() {
+        inventoryNode.detachAllChildren();
+
+        // === 1. Lógica de desenho do Inventário (Base) ===
+
+        Inventory inv = player.getInventory();
+        int screenWidth = getApplication().getCamera().getWidth();
+        int screenHeight = getApplication().getCamera().getHeight();
+
+        // Constantes do HUDAppState.java
+        int SLOT_SIZE = 35; // Valor do campo da classe (assumido)
+        int SLOT_SPACING = 38; // Valor do campo da classe (assumido)
+        int INVENTORY_COLS = 10; // Valor do campo da classe (assumido)
+        int INVENTORY_ROWS = 4; // Valor do campo da classe (assumido)
+
+        // Ajustar largura para dar espaço ao HUD da fornalha (3 slots)
+        int furnaceSlotCols = 3; // Input, Phase, Output
+        int innerSpacing = 40;
+        int slotWidth = SLOT_SPACING * furnaceSlotCols + 10; // Largura do display de fornalha (3 slots + margem)
+
+        // Calcular o tamanho do BG para incluir o inventário + a fornalha lateral
+        int totalDisplayWidth = INVENTORY_COLS * SLOT_SPACING + innerSpacing + slotWidth + SLOT_SPACING;
+        int invStartX = (screenWidth - totalDisplayWidth) / 2 + 10;
+        int invStartY = 250;
+        int bgWidth = totalDisplayWidth - 20;
+        int bgHeight = INVENTORY_ROWS * SLOT_SPACING + 50;
+
+        // --- VARIÁVEIS DE CONTROLO DE DESTAQUE CORRIGIDAS ---
+        int currentSelectedSlot = inv.getSelectedSlot();
+        // O modo de colocação de item na fornalha desliga o destaque no inventário.
+        boolean isPuttingItemInFurnace = furnaceMenuOpen && (selectedItemForFurnace != null);
+        // --- FIM VARIÁVEIS DE CONTROLO DE DESTAQUE CORRIGIDAS ---
+
+
+        // Desenhar Fundo (Fundo igual ao do crafting/inventário)
+        Quad bgQuad = new Quad(bgWidth, bgHeight);
+        Geometry bg = new Geometry("InvBg", bgQuad);
+        Material bgMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        bgMat.setColor("Color", ColorRGBA.LightGray);
+        bg.setMaterial(bgMat);
+        bg.setLocalTranslation(invStartX - 10, invStartY - INVENTORY_ROWS * SLOT_SPACING + 25, -2); // Z=-2 for BG
+        inventoryNode.attachChild(bg);
+
+        // Desenhar Slots do inventário (0-39)
+        for (int i = 0; i < inv.getSize(); i++) {
+            int col = i % INVENTORY_COLS;
+            int row = i / INVENTORY_COLS;
+
+            int x = invStartX + col * SLOT_SPACING;
+            int y = invStartY - row * SLOT_SPACING;
+
+            // CORRIGIDO: O highlight no inventário só deve aparecer se NÃO estivermos no modo de colocação de fornalha.
+            boolean selected = (i == currentSelectedSlot && !isPuttingItemInFurnace);
+            Stacks stack = inv.getSlot(i);
+
+            // Desenha Slot, Borda, Ícone e Quantidade
+            drawInventorySlot(inventoryNode, stack, i, x, y, ColorRGBA.Gray, selected);
+        }
+
+        // Desenhar título
+        BitmapText title = new BitmapText(font, false);
+        String titleText = "FORNALHA (ALT: Fechar | O: Seleciona Item / Coloca | ENTER: Retirar)";
+        title.setText(titleText);
+        title.setSize(font.getCharSet().getRenderedSize() * 0.9f);
+        title.setColor(ColorRGBA.Black);
+        title.setLocalTranslation(invStartX, invStartY + 65, 0);
+        inventoryNode.attachChild(title);
+
+        // === 2. Desenho da Fornalha (Lateral) ===
+
+        if (furnaceMenuOpen && currentFurnaceState != null) {
+            int furnaceStartX = invStartX + INVENTORY_COLS * SLOT_SPACING + innerSpacing;
+            int furnaceStartY = invStartY - 20;
+
+            // Posição central para o bloco de fornalha
+            int centralX = furnaceStartX + SLOT_SPACING;
+            int centralY = furnaceStartY - SLOT_SPACING;
+
+            // Fundo da fornalha (para destacar a área)
+            int furnaceBgWidth = 300;
+            int furnaceBgHeight = SLOT_SIZE * 5;
+            Quad furnaceBgQuad = new Quad(furnaceBgWidth, furnaceBgHeight);
+            Geometry furnaceBg = new Geometry("FurnaceBg", furnaceBgQuad);
+            Material furnaceBgMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            furnaceBgMat.setColor("Color", ColorRGBA.LightGray.mult(0.9f));
+            furnaceBgMat.setTransparent(true);
+            furnaceBgMat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            furnaceBg.setMaterial(furnaceBgMat);
+            furnaceBg.setLocalTranslation(350, centralY + 150, -1);
+            inventoryNode.attachChild(furnaceBg);
+
+            // --- Slots da Fornalha ---
+
+            // 1. Slot de INPUT (Topo)
+            int inputX = 400;
+            int inputY = centralY + 265;
+            // CORRIGIDO: Destaque usa this.selectedFurnaceSlot
+            boolean inputSelected = (this.selectedFurnaceSlot == FURNACE_SLOT_INPUT);
+            drawInventorySlot(inventoryNode, currentFurnaceState.inputStack, 1000, inputX, inputY,
+                    ColorRGBA.Gray, inputSelected);
+
+            // 2. Slot de COMBUSTÍVEL (Baixo)
+            int fuelX = inputX;
+            int fuelY = inputY - 85;
+            // CORRIGIDO: Destaque usa this.selectedFurnaceSlot
+            boolean fuelSelected = (this.selectedFurnaceSlot == FURNACE_SLOT_FUEL);
+            drawInventorySlot(inventoryNode, currentFurnaceState.fuelStack, 1001, fuelX, fuelY,
+                    ColorRGBA.Gray, fuelSelected);
+
+            // 3. Slot de OUTPUT (Lateral)
+            int outputX = 500;
+            int outputY = fuelY + 42;
+            // CORRIGIDO: Destaque usa this.selectedFurnaceSlot
+            boolean outputSelected = (this.selectedFurnaceSlot == FURNACE_SLOT_OUTPUT);
+            drawInventorySlot(inventoryNode, currentFurnaceState.outputStack, 1002, outputX, outputY,
+                    ColorRGBA.Gray, outputSelected);
+
+            // 4. Imagem de Fase (Meio)
+            int phase = currentFurnaceState.getPhase();
+
+            // Lógica explícita para o caminho da imagem da fase
+            if (phase > 0) {
+                String phaseImagePath;
+                if (phase == 1) {
+                    phaseImagePath = "Interface/furnace_phase1.png";
+                } else if (phase == 2) {
+                    phaseImagePath = "Interface/furnace_phase2.png";
+                } else if (phase == 3) {
+                    phaseImagePath = "Interface/furnace_phase3.png";
+                } else if (phase == 4) {
+                    phaseImagePath = "Interface/furnace_phase4.png";
+                } else {
+                    // Fallback para a fase final ou se for maior que 4 (nunca deve acontecer)
+                    phaseImagePath = "Interface/furnace_phase4.png";
+                }
+
+                drawPhaseImage(inventoryNode, phaseImagePath, fuelX, outputY);
+            }
+
+            // 5. Item de Seleção (Flutuante)
+            if (selectedItemForFurnace != null) {
+                SimpleApplication sapp = (SimpleApplication) getApplication();
+                float mouseX = sapp.getInputManager().getCursorPosition().x;
+                float mouseY = sapp.getInputManager().getCursorPosition().y;
+
+                Stacks tempStack = new Stacks(selectedItemForFurnace,
+                        player.getInventory().countItem(selectedItemForFurnace));
+
+                drawInventorySlot(inventoryNode, tempStack, -1,
+                        (int)mouseX - SLOT_SIZE / 2, (int)mouseY - SLOT_SIZE / 2, // Centrado no cursor
+                        ColorRGBA.White.mult(0.7f), false); // Z=10 para ficar por cima de tudo
+            }
+        }
+    }
+
+    // Novo: Desenho da imagem de fase (seta)
+    private void drawPhaseImage(Node parentNode, String texturePath, int x, int y) {
+        Quad quad = new Quad(SLOT_SIZE, SLOT_SIZE);
+        Geometry geom = new Geometry("FurnacePhase", quad);
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture iconTex = assetManager.loadTexture(texturePath);
+
+        if (iconTex != null) {
+            mat.setTexture("ColorMap", iconTex);
+            mat.setTransparent(true);
+            mat.getAdditionalRenderState().setBlendMode(com.jme3.material.RenderState.BlendMode.Alpha);
+        } else {
+            mat.setColor("Color", ColorRGBA.Black);
+        }
+
+        geom.setMaterial(mat);
+        geom.setLocalTranslation(x, y, 5); // Z=5 para ficar no topo
+        parentNode.attachChild(geom);
     }
 
 

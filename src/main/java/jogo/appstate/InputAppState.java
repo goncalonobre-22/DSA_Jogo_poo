@@ -41,6 +41,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean craftArrowDown;
     private volatile boolean craftArrowLeft;
     private volatile boolean craftArrowRight;
+    private volatile boolean putInFurnaceRequested;
 
 
 
@@ -106,6 +107,8 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
         im.addMapping("RespawnButton", new KeyTrigger(KeyInput.KEY_RETURN));
 
+        im.addMapping("PutInFurnace", new KeyTrigger(KeyInput.KEY_O));
+
         im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
         im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-");
         // Adicionado do inventário pt.2
@@ -115,7 +118,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.addListener(this, "InvLeft", "InvRight", "InvUp", "InvDown");
         im.addListener(this, "Hotbar1","Hotbar2","Hotbar3","Hotbar4","Hotbar5","Hotbar6","Hotbar7","Hotbar8","Hotbar9", "Hotbar10");
         im.addListener(this, "Take", "Put", "CraftMenu", "ExitCraft",
-                "CraftUp", "CraftDown", "CraftLeft", "CraftRight");
+                "CraftUp", "CraftDown", "CraftLeft", "CraftRight", "PutInFurnace");
     }
 
     @Override
@@ -153,6 +156,8 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.deleteMapping("CraftDown");
         im.deleteMapping("CraftLeft");
         im.deleteMapping("CraftRight");
+
+        im.deleteMapping("PutInFurnace");
     }
 
     @Override
@@ -251,6 +256,9 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
                 if (isPressed) craftArrowRight = true;
             }
 
+            case "PutInFurnace" -> { // NOVO
+                if (isPressed) putInFurnaceRequested = true;
+            }
         }
     }
 
@@ -432,5 +440,10 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         }
     }
 
+    public boolean consumePutInFurnaceRequested() {
+        boolean r = putInFurnaceRequested;
+        putInFurnaceRequested = false;
+        return r;
+    }
 
 }

@@ -14,6 +14,7 @@ import jogo.gameobject.character.Player;
 import jogo.gameobject.item.food.Bread;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.tools.WoodAxe;
+import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
 public class InteractionAppState extends BaseAppState {
@@ -24,6 +25,7 @@ public class InteractionAppState extends BaseAppState {
     private final RenderIndex renderIndex;
     private final WorldAppState world;
     private float reach = 5.5f;
+    private VoxelWorld.Vector3i targetFurnace = null;
 
     public InteractionAppState(Node rootNode, Camera cam, InputAppState input, RenderIndex renderIndex, WorldAppState world) {
         this.rootNode = rootNode;
@@ -93,6 +95,16 @@ public class InteractionAppState extends BaseAppState {
             vw.pickFirstSolid(cam, reach).ifPresent(hit -> {
                 VoxelWorld.Vector3i cell = hit.cell;
                 System.out.println("TODO (exercise): interact with voxel at " + cell.x + "," + cell.y + "," + cell.z);
+
+                byte blockId = vw.getBlock(cell.x, cell.y, cell.z);
+
+                if (blockId == VoxelPalette.FURNACE_ID) {
+                    targetFurnace = cell;
+                    // Abre o HUD da fornalha (o HUDAppState fará a verificação e o set)
+                    getStateManager().getState(HudAppState.class).enterFurnaceMode(targetFurnace);
+                    System.out.println("A abrir Fornalha em: " + cell.x + "," + cell.y + "," + cell.z);
+                    return; // Interação concluída
+                }
             });
         }
     }
@@ -105,6 +117,10 @@ public class InteractionAppState extends BaseAppState {
             cur = cur.getParent();
         }
         return null;
+    }
+
+    public void clearTargetFurnace() {
+        this.targetFurnace = null;
     }
 
     @Override
