@@ -17,5 +17,12 @@ public class Vec3 {
         hash = 31 * hash + Float.floatToIntBits(this.z);
         return hash;
     }
+
+    public float distance(Vec3 other) {
+        float dx = this.x - other.x;
+        float dy = this.y - other.y;
+        float dz = this.z - other.z;
+        return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
 }
 

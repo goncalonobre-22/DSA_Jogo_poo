@@ -1,5 +1,6 @@
 package jogo.gameobject.character;
 
+import jogo.framework.math.Vec3;
 import jogo.util.inventory.Inventory;
 import jogo.util.inventory.Stacks;
 
@@ -113,5 +114,10 @@ public class Player extends Character {
             return true;
         }
         return false;
+    }
+
+    public void setPosition(Vec3 newPosition) {
+        // Assume-se que 'position' é um campo herdado/existente na classe Character
+        this.position = newPosition;
     }
 }

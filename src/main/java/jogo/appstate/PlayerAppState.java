@@ -98,6 +98,16 @@ public class PlayerAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
+        // 1. SINCRONIZAÇÃO CRÍTICA: Atualizar a posição lógica do objeto Player
+        if (player != null && playerNode != null) {
+
+            // CORREÇÃO: Usamos playerNode.getWorldTranslation() (posição da Node) em vez do método inexistente getPhysicsLocation().
+            com.jme3.math.Vector3f physicsPos = playerNode.getWorldTranslation();
+
+            // Convertemos para o nosso Vec3 e definimos no objeto Player (que a Slime vai ler)
+            player.setPosition(new jogo.framework.math.Vec3(physicsPos.x, physicsPos.y, physicsPos.z));
+        }
+
         handleInventoryInput();  // ADICIONAR esta linha
 
         if (player != null) {

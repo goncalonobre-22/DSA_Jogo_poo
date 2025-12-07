@@ -14,6 +14,7 @@ import jogo.gameobject.character.Player;
 import jogo.gameobject.item.food.Bread;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.tools.WoodAxe;
+import jogo.gameobject.npc.NPC;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
@@ -44,12 +45,14 @@ public class InteractionAppState extends BaseAppState {
         if (!input.consumeInteractRequested()) return;
 
         Player player = world != null ? world.getPlayer() : null;
+        Item selectedItem = null;
+
 
         if (player != null) {
             var selectedStack = player.getInventory().getSelectedItem();
 
             if (selectedStack != null && selectedStack.getAmount() > 0) {
-                Item selectedItem = selectedStack.getItem();
+                selectedItem = selectedStack.getItem();
 
                 // 1. Injeta a referência do Player em itens que a necessitam (via Downcasting/Polimorfismo)
                 if (selectedItem instanceof Bread bread) {
@@ -82,10 +85,17 @@ public class InteractionAppState extends BaseAppState {
         if (results.size() > 0) {
             Spatial hit = results.getClosestCollision().getGeometry();
             GameObject obj = findRegistered(hit);
+            if (obj instanceof NPC npc) {
+                // Aplica dano com o item selecionado (ou a "mão" se selectedItem for null)
+                npc.takeDamage(selectedItem);
+                return;
+            }
+
+            // Fallback: interagir com Item (se não for NPC)
             if (obj instanceof Item item) {
                 item.onInteract();
                 System.out.println("Interacted with item: " + obj.getName());
-                return; // prefer item interaction if both are hit
+                return;
             }
         }
 

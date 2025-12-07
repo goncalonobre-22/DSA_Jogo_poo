@@ -23,7 +23,6 @@ public class VoxelWorld {
     private final AssetManager assetManager;
     private final int sizeX, sizeY, sizeZ;
     private final VoxelPalette palette;
-    private final long seed = 12;
     private final int baseHeight = 20;
     private final int amplitude = 10;
     private final float frequency = 0.05f;
@@ -124,29 +123,7 @@ public class VoxelWorld {
 
     public Node getNode() { return node; }
 
-    public static class Noise {
-        private final long seed;
 
-        public Noise(long seed) {
-            this.seed = seed;
-        }
-
-        private float rawNoise(int x, int z) { /* mesmo código acima */
-            return 0;
-        }
-
-        private float lerp(float a, float b, float t) {
-            return a + (b - a) * t;
-        }
-
-        private float smooth(int x, int z) { /* mesmo código acima */
-            return 0;
-        }
-
-        public float noise(float x, float z) { /* mesmo código acima */
-            return x;
-        }
-    }
 
     //TODO this is where you'll generate your world
     public void generateLayers() {
@@ -189,7 +166,7 @@ public class VoxelWorld {
 //        setBlock(pos.x, groundY + 1, pos.z - 1, VoxelPalette.FURNACE_ID);
 //        setBlock(pos.x + 4, groundY + 1, pos.z - 4, VoxelPalette.HOTBLOCK_ID);
 
-        SimpleNoise noise = new SimpleNoise(12345);
+        SimpleNoise noise = new SimpleNoise(123);
 
         int width = sizeX;
         int depth = sizeZ;
@@ -376,7 +353,7 @@ public class VoxelWorld {
         return Optional.empty();
     }
 
-    private boolean isSolid(int x, int y, int z) {
+    public boolean isSolid(int x, int y, int z) {
         if (!inBounds(x,y,z)) return false;
         return palette.get(getBlock(x, y, z)).isSolid();
     }

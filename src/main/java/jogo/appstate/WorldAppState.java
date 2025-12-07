@@ -11,14 +11,20 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
+import jogo.framework.math.Vec3;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.PlaceableItem;
+import jogo.gameobject.npc.NPC;
+import jogo.gameobject.npc.hostil.Slime;
 import jogo.util.breakingblocks.BreakingBlockSystem;
 import jogo.util.inventory.ItemRegistry;
 import jogo.voxel.VoxelBlockType;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorldAppState extends BaseAppState {
 
@@ -41,6 +47,8 @@ public class WorldAppState extends BaseAppState {
 
     private float furnaceUpdateTimer = 0.0f; // NOVO: Timer para o update da fornalha
     private static final float FURNACE_UPDATE_RATE = 0.1f; // Tenta o update mais vezes (10x por seg)
+
+    private List<NPC> npcList = new ArrayList<>();
 
 
     // world root for easy cleanup
@@ -90,6 +98,40 @@ public class WorldAppState extends BaseAppState {
 
         // compute recommended spawn
         spawnPosition = voxelWorld.getRecommendedSpawn();
+
+        spawnNPCs();
+    }
+
+    private void spawnNPCs() {
+
+        int worldX = 320;
+        int worldZ = 320;
+
+        int slimeCount = 8;
+
+        for (int i = 0; i < slimeCount; i++) {
+
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+
+            int rawY = voxelWorld.getTopSolidY(x, z);
+
+            if (rawY < 0) continue;
+
+            // CORREÇÃO: Nasce sempre 1 unidade acima do bloco sólido, sem limite Y arbitrário.
+            int y = rawY + 1;
+
+            Slime slime = new Slime("Slime", new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(slime);
+
+            System.out.println("Spawn slime: " + slime.getName() +
+                    " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+
+        if (playerAppState != null) {
+            Player player = playerAppState.getPlayer();
+            getStateManager().attach(new NPCAppState(npcList, worldNode, player));
+        }
     }
 
     public com.jme3.math.Vector3f getRecommendedSpawnPosition() {
