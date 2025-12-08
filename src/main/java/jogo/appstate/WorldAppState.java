@@ -128,10 +128,10 @@ public class WorldAppState extends BaseAppState {
                     " em X=" + x + " Y=" + y + " Z=" + z);
         }
 
-        if (playerAppState != null) {
-            Player player = playerAppState.getPlayer();
-            getStateManager().attach(new NPCAppState(npcList, worldNode, player));
-        }
+//        if (playerAppState != null) {
+//            Player player = playerAppState.getPlayer();
+//            getStateManager().attach(new NPCAppState(npcList, worldNode, player));
+//        }
     }
 
     public com.jme3.math.Vector3f getRecommendedSpawnPosition() {
@@ -291,6 +291,10 @@ public class WorldAppState extends BaseAppState {
         return player;
     }
 
+    public List<NPC> getNpcList() {
+        return npcList;
+    }
+
     private void checkFallingBlocks() {
         if (voxelWorld == null || physicsSpace == null) return;
 
@@ -346,6 +350,10 @@ public class WorldAppState extends BaseAppState {
                 playerAppState.refreshPhysics();
             }
         }
+    }
+
+    public Node getWorldNode() {
+        return worldNode;
     }
 
 

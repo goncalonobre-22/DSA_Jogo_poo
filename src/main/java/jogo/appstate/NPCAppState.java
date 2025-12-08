@@ -11,6 +11,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.material.RenderState;
 
+import jogo.engine.GameRegistry;
+import jogo.engine.RenderIndex;
 import jogo.gameobject.npc.NPC;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.npc.hostil.Slime;
@@ -20,24 +22,38 @@ import java.util.List;
 
 public class NPCAppState extends BaseAppState {
 
-    private final Node worldNode;
+//    private final Node worldNode;
     private final Player player;
+    private final RenderIndex renderIndex;
+    private final GameRegistry registry; // Não usado para NPC, mas bom para consistência
+    private final WorldAppState worldAppState;
+    private HashMap<Node, NPC> modelToNpc = new HashMap<>();
 
     private List<NPC> npcList;
     private HashMap<NPC, Node> models = new HashMap<>();
 
-    public NPCAppState(List<NPC> npcList, Node worldNode, Player player) {
+
+    public NPCAppState(List<NPC> npcList, WorldAppState worldAppState, Player player, RenderIndex renderIndex, GameRegistry registry) {
         this.npcList = npcList;
-        this.worldNode = worldNode;
+        this.worldAppState = worldAppState;
         this.player = player;
+        this.renderIndex = renderIndex;
+        this.registry = registry;
     }
 
     @Override
     protected void initialize(Application app) {
+        Node worldNode = worldAppState.getWorldNode();
         for (NPC npc : npcList) {
             Node model = create3DModel(app, npc);
             models.put(npc, model);
+            modelToNpc.put(model, npc);
             worldNode.attachChild(model);
+
+            renderIndex.register(model, npc);
+
+            // [NOVO] Injetar o AppState hook no NPC
+            npc.appStateHook = this;
         }
     }
 
@@ -112,12 +128,34 @@ public class NPCAppState extends BaseAppState {
         }
     }
 
+    // Adicionar método de remoção:
+    public void removeNPC(NPC npc) {
+        Node model = models.get(npc);
+        if (model != null) {
+            // 1. Remover da cena
+            model.removeFromParent();
+
+            // 2. Limpar o RenderIndex
+            renderIndex.unregister(model);
+
+            // 3. Remover dos mapas e da lista de NPCs a serem atualizados (AI)
+            models.remove(npc);
+            modelToNpc.remove(model);
+            npcList.remove(npc);
+            // Nota: Se houver controlo de física no NPC (RigidBodyControl), também deve ser removido aqui,
+            // mas a Slime usa lógica de movimento manual por padrão (NPC.setPhysicsControl retorna null).
+
+            System.out.println("NPC " + npc.getName() + " removido da cena.");
+        }
+    }
+
     @Override
     protected void cleanup(Application app) {
         for (Node model : models.values()) {
             model.removeFromParent();
         }
         models.clear();
+        modelToNpc.clear();
     }
 
     @Override protected void onEnable() {}

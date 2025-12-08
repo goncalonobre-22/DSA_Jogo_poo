@@ -124,6 +124,15 @@ public class InteractionAppState extends BaseAppState {
         while (cur != null) {
             GameObject obj = renderIndex.lookup(cur);
             if (obj != null) return obj;
+            if (world != null && cur.getName() != null) {
+                // Procura na lista de NPCs (agora exposta pelo WorldAppState)
+                for (NPC npc : world.getNpcList()) {
+                    // O nome do Node do Slime é igual ao nome do NPC
+                    if (cur.getName().equals(npc.getName())) {
+                        return npc; // Sucesso! Encontrámos a Slime/NPC
+                    }
+                }
+            }
             cur = cur.getParent();
         }
         return null;

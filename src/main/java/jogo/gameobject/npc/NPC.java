@@ -1,12 +1,14 @@
 package jogo.gameobject.npc;
 
 import com.jme3.bullet.control.RigidBodyControl;
+import jogo.appstate.NPCAppState;
 import jogo.gameobject.character.Character;
 import jogo.framework.math.Vec3;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.Tool;
 
 public abstract class NPC extends Character {
+    public NPCAppState appStateHook;
 
     public NPC(String name) {
         super(name);
@@ -49,9 +51,20 @@ public abstract class NPC extends Character {
 
         int finalDamage = (int) (baseDamage * multiplier);
 
+        int oldHealth = getHealth(); // [NOVO] Capturar vida antiga
         super.takeDamage(finalDamage); // Chama o takeDamage base do Character
 
-        // Lógica de feedback
-        System.out.println(getName() + " sofreu " + finalDamage + " de dano de " + source + ". Vida atual: " + getHealth());
+        int newHealth = getHealth(); // [NOVO] Capturar vida nova
+
+        // [NOVO] Lógica de MORTE
+        if (newHealth <= 0 && oldHealth > 0) {
+            System.out.println(getName() + " morreu.");
+            if (appStateHook != null) {
+                appStateHook.removeNPC(this); // [NOVO] Notificar o AppState para remover o modelo/AI
+            }
+        } else {
+            // Lógica de feedback normal
+            System.out.println(getName() + " sofreu " + finalDamage + " de dano de " + source + ". Vida atual: " + newHealth);
+        }
     }
 }

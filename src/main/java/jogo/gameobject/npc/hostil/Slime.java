@@ -27,11 +27,14 @@ public class Slime extends NPC {
 
     private static final float PERCEPTION_RANGE = 30.0f;
 
+    private final int health = 5;
+
     public Slime(String name, Vec3 spawnPos, VoxelWorld world, Player player) {
         super(name);
         this.position = new Vec3(spawnPos.x, spawnPos.y, spawnPos.z);
         this.world = world;
         this.player = player;
+        setHealth(health);
     }
 
     public void setTarget(Vec3 target) {
@@ -130,10 +133,5 @@ public class Slime extends NPC {
         if (world.isSolid((int)Math.floor(position.x), blockUnderSlimeCenter, (int)Math.floor(position.z))) {
             position.y = blockUnderSlimeCenter + 1.0f;
         }
-    }
-
-    @Override
-    public void setHealth(int health) {
-        super.setHealth(5);
     }
 }
