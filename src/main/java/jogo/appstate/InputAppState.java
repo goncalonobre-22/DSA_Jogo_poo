@@ -42,6 +42,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean craftArrowLeft;
     private volatile boolean craftArrowRight;
     private volatile boolean putInFurnaceRequested;
+    private volatile boolean clearCraftRequested;
 
 
 
@@ -109,6 +110,10 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
         im.addMapping("PutInFurnace", new KeyTrigger(KeyInput.KEY_O));
 
+        im.addMapping("ClearCraft", new KeyTrigger(KeyInput.KEY_BACK));
+
+
+
         im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
         im.addListener(this, "MouseX+", "MouseX-", "MouseY+", "MouseY-");
         // Adicionado do inventário pt.2
@@ -118,7 +123,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.addListener(this, "InvLeft", "InvRight", "InvUp", "InvDown");
         im.addListener(this, "Hotbar1","Hotbar2","Hotbar3","Hotbar4","Hotbar5","Hotbar6","Hotbar7","Hotbar8","Hotbar9", "Hotbar10");
         im.addListener(this, "Take", "Put", "CraftMenu", "ExitCraft",
-                "CraftUp", "CraftDown", "CraftLeft", "CraftRight", "PutInFurnace");
+                "CraftUp", "CraftDown", "CraftLeft", "CraftRight", "PutInFurnace", "ClearCraft");
     }
 
     @Override
@@ -158,6 +163,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.deleteMapping("CraftRight");
 
         im.deleteMapping("PutInFurnace");
+        im.deleteMapping("ClearCraft");
     }
 
     @Override
@@ -258,6 +264,10 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
             case "PutInFurnace" -> { // NOVO
                 if (isPressed) putInFurnaceRequested = true;
+            }
+
+            case "ClearCraft" -> { // <--- NOVO
+                if (isPressed) clearCraftRequested = true;
             }
         }
     }
@@ -443,6 +453,12 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     public boolean consumePutInFurnaceRequested() {
         boolean r = putInFurnaceRequested;
         putInFurnaceRequested = false;
+        return r;
+    }
+
+    public boolean consumeClearCraftRequested() { // <--- NOVO
+        boolean r = clearCraftRequested;
+        clearCraftRequested = false;
         return r;
     }
 

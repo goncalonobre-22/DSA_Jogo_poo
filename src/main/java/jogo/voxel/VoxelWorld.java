@@ -29,10 +29,16 @@ public class VoxelWorld {
     private final int dirtLayers = 3;
     private final int ironMaxHeight = 12;
     private final float ironChance = 0.02f;
-    private static final byte AIR = 0;
-    private static final byte GRASS = 9;
-    private static final byte WOOD = 5;
-    private static final byte LEAVES = 11;
+    private static final byte AIR = VoxelPalette.AIR_ID;
+    private static final byte GRASS = VoxelPalette.GRASS_ID;
+    private static final byte WOOD = VoxelPalette.WOOD_ID;
+    private static final byte LEAVES = VoxelPalette.LEAVES_ID;
+    private static final byte STONE = VoxelPalette.STONE_ID; // 1
+    private static final byte DIRT = VoxelPalette.DIRT_ID; // 2
+    private static final byte SAND = VoxelPalette.SAND_ID; // 3
+    private static final byte METALORE = VoxelPalette.METALORE_ID; // 4
+    private static final byte SOULSAND = VoxelPalette.SOULSAND_ID; // 6
+    private static final byte HOTBLOCK = VoxelPalette.HOTBLOCK_ID; // 8
 
     private final Node node = new Node("VoxelWorld");
     private final Map<Byte, Geometry> geoms = new HashMap<>();
@@ -127,88 +133,170 @@ public class VoxelWorld {
 
     //TODO this is where you'll generate your world
     public void generateLayers() {
-        //generate a SINGLE block under the player:
-//        Vector3i pos = new Vector3i(getRecommendedSpawn());
-//        int groundY = pos.y;
+
+//        SimpleNoise noise = new SimpleNoise(123);
 //
-//        int width = 50;
-//        int depth = 50;
-//        int startX = pos.x - (width / 2);
-//        int startZ = pos.z - (depth / 2);
+//        int width = sizeX;
+//        int depth = sizeZ;
 //
-//        for (int x = startX; x < startX + width; x++) {
-//            for (int z = startZ; z < startZ + depth; z++) {
-//                setBlock(x, groundY, z, VoxelPalette.STONE_ID);
+//        int baseHeight = 20;
+//        int amplitude = 8;
+//
+//        for (int x = 0; x < width; x++) {
+//            for (int z = 0; z < depth; z++) {
+//
+//                // Altura baseada no noise (entre -1 e 1)
+//                float n = noise.noise(x * 0.02f, z * 0.02f);
+//                int height = baseHeight + (int) (n * amplitude);
+//
+//                // Limites verticais
+//                if (height < 3) height = 3;
+//                if (height >= sizeY - 1) height = sizeY - 2;
+//
+//// GRASS no topo
+//                setBlock(x, height, z, GRASS);
+//
+//// Gerar árvore ocasionalmente
+//                if (getBlock(x, height + 1, z) == AIR) {
+//                    if (Math.random() < 0.005) {   // 3% chance
+//                        generateTree(x, height + 1, z);
+//                    }
+//                }
+//                // DIRT logo abaixo
+//                for (int y = height - 1; y >= height - 3 && y >= 0; y--) {
+//                    setBlock(x, y, z, (byte) 2);
+//                }
+//
+//                // STONE + ORE
+//                for (int y = height - 3; y >= 0; y--) {
+//
+//                    if (y < baseHeight - 4 && Math.random() < 0.015) {
+//                        setBlock(x, y, z, (byte) 4); // minério
+//                    } else {
+//                        setBlock(x, y, z, (byte) 1); // pedra
+//                    }
+//                }
 //            }
 //        }
-//
-//        setBlock(pos.x + 2, pos.y + 1, pos.z, VoxelPalette.DIRT_ID);
-//        setBlock(pos.x - 2, pos.y + 3, pos.z, VoxelPalette.SAND_ID);
-//        setBlock(pos.x + 4, pos.y + 1, pos.z, VoxelPalette.METALORE_ID);
-//        setBlock(pos.x - 4, pos.y + 1, pos.z, VoxelPalette.WOOD_ID);
-//
-//        setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.STONE_ID);
-//        setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.SAND_ID);
-//        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.SAND_ID);
-//        setBlock(pos.x, groundY + 4, pos.z + 5, VoxelPalette.SAND_ID);
-//        setBlock(pos.x, groundY + 1, pos.z + 5, VoxelPalette.WOOD_ID);
-//        setBlock(pos.x, groundY + 2, pos.z + 5, VoxelPalette.WOOD_ID);
-//        setBlock(pos.x, groundY + 3, pos.z + 5, VoxelPalette.WOOD_ID);
-//        setBlock(pos.x, groundY + 1, pos.z + 4, VoxelPalette.WOOD_ID);
-//        setBlock(pos.x, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
-//        setBlock(pos.x + 1, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
-//        setBlock(pos.x - 1, groundY + 1, pos.z + 3, VoxelPalette.SAND_ID);
-//        setBlock(pos.x + 2, groundY + 1, pos.z - 1, VoxelPalette.SAND_ID);
-//        setBlock(pos.x - 2, groundY + 1, pos.z - 1, VoxelPalette.SOULSAND_ID);
-//        setBlock(pos.x -2, groundY + 1, pos.z -2, VoxelPalette.SOULSAND_ID);
-//        setBlock(pos.x + 3,  groundY + 1, pos.z + 1, VoxelPalette.WOOD_ID);
-//        setBlock(pos.x,  groundY + 1, pos.z - 1, VoxelPalette.HOTBLOCK_ID);
-//        setBlock(pos.x, groundY + 1, pos.z - 1, VoxelPalette.FURNACE_ID);
-//        setBlock(pos.x + 4, groundY + 1, pos.z - 4, VoxelPalette.HOTBLOCK_ID);
 
-        SimpleNoise noise = new SimpleNoise(123);
+
+
+        SimpleNoise heightNoise = new SimpleNoise(2742);
+        SimpleNoise biomeNoise = new SimpleNoise(1235); // Novo noise para biomas
 
         int width = sizeX;
         int depth = sizeZ;
 
         int baseHeight = 20;
         int amplitude = 8;
+        float biomeFrequency = 0.005f; // Frequência baixa para grandes biomas
 
         for (int x = 0; x < width; x++) {
             for (int z = 0; z < depth; z++) {
 
-                // Altura baseada no noise (entre -1 e 1)
-                float n = noise.noise(x * 0.02f, z * 0.02f);
+                // 1. Determinar o Bioma
+                float biomeN = biomeNoise.noise(x * biomeFrequency, z * biomeFrequency);
+
+                byte topBlock;
+                float oreChance;
+                int surfaceDepth;
+                boolean isHot = false;
+                boolean isDesert = false;
+
+                if (biomeN < -0.3f) { // Bioma Deserto
+                    topBlock = SAND;
+                    oreChance = 0.0f; // Sem minério (opcional)
+                    surfaceDepth = 5; // 5 camadas de areia/soul sand
+                    isDesert = true;
+
+                } else if (biomeN > 0.3f) { // Bioma Hot/Volcanic
+                    topBlock = HOTBLOCK;
+                    oreChance = 0.05f; // Mais minério
+                    surfaceDepth = 3; // 3 camadas de hotblock
+                    isHot = true;
+
+                } else { // Bioma Padrão (Grass)
+                    topBlock = GRASS;
+                    oreChance = 0.015f;
+                    surfaceDepth = 3; // 3 camadas de sujeira
+                }
+
+                // 2. Calcular Altura
+                float n = heightNoise.noise(x * 0.02f, z * 0.02f);
                 int height = baseHeight + (int) (n * amplitude);
 
                 // Limites verticais
                 if (height < 3) height = 3;
                 if (height >= sizeY - 1) height = sizeY - 2;
 
-// GRASS no topo
-                setBlock(x, height, z, GRASS);
+                // 3. Colocar Blocos
 
-// Gerar árvore ocasionalmente
-                if (getBlock(x, height + 1, z) == AIR) {
-                    if (Math.random() < 0.005) {   // 3% chance
-                        generateTree(x, height + 1, z);
+                // Itera de cima para baixo
+                for (int y = height; y >= 0; y--) {
+
+                    if (y > height) continue; // Bloco de ar acima do solo
+
+                    if (isHot) {
+                        // Hot/Volcanic: 3 camadas de HotBlock + Stone/Ore
+                        if (y >= height - 2) { // Camadas: height, height-1, height-2
+                            setBlock(x, y, z, HOTBLOCK);
+                        } else {
+                            // Subsolo de Stone com muita abundância de MetalOre
+                            if (Math.random() < oreChance) {
+                                setBlock(x, y, z, METALORE);
+                            } else {
+                                setBlock(x, y, z, STONE);
+                            }
+                        }
+
+                    } else if (isDesert) {
+                        // Deserto: Camada superior de Areia/SoulSand + Stone apenas no fundo
+                        if (y > height - surfaceDepth) { // Camadas de Areia
+                            if (Math.random() < 0.015 && y >= height - 2) { // Pequena chance de Soul Sand perto da superfície
+                                setBlock(x, y, z, SOULSAND);
+                            } else {
+                                setBlock(x, y, z, SAND);
+                            }
+                        } else {
+                            // Subsolo: Pedra apenas na camada inferior (y=0)
+                            if (y == 0) {
+                                setBlock(x, y, z, STONE);
+                            } else {
+                                // Opcional: Manter o resto como ar (AIR) ou como Stone/Ore para manter um subsolo sólido
+                                // Para manter o subsolo sólido como o mundo original, mas com stone e sem ore:
+                                setBlock(x, y, z, STONE);
+                            }
+                        }
+
+                    } else { // Bioma Padrão
+                        // Padrão: Grass/Dirt + Stone/Ore
+                        if (y == height) {
+                            setBlock(x, y, z, GRASS);
+                        } else if (y > height - surfaceDepth) {
+                            setBlock(x, y, z, DIRT);
+                        } else {
+                            // STONE + ORE
+                            if (y < baseHeight - 4 && Math.random() < oreChance) {
+                                setBlock(x, y, z, METALORE);
+                            } else {
+                                setBlock(x, y, z, STONE);
+                            }
+                        }
                     }
                 }
-                // DIRT logo abaixo
-                for (int y = height - 1; y >= height - 3 && y >= 0; y--) {
-                    setBlock(x, y, z, (byte) 2);
-                }
 
-                // STONE + ORE
-                for (int y = height - 3; y >= 0; y--) {
-
-                    if (y < baseHeight - 4 && Math.random() < 0.015) {
-                        setBlock(x, y, z, (byte) 4); // minério
-                    } else {
-                        setBlock(x, y, z, (byte) 1); // pedra
+                // 4. Geração de Árvores
+                if (getBlock(x, height + 1, z) == AIR) {
+                    if (Math.random() < 0.005) {   // 0.5% chance
+                        if (isHot) {
+                            generateHotTree(x, height + 1, z);
+                        } else {
+                            generateTree(x, height + 1, z);
+                        }
                     }
                 }
             }
+
         }
     }
 
@@ -658,6 +746,19 @@ public class VoxelWorld {
             }
         }
     }
+
+    private void generateHotTree(int x, int y, int z) {
+
+        int trunkHeight = 4 + (int) (Math.random() * 3);
+
+        // Tronco (WOOD)
+        for (int i = 0; i < trunkHeight; i++) {
+            safeSetBlock(x, y + i, z, WOOD);
+        }
+
+        // Sem Folhas
+    }
+
     private void safeSetBlock(int x, int y, int z, byte id) {
         if (x < 0 || x >= sizeX) return;
         if (y < 0 || y >= sizeY) return;

@@ -156,6 +156,12 @@ public class HudAppState extends BaseAppState {
             return;
         }
 
+        boolean clearCraft = input.consumeClearCraftRequested();
+        if (clearCraft && inventoryOpen) {
+            handleClearCrafting();
+            // Não é mais necessário consumir input.consumeToggleShadingRequested();
+        }
+
         updateHealthDisplay();
 
         updateHungerDisplay();
@@ -1243,6 +1249,57 @@ public class HudAppState extends BaseAppState {
         geom.setMaterial(mat);
         geom.setLocalTranslation(x, y, 5); // Z=5 para ficar no topo
         parentNode.attachChild(geom);
+    }
+
+    private void handleClearCrafting() {
+        Stacks[] grid = player.getCraftingGrid();
+        boolean gridFullyCleared = true;
+
+        System.out.println("A tentar limpar a grelha de crafting (DELETE)...");
+
+        for (int i = 0; i < grid.length; i++) {
+            Stacks stack = grid[i];
+            if (stack != null && stack.getAmount() > 0) {
+                int amountToReturn = stack.getAmount();
+                int returnedCount = 0;
+
+                // Tenta devolver item por item para o inventário
+                for (int k = 0; k < amountToReturn; k++) {
+                    if (player.getInventory().addItem(stack.getItem(), 1)) {
+                        returnedCount++;
+                    } else {
+                        // Inventário cheio
+                        break;
+                    }
+                }
+
+                if (returnedCount > 0) {
+                    System.out.println("Devolvido " + returnedCount + "x " + stack.getItem().getName() + " para o inventário.");
+                }
+
+                if (returnedCount == amountToReturn) {
+                    // Todos os itens foram devolvidos com sucesso
+                    grid[i] = null;
+                } else {
+                    // Apenas uma parte ou nenhum item foi devolvido
+                    if (returnedCount > 0) {
+                        stack.addAmount(-returnedCount);
+                        gridFullyCleared = false;
+                    } else {
+                        // Não devolveu nada, mantém a stack intacta
+                        gridFullyCleared = false;
+                    }
+                }
+            }
+        }
+
+        if (gridFullyCleared) {
+            System.out.println("Grelha de crafting limpa.");
+            player.setSelectedCraftSlot(0); // Reinicia a seleção
+            selectedItem = null; // Limpa a seleção de tipo
+        } else {
+            System.out.println("A grelha não pôde ser totalmente limpa (Inventário cheio).");
+        }
     }
 
 
