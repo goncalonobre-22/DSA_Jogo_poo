@@ -9,6 +9,7 @@ import jogo.voxel.blocks.granular.DirtBlockType;
 import jogo.voxel.blocks.granular.GrassBlockType;
 import jogo.voxel.blocks.granular.SandBlockType;
 import jogo.voxel.blocks.granular.SoulSandBlockType;
+import jogo.voxel.blocks.natural.LeavesBlockType;
 import jogo.voxel.blocks.natural.PlankBlockType;
 import jogo.voxel.blocks.natural.WoodBlockType;
 
@@ -45,7 +46,8 @@ public class VoxelPalette {
         p.register(new PlankBlockType()); // id 7
         p.register(new HotBlockType()); // id 8
         p.register(new GrassBlockType()); // id 9
-        p.register(new FurnaceBlockType());
+        p.register(new FurnaceBlockType()); // id 10
+        p.register(new LeavesBlockType()); // id 11
         return p;
     }
 
@@ -60,4 +62,5 @@ public class VoxelPalette {
     public static final byte HOTBLOCK_ID = 8;
     public static final byte GRASS_ID = 9;
     public static final byte FURNACE_ID = 10;
+    public static final byte LEAVES_ID = 11;
 }

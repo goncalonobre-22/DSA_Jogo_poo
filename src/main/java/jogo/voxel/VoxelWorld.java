@@ -32,7 +32,7 @@ public class VoxelWorld {
     private static final byte AIR = 0;
     private static final byte GRASS = 9;
     private static final byte WOOD = 5;
-    private static final byte LEAVES = 8;
+    private static final byte LEAVES = 11;
 
     private final Node node = new Node("VoxelWorld");
     private final Map<Byte, Geometry> geoms = new HashMap<>();
