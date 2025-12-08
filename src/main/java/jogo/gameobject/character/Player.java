@@ -17,7 +17,14 @@ public class Player extends Character {
     private static final float BASE_DECAY_TIME = 120.0f; // 2 minutos = 120 segundos
     private static final float STARVATION_DAMAGE_TIME = 2.0f;
 
+    private float scoreTimer = 0.0f;
+    private static final float SCORE_INTERVAL = 10.0f; // Incrementa a cada 10 segundos
+    private static final int SCORE_AMOUNT = 1;
+    private int score = 0;
+
     private boolean justTookDamage = false;
+
+
 
     public Player() {
         super("Player");
@@ -114,6 +121,25 @@ public class Player extends Character {
             return true;
         }
         return false;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    /** NOVO: Adiciona a quantidade de pontos ao score (e.g. 1 por bloco). */
+    public void incrementScore(int amount) {
+        this.score += amount;
+        // Opcional: System.out.println("Player Score: " + this.score);
+    }
+
+    public void updateScoreTimer(float tpf) {
+        scoreTimer += tpf;
+
+        if (scoreTimer >= SCORE_INTERVAL) {
+            incrementScore(SCORE_AMOUNT);
+            scoreTimer = 0.0f; // Reinicia o timer
+        }
     }
 
     public void setPosition(Vec3 newPosition) {

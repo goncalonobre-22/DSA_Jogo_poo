@@ -1,5 +1,6 @@
 package jogo.util.breakingblocks;
 
+import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.Tool;
 import jogo.voxel.VoxelWorld;
@@ -21,6 +22,7 @@ public class BreakingBlockSystem {
     public boolean hitBlock(int x, int y, int z, Item heldItem) {
         String key = x + "," + y + "," + z;
         VoxelBlockType blockType = world.getPalette().get(world.getBlock(x, y, z));
+        Player player = new Player();
 
         if (!blockType.isSolid()) {
             return false;
@@ -67,6 +69,7 @@ public class BreakingBlockSystem {
         } else {
             return false;
         }
+
     }
 
     /** Chamado em cada frame para atualizar o timeout dos blocos em quebra. */

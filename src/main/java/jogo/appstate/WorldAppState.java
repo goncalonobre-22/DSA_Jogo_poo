@@ -127,11 +127,6 @@ public class WorldAppState extends BaseAppState {
             System.out.println("Spawn slime: " + slime.getName() +
                     " em X=" + x + " Y=" + y + " Z=" + z);
         }
-
-//        if (playerAppState != null) {
-//            Player player = playerAppState.getPlayer();
-//            getStateManager().attach(new NPCAppState(npcList, worldNode, player));
-//        }
     }
 
     public com.jme3.math.Vector3f getRecommendedSpawnPosition() {
@@ -149,6 +144,10 @@ public class WorldAppState extends BaseAppState {
         }
 
         checkFallingBlocks();
+
+        if (player != null) {
+            player.updateScoreTimer(tpf);
+        }
 
         if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);

@@ -43,6 +43,7 @@ public class HudAppState extends BaseAppState {
 
     private Node heartNode;
     private Node hungerNode;
+    private Node scoreNode;
 
     private static final int SLOT_SIZE = 35;
     private static final int SLOT_SPACING = 38;
@@ -125,6 +126,10 @@ public class HudAppState extends BaseAppState {
         craftingNode = new Node("Crafting");
         System.out.println("HudAppState initialized: craftingNode created");
 
+        scoreNode = new Node("ScoreDisplay");
+        guiNode.attachChild(scoreNode);
+        System.out.println("HudAppState initialized: scoreNode attached");
+
         gameOverNode = new Node("GameOverScreen");
         System.out.println("HudAppState initialized: gameOverNode created");
     }
@@ -165,6 +170,8 @@ public class HudAppState extends BaseAppState {
         updateHealthDisplay();
 
         updateHungerDisplay();
+
+        updateScoreDisplay();
 
         if (inventoryOpen) {
             // A interface é sempre a combinada, mas a lógica de input é que muda.
@@ -510,6 +517,10 @@ public class HudAppState extends BaseAppState {
 
         if (hungerNode != null) { // [NOVO] Limpar o nó de fome
             hungerNode.removeFromParent();
+        }
+
+        if (scoreNode != null) { // [NOVO] Limpar o nó de pontuação
+            scoreNode.removeFromParent();
         }
 
         if (gameOverNode != null) { // Limpar o nó de Game Over
@@ -1300,6 +1311,65 @@ public class HudAppState extends BaseAppState {
         } else {
             System.out.println("A grelha não pôde ser totalmente limpa (Inventário cheio).");
         }
+    }
+
+    private void updateScoreDisplay() {
+        scoreNode.detachAllChildren();
+
+        int currentScore = player.getScore(); // Obtém a pontuação do Player
+        String playerName = "Player 1"; // Nome do jogador (fixo)
+
+        SimpleApplication sapp = (SimpleApplication) getApplication();
+        int screenHeight = sapp.getCamera().getHeight();
+
+        // Posição: Canto superior esquerdo (margem de 20px)
+        int marginX = 20;
+        int marginY = screenHeight - 20;
+
+        // Background
+        Quad bgQuad = new Quad(140, 70);
+        Geometry bg = new Geometry("ScoreBg", bgQuad);
+        Material bgMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        bgMat.setColor("Color", ColorRGBA.DarkGray);
+        bg.setMaterial(bgMat);
+        bg.setLocalTranslation(marginX - 10, marginY - 60, -1); // Z=-2 for BG
+        scoreNode.attachChild(bg);
+
+
+        // Título da Coluna (Nome)
+        BitmapText nameLabel = new BitmapText(font, false);
+        nameLabel.setText("Nome:");
+        nameLabel.setSize(font.getCharSet().getRenderedSize() * 1.0f);
+        nameLabel.setColor(ColorRGBA.White);
+        nameLabel.setLocalTranslation(marginX, marginY, 0);
+        scoreNode.attachChild(nameLabel);
+
+        // Valor da Coluna (Nome do Jogador)
+        BitmapText playerNameText = new BitmapText(font, false);
+        playerNameText.setText(playerName);
+        playerNameText.setSize(font.getCharSet().getRenderedSize() * 1.0f);
+        playerNameText.setColor(ColorRGBA.White);
+        // Posição à direita de "Nome:"
+        playerNameText.setLocalTranslation(marginX + nameLabel.getLineWidth() + 10, marginY, 0);
+        scoreNode.attachChild(playerNameText);
+
+        // Título da Coluna (Pontuação)
+        BitmapText scoreLabel = new BitmapText(font, false);
+        scoreLabel.setText("Pontuacao:");
+        scoreLabel.setSize(font.getCharSet().getRenderedSize() * 1.0f);
+        scoreLabel.setColor(ColorRGBA.White);
+        int scoreY = marginY - 25; // Abaixo do nome
+        scoreLabel.setLocalTranslation(marginX, scoreY, 0);
+        scoreNode.attachChild(scoreLabel);
+
+        // Valor da Coluna (Score)
+        BitmapText scoreValueText = new BitmapText(font, false);
+        scoreValueText.setText(String.valueOf(currentScore));
+        scoreValueText.setSize(font.getCharSet().getRenderedSize() * 1.0f);
+        scoreValueText.setColor(ColorRGBA.White);
+        // Posição à direita de "Pontuação:"
+        scoreValueText.setLocalTranslation(marginX + scoreLabel.getLineWidth() + 10, scoreY, 0);
+        scoreNode.attachChild(scoreValueText);
     }
 
 
