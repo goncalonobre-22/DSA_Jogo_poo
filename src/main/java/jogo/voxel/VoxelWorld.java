@@ -39,6 +39,7 @@ public class VoxelWorld {
     private static final byte METALORE = VoxelPalette.METALORE_ID; // 4
     private static final byte SOULSAND = VoxelPalette.SOULSAND_ID; // 6
     private static final byte HOTBLOCK = VoxelPalette.HOTBLOCK_ID; // 8
+    private static final byte BEDROCK =  VoxelPalette.BEDROCK_ID; // 12
 
     private final Node node = new Node("VoxelWorld");
     private final Map<Byte, Geometry> geoms = new HashMap<>();
@@ -134,55 +135,8 @@ public class VoxelWorld {
     //TODO this is where you'll generate your world
     public void generateLayers() {
 
-//        SimpleNoise noise = new SimpleNoise(123);
-//
-//        int width = sizeX;
-//        int depth = sizeZ;
-//
-//        int baseHeight = 20;
-//        int amplitude = 8;
-//
-//        for (int x = 0; x < width; x++) {
-//            for (int z = 0; z < depth; z++) {
-//
-//                // Altura baseada no noise (entre -1 e 1)
-//                float n = noise.noise(x * 0.02f, z * 0.02f);
-//                int height = baseHeight + (int) (n * amplitude);
-//
-//                // Limites verticais
-//                if (height < 3) height = 3;
-//                if (height >= sizeY - 1) height = sizeY - 2;
-//
-//// GRASS no topo
-//                setBlock(x, height, z, GRASS);
-//
-//// Gerar árvore ocasionalmente
-//                if (getBlock(x, height + 1, z) == AIR) {
-//                    if (Math.random() < 0.005) {   // 3% chance
-//                        generateTree(x, height + 1, z);
-//                    }
-//                }
-//                // DIRT logo abaixo
-//                for (int y = height - 1; y >= height - 3 && y >= 0; y--) {
-//                    setBlock(x, y, z, (byte) 2);
-//                }
-//
-//                // STONE + ORE
-//                for (int y = height - 3; y >= 0; y--) {
-//
-//                    if (y < baseHeight - 4 && Math.random() < 0.015) {
-//                        setBlock(x, y, z, (byte) 4); // minério
-//                    } else {
-//                        setBlock(x, y, z, (byte) 1); // pedra
-//                    }
-//                }
-//            }
-//        }
-
-
-
         SimpleNoise heightNoise = new SimpleNoise(2742);
-        SimpleNoise biomeNoise = new SimpleNoise(1235); // Novo noise para biomas
+        SimpleNoise biomeNoise = new SimpleNoise(1268); // Novo noise para biomas
 
         int width = sizeX;
         int depth = sizeZ;
@@ -260,11 +214,11 @@ public class VoxelWorld {
                         } else {
                             // Subsolo: Pedra apenas na camada inferior (y=0)
                             if (y == 0) {
-                                setBlock(x, y, z, STONE);
+                                setBlock(x, y, z, BEDROCK);
                             } else {
                                 // Opcional: Manter o resto como ar (AIR) ou como Stone/Ore para manter um subsolo sólido
                                 // Para manter o subsolo sólido como o mundo original, mas com stone e sem ore:
-                                setBlock(x, y, z, STONE);
+                                setBlock(x, y, z, BEDROCK);
                             }
                         }
 

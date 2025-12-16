@@ -48,6 +48,7 @@ public class VoxelPalette {
         p.register(new GrassBlockType()); // id 9
         p.register(new FurnaceBlockType()); // id 10
         p.register(new LeavesBlockType()); // id 11
+        p.register(new BedrockBlockType()); // id 12
         return p;
     }
 
@@ -63,4 +64,5 @@ public class VoxelPalette {
     public static final byte GRASS_ID = 9;
     public static final byte FURNACE_ID = 10;
     public static final byte LEAVES_ID = 11;
+    public static final byte BEDROCK_ID = 12;
 }

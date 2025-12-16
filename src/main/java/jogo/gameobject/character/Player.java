@@ -20,9 +20,6 @@ public class Player extends Character {
     private static final float BASE_DECAY_TIME = 120.0f; // 2 minutos = 120 segundos
     private static final float STARVATION_DAMAGE_TIME = 2.0f;
 
-//    private float scoreTimer = 0.0f;
-//    private static final float SCORE_INTERVAL = 10.0f; // Incrementa a cada 10 segundos
-//    private static final int SCORE_AMOUNT = 1;
     private int score = 0;
 
     private final Queue<Integer> scoreQueue = new LinkedList<>();
@@ -137,15 +134,6 @@ public class Player extends Character {
         this.score += amount;
         // Opcional: System.out.println("Player Score: " + this.score);
     }
-
-//    public void updateScoreTimer(float tpf) {
-//        scoreTimer += tpf;
-//
-//        if (scoreTimer >= SCORE_INTERVAL) {
-//            incrementScore(SCORE_AMOUNT);
-//            scoreTimer = 0.0f; // Reinicia o timer
-//        }
-//    }
 
     /** NOVO: Adiciona um evento de incremento de pontuação à fila. */
     public void addScoreIncrement(int amount) {
