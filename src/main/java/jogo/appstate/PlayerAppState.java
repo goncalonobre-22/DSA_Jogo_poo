@@ -33,6 +33,10 @@ public class PlayerAppState extends BaseAppState {
     private float playerDamageTimer = 0.0f;
     private static final float DAMAGE_TICK_RATE = 1f;
 
+    private float passiveScoreTimer = 0.0f; // NOVO: Timer para a pontuação passiva
+    private static final float PASSIVE_SCORE_INTERVAL = 10.0f; // 10 segundos
+    private static final int PASSIVE_SCORE_AMOUNT = 1;
+
     private AudioNode hurtSound;
 
     // view angles
@@ -150,6 +154,8 @@ public class PlayerAppState extends BaseAppState {
             applyViewToCamera();
             return;
         }
+
+        handlePassiveScore(tpf);
 
         // handle mouse look
         Vector2f md = input.consumeMouseDelta();
@@ -356,6 +362,21 @@ public class PlayerAppState extends BaseAppState {
         if (hurtSound != null) {
             hurtSound.playInstance();
         }
+    }
+
+    private void handlePassiveScore(float tpf) {
+        if (player == null) return;
+
+        passiveScoreTimer += tpf;
+
+        if (passiveScoreTimer >= PASSIVE_SCORE_INTERVAL) {
+            // Adiciona o incremento à fila
+            player.addScoreIncrement(PASSIVE_SCORE_AMOUNT);
+            passiveScoreTimer = 0.0f; // Reinicia o timer
+        }
+
+        // Processa todos os eventos de pontuação que estão na fila a cada frame.
+        player.processScoreQueue();
     }
 
     public Vector3f getPlayerPosition() {

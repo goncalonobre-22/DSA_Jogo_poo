@@ -145,10 +145,6 @@ public class WorldAppState extends BaseAppState {
 
         checkFallingBlocks();
 
-        if (player != null) {
-            player.updateScoreTimer(tpf);
-        }
-
         if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
             pick.ifPresent(hit -> {
