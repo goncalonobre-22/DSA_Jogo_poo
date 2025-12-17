@@ -20,16 +20,23 @@ public class FurnaceState {
     public int getPhase() {
         if (inputStack == null || fuelLeft <= 0.0f) return 0;
         // Fase 1 a 4
-        return (int) Math.min(4, Math.ceil(meltProgress / PHASE_DURATION));
+        return (int) (meltProgress / PHASE_DURATION);
     }
 
     /**
      * Coloca um item no slot de Input (se for uma receita válida).
      */
     public boolean setInput(Item item) {
-        if (inputStack == null && FurnaceRegistry.findRecipe(item) != null) {
-            inputStack = new Stacks(item, 1);
-            meltProgress = 0.0f;
+        if (inputStack == null) {
+            if (FurnaceRegistry.findRecipe(item) != null) {
+                inputStack = new Stacks(item, 1);
+                meltProgress = 0.0f;
+                return true;
+            }
+        }
+        // 2. Se o slot já tiver o mesmo item e não estiver cheio (MAX_STACK_SIZE)
+        else if (inputStack.isSameItem(item) && !inputStack.isFull()) {
+            inputStack.addAmount(1);
             return true;
         }
         return false;

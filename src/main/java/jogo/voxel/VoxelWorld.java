@@ -267,14 +267,6 @@ public class VoxelWorld {
         return -1;
     }
 
-//    public int getTopSolidY(int x, int z) {
-//        if (x < 0 || z < 0 || x >= sizeX || z >= sizeZ) return -1;
-//        for (int y = sizeY - 1; y >= 0; y--) {
-//            if (palette.get(getBlock(x, y, z)).isSolid()) return y;
-//        }
-//        return -1;
-//    }
-
     public Vector3f getRecommendedSpawn() {
         int cx = sizeX / 2;
         int cz = sizeZ / 2;

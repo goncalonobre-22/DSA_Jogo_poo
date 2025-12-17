@@ -14,11 +14,4 @@ public abstract class PlaceableItem extends Item{
     public byte getBlockId() {
         return blockId;
     }
-
-    /**
-     * Verifica se este item pode ser colocado como bloco.
-     */
-    public boolean isPlaceable() {
-        return true;
-    }
 }

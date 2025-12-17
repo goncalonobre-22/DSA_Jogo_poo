@@ -8,7 +8,8 @@ public class Stacks {
     private Item item;
 
     public Stacks(Item item, int amount) {
-        this.amount = Math.min(amount, MAX_STACK_SIZE);
+        //this.amount = Math.min(amount, MAX_STACK_SIZE);
+        this.amount = amount;
         this.item = item;
     }
 
@@ -20,16 +21,14 @@ public class Stacks {
         return amount;
     }
 
-    public void setAmount(int amount) {
-        this.amount = Math.max(0, Math.min(amount, MAX_STACK_SIZE));
-    }
-
     public void addAmount(int add) {
-        this.amount = Math.min(amount + add, MAX_STACK_SIZE);
+        //this.amount = Math.min(amount + add, MAX_STACK_SIZE);
+        this.amount += add;
     }
 
     public void removeAmount(int remove) {
-        this.amount = Math.max(0, amount - remove);
+        //this.amount = Math.max(0, amount - remove);
+        this.amount -= remove;
     }
 
     public boolean isFull() {

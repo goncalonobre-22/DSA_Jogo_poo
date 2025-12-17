@@ -87,7 +87,7 @@ public class PlayerAppState extends BaseAppState {
         // Local light source that follows the player's head
         playerLight = new PointLight();
         playerLight.setColor(new com.jme3.math.ColorRGBA(0.6f, 0.55f, 0.5f, 1f));
-        playerLight.setRadius(12f);
+        playerLight.setRadius(70f); //12
         rootNode.addLight(playerLight);
 
         // Spawn at recommended location

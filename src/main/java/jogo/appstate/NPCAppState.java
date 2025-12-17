@@ -122,7 +122,7 @@ public class NPCAppState extends BaseAppState {
 
         // --- NOVO: VACA (Cow) ---
         else if (npc instanceof Cow) {
-            mat.setColor("Color", com.jme3.math.ColorRGBA.Brown); // Cor castanha sólida
+            mat.setColor("Color", com.jme3.math.ColorRGBA.Brown);// Cor castanha sólida
         }
 
         // --- NOVO: CURANDEIRO (Healer) ---
