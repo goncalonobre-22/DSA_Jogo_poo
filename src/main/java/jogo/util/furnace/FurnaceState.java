@@ -35,7 +35,7 @@ public class FurnaceState {
             }
         }
         // 2. Se o slot já tiver o mesmo item e não estiver cheio (MAX_STACK_SIZE)
-        else if (inputStack.isSameItem(item) && !inputStack.isFull()) {
+        else if (inputStack.isSameItem(item) && inputStack.isFull()) {
             inputStack.addAmount(1);
             return true;
         }
@@ -96,11 +96,12 @@ public class FurnaceState {
                 // Tentar adicionar ao output
                 if (outputStack == null) {
                     outputStack = new Stacks(outputItem, 1);
-                    inputStack = null; // Item de input consumido
+                    inputStack.removeAmount(1);// Item de input consumido
                     meltProgress = 0.0f; // Prepara para o próximo item
-                } else if (outputStack.isSameItem(outputItem) && !outputStack.isFull()) {
+                } else if (outputStack.isSameItem(outputItem) && outputStack.isFull()) {
                     outputStack.addAmount(1);
-                    inputStack = null;
+                    inputStack.removeAmount(1);
+                    if (inputStack.getAmount() == 0) inputStack = null;
                     meltProgress = 0.0f;
                 }
                 // Se o output estiver bloqueado, o meltProgress fica em 8.0f (estado 'done').

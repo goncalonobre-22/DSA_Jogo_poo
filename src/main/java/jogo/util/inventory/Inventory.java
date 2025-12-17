@@ -96,6 +96,4 @@ public class Inventory {
     public Stacks getSelectedItem() {
         return getSlot(selectedSlot);
     }
-
-
 }

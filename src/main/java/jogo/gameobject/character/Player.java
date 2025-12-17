@@ -132,7 +132,6 @@ public class Player extends Character {
     /** NOVO: Adiciona a quantidade de pontos ao score (e.g. 1 por bloco). */
     public void incrementScore(int amount) {
         this.score += amount;
-        // Opcional: System.out.println("Player Score: " + this.score);
     }
 
     /** NOVO: Adiciona um evento de incremento de pontuação à fila. */

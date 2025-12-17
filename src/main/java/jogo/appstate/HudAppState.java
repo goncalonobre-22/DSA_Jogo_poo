@@ -952,6 +952,11 @@ public class HudAppState extends BaseAppState {
                 if (inv.removeItem(itemToPut, 1)) {
                     canPlace = currentFurnaceState.setInput(itemToPut); // Coloca e inicia melt (se não estiver a derreter)
                 }
+            } else if (currentFurnaceState.inputStack != null && currentFurnaceState.inputStack.isSameItem(itemToPut) && currentFurnaceState.inputStack.isFull()) {
+                if (inv.removeItem(itemToPut, 1)) {
+                    currentFurnaceState.inputStack.addAmount(1); // Empilha
+                    canPlace = true;
+                }
             }
             slotName = "Input";
         } else if (slotType == FURNACE_SLOT_FUEL) {
@@ -959,7 +964,7 @@ public class HudAppState extends BaseAppState {
                 if (inv.removeItem(itemToPut, 1)) {
                     canPlace = currentFurnaceState.setFuel(itemToPut);
                 }
-            } else if (currentFurnaceState.fuelStack != null && currentFurnaceState.fuelStack.isSameItem(itemToPut) && !currentFurnaceState.fuelStack.isFull()) {
+            } else if (currentFurnaceState.fuelStack != null && currentFurnaceState.fuelStack.isSameItem(itemToPut) && currentFurnaceState.fuelStack.isFull()) {
                 if (inv.removeItem(itemToPut, 1)) {
                     currentFurnaceState.fuelStack.addAmount(1); // Empilha
                     canPlace = true;

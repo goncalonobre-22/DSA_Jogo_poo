@@ -8,8 +8,7 @@ import java.util.*;
 
 public class ItemRegistry {
     private static final Map<Byte, Class<? extends PlaceableItem>> blockToItem = new HashMap<>();
-    private static final Map<String, Class<? extends Item>> nameToItem = new HashMap<>();
-    private static final List<Class<? extends Item>> recipeClasses = new ArrayList<>();
+   // private static final Map<String, Class<? extends Item>> nameToItem = new HashMap<>();
 
 
     static {
@@ -26,13 +25,6 @@ public class ItemRegistry {
 
     private static void registerBlockItem(byte blockId, Class<? extends PlaceableItem> itemClass) {
         blockToItem.put(blockId, itemClass);
-        try {
-            Item instance = itemClass.getDeclaredConstructor().newInstance();
-            nameToItem.put(instance.getName(), itemClass);
-        } catch (Exception e) {
-            System.err.println("Erro ao registar item: " + itemClass.getName());
-            e.printStackTrace();
-        }
     }
 
     // Cria o item correspondente ao blockId

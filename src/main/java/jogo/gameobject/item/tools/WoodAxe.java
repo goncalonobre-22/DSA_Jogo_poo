@@ -38,6 +38,11 @@ public class WoodAxe extends Tool {
     }
 
     @Override
+    public float getAttackMultiplier() {
+        return 3f;
+    }
+
+    @Override
     public void onInteract() {
         if (worldAppState == null || camera == null) {
             System.out.println("Erro: WoodAxe não tem contexto de mundo/câmera injetado.");

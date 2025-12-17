@@ -22,6 +22,7 @@ import jogo.gameobject.npc.pacifico.Cow;
 import jogo.gameobject.npc.pacifico.Healer;
 import jogo.util.breakingblocks.BreakingBlockSystem;
 import jogo.util.inventory.ItemRegistry;
+import jogo.util.inventory.Stacks;
 import jogo.voxel.VoxelBlockType;
 import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
@@ -39,7 +40,7 @@ public class WorldAppState extends BaseAppState {
     private PlayerAppState playerAppState;
 
     // Adicionado do inventário
-    private Player player;
+    private final Player player;
 
     private BreakingBlockSystem breakingBlockSystem;
 
@@ -102,78 +103,7 @@ public class WorldAppState extends BaseAppState {
         // compute recommended spawn
         spawnPosition = voxelWorld.getRecommendedSpawn();
 
-        spawnNPCs();
-    }
-
-    private void spawnNPCs() {
-
-        int worldX = 320;
-        int worldZ = 320;
-
-        int slimeCount = 8;
-        int zombieCount = 5;
-        int cowCount = 4;
-        int healerCount = 10;
-
-        // --- 1. SPAWN DE SLIMES (Seu código existente) ---
-        for (int i = 0; i < slimeCount; i++) {
-
-            int x = (int) (Math.random() * worldX);
-            int z = (int) (Math.random() * worldZ);
-
-            int rawY = voxelWorld.getTopSolidY(x, z);
-
-            if (rawY < 0) continue;
-
-            int y = rawY + 1;
-
-            Slime slime = new Slime("Slime" + i, new Vec3(x, y, z), voxelWorld, this.player);
-            npcList.add(slime);
-
-            System.out.println("Spawn Slime: " + slime.getName() +
-                    " em X=" + x + " Y=" + y + " Z=" + z);
-        }
-
-        // --- 2. SPAWN DE ZOMBIES (NOVO) ---
-        for (int i = 0; i < zombieCount; i++) {
-
-            int x = (int) (Math.random() * worldX);
-            int z = (int) (Math.random() * worldZ);
-
-            int rawY = voxelWorld.getTopSolidY(x, z);
-
-            if (rawY < 0) continue;
-
-            int y = rawY + 1;
-
-            Zombie zombie = new Zombie("Zombie" + i, new Vec3(x, y, z), voxelWorld, this.player);
-            npcList.add(zombie);
-
-            System.out.println("Spawn Zombie: " + zombie.getName() +
-                    " em X=" + x + " Y=" + y + " Z=" + z);
-        }
-        for (int i = 0; i < cowCount; i++) {
-            int x = (int) (Math.random() * worldX);
-            int z = (int) (Math.random() * worldZ);
-            int rawY = voxelWorld.getTopSolidY(x, z);
-            if (rawY < 0) continue;
-            int y = rawY + 1;
-
-            Cow cow = new Cow("Cow" + i, new Vec3(x, y, z), voxelWorld, this.player);
-            npcList.add(cow);
-            System.out.println("Spawn Cow: " + cow.getName() + " em X=" + x + " Y=" + y + " Z=" + z);
-        }
-        for (int i = 0; i < healerCount; i++) {
-            int x = (int) (Math.random() * worldX);
-            int z = (int) (Math.random() * worldZ);
-            int rawY = voxelWorld.getTopSolidY(x, z);
-            if (rawY < 0) continue;
-            int y = rawY + 1;
-
-            Healer healer = new Healer("Healer" + i, new Vec3(x, y, z), voxelWorld, this.player);
-            npcList.add(healer);
-            System.out.println("Spawn Healer: " + healer.getName() + " em X=" + x + " Y=" + y + " Z=" + z);
-        }
+        //spawnNPCs();
     }
 
     public com.jme3.math.Vector3f getRecommendedSpawnPosition() {
@@ -186,101 +116,11 @@ public class WorldAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
-        if (breakingBlockSystem != null) {
-            breakingBlockSystem.update(tpf);
-        }
-
+        setBreakingBlockSystem(tpf);
         checkFallingBlocks();
-
-        if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
-            var pick = voxelWorld.pickFirstSolid(cam, 6f);
-            pick.ifPresent(hit -> {
-                VoxelWorld.Vector3i cell = hit.cell;
-                byte blockId = voxelWorld.getBlock(cell.x, cell.y, cell.z);
-                Item heldItem = null;
-                if (player != null) {
-                    var selectedStack = player.getInventory().getSelectedItem();
-                    if (selectedStack != null && selectedStack.getAmount() > 0) {
-                        heldItem = selectedStack.getItem();
-                    }
-                }
-
-                boolean shouldBreak = breakingBlockSystem.hitBlock(cell.x, cell.y, cell.z, heldItem);
-
-                if (shouldBreak) {
-                    if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
-                        // Cria o item correspondente ao bloco
-                        if (player != null && blockId != VoxelPalette.AIR_ID) {
-                            PlaceableItem item = ItemRegistry.createItemFromBlock(blockId);
-                            if (item != null) { // ITEM CRIADO COM SUCESSO
-                                boolean added = player.getInventory().addItem(item, 1);
-                                if (added) {
-                                    System.out.println(item.getName() + " adicionado ao inventário!");
-                                } else {
-                                    System.out.println("Inventário cheio!");
-                                }
-                            } else {
-                                System.out.println("Falha na criação do item para bloco ID: " + blockId);
-                            }
-                        }
-
-                        voxelWorld.rebuildDirtyChunks(physicsSpace);
-                        playerAppState.refreshPhysics();
-                    }
-
-                }
-            });
-        }
-
-        // Adicionado por causa do inventário
-
-        if (input != null && input.isMouseCaptured() && input.consumePlaceRequested()) {
-            var pick = voxelWorld.pickFirstSolid(cam, 6f);
-            pick.ifPresent(hit -> {
-                VoxelWorld.Vector3i cell = hit.cell;
-                Vector3f normal = hit.normal;
-
-                int placeX = cell.x + (int)normal.x;
-                int placeY = cell.y + (int)normal.y;
-                int placeZ = cell.z + (int)normal.z;
-
-                if (player != null) {
-                    var selectedStack = player.getInventory().getSelectedItem();
-
-                    // 1. Verificar se existe item selecionado
-                    if (selectedStack == null || selectedStack.getAmount() <= 0) {
-                        System.out.println("Nenhum item selecionado ou pilha vazia!");
-                        return;
-                    }
-
-                    Item item = selectedStack.getItem();
-
-                    // 2. Verificar se o item é colocável
-                    if (!(item instanceof PlaceableItem placeableItem)) {
-                        System.out.println(item.getName() + "' não é um bloco colocável.");
-                        return;
-                    }
-
-                    byte blockId = placeableItem.getBlockId();
-
-                    // 3. Verificar se o local de colocação está ocupado
-                    if (voxelWorld.getBlock(placeX, placeY, placeZ) != VoxelPalette.AIR_ID) {
-                        System.out.println("Não é possível colocar: Local já ocupado.");
-                        return;
-                    }
-
-                    // SUCESSO: Colocar o Bloco e remover do inventário
-                    voxelWorld.setBlock(placeX, placeY, placeZ, blockId);
-
-                    player.getInventory().removeItem(item, 1);
-                    System.out.println("Bloco '" + item.getName() + "' colocado!");
-
-                    voxelWorld.rebuildDirtyChunks(physicsSpace);
-                    playerAppState.refreshPhysics();
-                }
-            });
-
-        }
+        setBrokenBlockToInventory();
+        setPlacedBlockInWorld();
+        setFurnaceUpdateTimer(tpf);
 
         if (input != null && input.consumeToggleShadingRequested()) {
             voxelWorld.toggleRenderDebug();
@@ -292,19 +132,8 @@ public class WorldAppState extends BaseAppState {
             if (playerAppState != null && playerAppState.getPlayerPosition() != null) {
                 voxelWorld.updateTickableBlocks(playerAppState.getPlayerPosition(), WORLD_TICK_RATE, physicsSpace);
             }
-            worldTickTimer = 0.0f; // Reinicia o timer
+            worldTickTimer = 0.0f;
         }
-
-        furnaceUpdateTimer += tpf;
-        if (furnaceUpdateTimer >= FURNACE_UPDATE_RATE) {
-            if (voxelWorld != null) {
-                // O VoxelWorld gere o tick em todos os FurnaceState
-                voxelWorld.updateAllFurnaces(furnaceUpdateTimer, physicsSpace);
-            }
-            furnaceUpdateTimer = 0.0f; // Reinicia o timer
-        }
-
-
     }
 
     @Override
@@ -394,10 +223,189 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    public void setBreakingBlockSystem(float tpf) {
+        if (breakingBlockSystem != null) {
+            breakingBlockSystem.update(tpf);
+        }
+    }
+
+    public void setBrokenBlockToInventory() {
+        if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
+            var pick = voxelWorld.pickFirstSolid(cam, 6f);
+            pick.ifPresent(hit -> {
+                VoxelWorld.Vector3i cell = hit.cell;
+                byte blockId = voxelWorld.getBlock(cell.x, cell.y, cell.z);
+                Item heldItem = null;
+                if (player != null) {
+                    Stacks selectedStack = player.getInventory().getSelectedItem();
+                    if (selectedStack != null && selectedStack.getAmount() > 0) {
+                        heldItem = selectedStack.getItem();
+                    }
+                }
+
+                boolean shouldBreak = breakingBlockSystem.hitBlock(cell.x, cell.y, cell.z, heldItem);
+
+                if (shouldBreak) {
+                    if (voxelWorld.breakAt(cell.x, cell.y, cell.z)) {
+                        // Cria o item correspondente ao bloco
+                        if (player != null && blockId != VoxelPalette.AIR_ID) {
+                            PlaceableItem item = ItemRegistry.createItemFromBlock(blockId);
+                            if (item != null) { // ITEM CRIADO COM SUCESSO
+                                boolean added = player.getInventory().addItem(item, 1);
+                                if (added) {
+                                    System.out.println(item.getName() + " adicionado ao inventário!");
+                                } else {
+                                    System.out.println("Inventário cheio!");
+                                }
+                            } else {
+                                System.out.println("Falha na criação do item para bloco ID: " + blockId);
+                            }
+                        }
+
+                        voxelWorld.rebuildDirtyChunks(physicsSpace);
+                        playerAppState.refreshPhysics();
+                    }
+
+                }
+            });
+        }
+    }
+
+    public void setPlacedBlockInWorld() {
+        if (input != null && input.isMouseCaptured() && input.consumePlaceRequested()) {
+            var pick = voxelWorld.pickFirstSolid(cam, 6f);
+            pick.ifPresent(hit -> {
+                VoxelWorld.Vector3i cell = hit.cell;
+                Vector3f normal = hit.normal;
+
+                int placeX = cell.x + (int)normal.x;
+                int placeY = cell.y + (int)normal.y;
+                int placeZ = cell.z + (int)normal.z;
+
+                if (player != null) {
+                    var selectedStack = player.getInventory().getSelectedItem();
+
+                    // 1. Verificar se existe item selecionado
+                    if (selectedStack == null || selectedStack.getAmount() <= 0) {
+                        System.out.println("Nenhum item selecionado ou pilha vazia!");
+                        return;
+                    }
+
+                    Item item = selectedStack.getItem();
+
+                    // 2. Verificar se o item é colocável
+                    if (!(item instanceof PlaceableItem placeableItem)) {
+                        System.out.println(item.getName() + "' não é um bloco colocável.");
+                        return;
+                    }
+
+                    byte blockId = placeableItem.getBlockId();
+
+                    // 3. Verificar se o local de colocação está ocupado
+                    if (voxelWorld.getBlock(placeX, placeY, placeZ) != VoxelPalette.AIR_ID) {
+                        System.out.println("Não é possível colocar: Local já ocupado.");
+                        return;
+                    }
+
+                    // SUCESSO: Colocar o Bloco e remover do inventário
+                    voxelWorld.setBlock(placeX, placeY, placeZ, blockId);
+
+                    player.getInventory().removeItem(item, 1);
+                    System.out.println("Bloco '" + item.getName() + "' colocado!");
+
+                    voxelWorld.rebuildDirtyChunks(physicsSpace);
+                    playerAppState.refreshPhysics();
+                }
+            });
+
+        }
+    }
+
+    public void setFurnaceUpdateTimer(float tpf) {
+        furnaceUpdateTimer += tpf;
+        if (furnaceUpdateTimer >= FURNACE_UPDATE_RATE) {
+            if (voxelWorld != null) {
+                // O VoxelWorld gere o tick em todos os FurnaceState
+                voxelWorld.updateAllFurnaces(furnaceUpdateTimer, physicsSpace);
+            }
+            furnaceUpdateTimer = 0.0f; // Reinicia o timer
+        }
+    }
+
+    private void spawnNPCs() {
+
+        int worldX = 320;
+        int worldZ = 320;
+
+        int slimeCount = 8;
+        int zombieCount = 5;
+        int cowCount = 4;
+        int healerCount = 10;
+
+        // --- 1. SPAWN DE SLIMES (Seu código existente) ---
+        for (int i = 0; i < slimeCount; i++) {
+
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+
+            int rawY = voxelWorld.getTopSolidY(x, z);
+
+            if (rawY < 0) continue;
+
+            int y = rawY + 1;
+
+            Slime slime = new Slime("Slime" + i, new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(slime);
+
+            System.out.println("Spawn Slime: " + slime.getName() +
+                    " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+
+        // --- 2. SPAWN DE ZOMBIES (NOVO) ---
+        for (int i = 0; i < zombieCount; i++) {
+
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+
+            int rawY = voxelWorld.getTopSolidY(x, z);
+
+            if (rawY < 0) continue;
+
+            int y = rawY + 1;
+
+            Zombie zombie = new Zombie("Zombie" + i, new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(zombie);
+
+            System.out.println("Spawn Zombie: " + zombie.getName() +
+                    " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+        for (int i = 0; i < cowCount; i++) {
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+            int rawY = voxelWorld.getTopSolidY(x, z);
+            if (rawY < 0) continue;
+            int y = rawY + 1;
+
+            Cow cow = new Cow("Cow" + i, new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(cow);
+            System.out.println("Spawn Cow: " + cow.getName() + " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+        for (int i = 0; i < healerCount; i++) {
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+            int rawY = voxelWorld.getTopSolidY(x, z);
+            if (rawY < 0) continue;
+            int y = rawY + 1;
+
+            Healer healer = new Healer("Healer" + i, new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(healer);
+            System.out.println("Spawn Healer: " + healer.getName() + " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+    }
+
     public Node getWorldNode() {
         return worldNode;
     }
-
 
     @Override
     protected void onEnable() { }

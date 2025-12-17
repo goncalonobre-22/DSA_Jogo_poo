@@ -31,7 +31,7 @@ public class RecipeRegistry {
                         " W ",
                         " W ",
                         "   "
-                },
+                } ,
                 // W corresponde ao bloco de madeira
                 Map.of('W', new WoodBlockItem())
         ));

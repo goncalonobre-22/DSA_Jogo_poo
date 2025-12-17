@@ -14,7 +14,6 @@ import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import jogo.gameobject.character.Player;
 import jogo.voxel.VoxelBlockType;
-import jogo.voxel.VoxelPalette;
 import jogo.voxel.VoxelWorld;
 
 public class PlayerAppState extends BaseAppState {
@@ -225,13 +224,13 @@ public class PlayerAppState extends BaseAppState {
             return null;
         }
 
-        Vector3f playerWorldPos = playerNode.getWorldTranslation();
+
         VoxelWorld vw = world.getVoxelWorld();
 
         // O bloco sob o jogador (y da base - um pequeno delta)
-        int blockX = (int) Math.floor(playerWorldPos.x);
-        int blockY = (int) Math.floor(playerWorldPos.y - 0.1f); // 0.1f para garantir que está no bloco de baixo
-        int blockZ = (int) Math.floor(playerWorldPos.z);
+        int blockX = (int) getPlayerPosition().x;
+        int blockY = (int) (getPlayerPosition().y - 1f);
+        int blockZ = (int) getPlayerPosition().z;
 
         byte blockId = vw.getBlock(blockX, blockY, blockZ);
         // A Palette garante que retorna um VoxelBlockType (AirBlockType para IDs inválidos),

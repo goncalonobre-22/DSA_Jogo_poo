@@ -8,7 +8,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.texture.Texture2D;
 import jogo.util.Hit;
@@ -26,9 +25,6 @@ public class VoxelWorld {
     private final int baseHeight = 20;
     private final int amplitude = 10;
     private final float frequency = 0.05f;
-    private final int dirtLayers = 3;
-    private final int ironMaxHeight = 12;
-    private final float ironChance = 0.02f;
     private static final byte AIR = VoxelPalette.AIR_ID;
     private static final byte GRASS = VoxelPalette.GRASS_ID;
     private static final byte WOOD = VoxelPalette.WOOD_ID;

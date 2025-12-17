@@ -67,10 +67,6 @@ public class InteractionAppState extends BaseAppState {
                 // 2. Chama o método de interação para QUALQUER item selecionado
                 selectedItem.onInteract();
                 System.out.println("Interagiu com o item selecionado: " + selectedItem.getName());
-
-                // A lógica de consumo agora está dentro do onInteract() do item (ex.: Bread.java).
-
-                return; // O item selecionado foi ativado. Interrompe as interações com o mundo.
             }
         }
 
