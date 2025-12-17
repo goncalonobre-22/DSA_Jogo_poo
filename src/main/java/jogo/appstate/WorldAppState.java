@@ -17,6 +17,9 @@ import jogo.gameobject.item.Item;
 import jogo.gameobject.item.PlaceableItem;
 import jogo.gameobject.npc.NPC;
 import jogo.gameobject.npc.hostil.Slime;
+import jogo.gameobject.npc.hostil.Zombie;
+import jogo.gameobject.npc.pacifico.Cow;
+import jogo.gameobject.npc.pacifico.Healer;
 import jogo.util.breakingblocks.BreakingBlockSystem;
 import jogo.util.inventory.ItemRegistry;
 import jogo.voxel.VoxelBlockType;
@@ -108,7 +111,11 @@ public class WorldAppState extends BaseAppState {
         int worldZ = 320;
 
         int slimeCount = 8;
+        int zombieCount = 5;
+        int cowCount = 4;
+        int healerCount = 10;
 
+        // --- 1. SPAWN DE SLIMES (Seu código existente) ---
         for (int i = 0; i < slimeCount; i++) {
 
             int x = (int) (Math.random() * worldX);
@@ -118,14 +125,54 @@ public class WorldAppState extends BaseAppState {
 
             if (rawY < 0) continue;
 
-            // CORREÇÃO: Nasce sempre 1 unidade acima do bloco sólido, sem limite Y arbitrário.
             int y = rawY + 1;
 
-            Slime slime = new Slime("Slime", new Vec3(x, y, z), voxelWorld, this.player);
+            Slime slime = new Slime("Slime" + i, new Vec3(x, y, z), voxelWorld, this.player);
             npcList.add(slime);
 
-            System.out.println("Spawn slime: " + slime.getName() +
+            System.out.println("Spawn Slime: " + slime.getName() +
                     " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+
+        // --- 2. SPAWN DE ZOMBIES (NOVO) ---
+        for (int i = 0; i < zombieCount; i++) {
+
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+
+            int rawY = voxelWorld.getTopSolidY(x, z);
+
+            if (rawY < 0) continue;
+
+            int y = rawY + 1;
+
+            Zombie zombie = new Zombie("Zombie" + i, new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(zombie);
+
+            System.out.println("Spawn Zombie: " + zombie.getName() +
+                    " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+        for (int i = 0; i < cowCount; i++) {
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+            int rawY = voxelWorld.getTopSolidY(x, z);
+            if (rawY < 0) continue;
+            int y = rawY + 1;
+
+            Cow cow = new Cow("Cow" + i, new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(cow);
+            System.out.println("Spawn Cow: " + cow.getName() + " em X=" + x + " Y=" + y + " Z=" + z);
+        }
+        for (int i = 0; i < healerCount; i++) {
+            int x = (int) (Math.random() * worldX);
+            int z = (int) (Math.random() * worldZ);
+            int rawY = voxelWorld.getTopSolidY(x, z);
+            if (rawY < 0) continue;
+            int y = rawY + 1;
+
+            Healer healer = new Healer("Healer" + i, new Vec3(x, y, z), voxelWorld, this.player);
+            npcList.add(healer);
+            System.out.println("Spawn Healer: " + healer.getName() + " em X=" + x + " Y=" + y + " Z=" + z);
         }
     }
 

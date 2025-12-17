@@ -1,6 +1,5 @@
 package jogo.appstate;
 
-// ... (imports) ...
 
 import com.jme3.app.Application;
 import com.jme3.app.state.BaseAppState;
@@ -16,13 +15,16 @@ import jogo.engine.RenderIndex;
 import jogo.gameobject.npc.NPC;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.npc.hostil.Slime;
+import jogo.gameobject.npc.hostil.Zombie;
+import jogo.gameobject.npc.pacifico.Cow;
+import jogo.gameobject.npc.pacifico.Healer;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class NPCAppState extends BaseAppState {
 
-//    private final Node worldNode;
+    //    private final Node worldNode;
     private final Player player;
     private final RenderIndex renderIndex;
     private final GameRegistry registry; // Não usado para NPC, mas bom para consistência
@@ -57,43 +59,91 @@ public class NPCAppState extends BaseAppState {
         }
     }
 
-    private Node create3DModel(Application app, NPC npc) {
+    private com.jme3.scene.Node create3DModel(com.jme3.app.Application app, jogo.gameobject.npc.NPC npc) {
 
-        Node parent = new Node(npc.getName());
+        com.jme3.scene.Node parent = new com.jme3.scene.Node(npc.getName());
+        com.jme3.scene.Geometry geo;
 
-        // ---- SHAPE DO SLIME 3D ----
-        // Raio 0.5f (Original) - Agora é a altura lógica da colisão.
-        Sphere sphere = new Sphere(16, 16, 0.5f);
-        Geometry geo = new Geometry("slime", sphere);
+        // --- 1. LÓGICA DA GEOMETRIA ---
+        if (npc instanceof jogo.gameobject.npc.hostil.Slime) {
+            com.jme3.scene.shape.Sphere sphere = new com.jme3.scene.shape.Sphere(16, 16, 0.5f);
+            geo = new com.jme3.scene.Geometry("slime", sphere);
+            geo.setLocalScale(1f, 0.6f, 1f);
+            geo.setLocalTranslation(0, 0.3f, 0);
+        }
+        else if (npc instanceof jogo.gameobject.npc.hostil.Zombie) {
+            // Caixa de 0.6m de largura/profundidade e 1.8m de altura
+            com.jme3.scene.shape.Box box = new com.jme3.scene.shape.Box(0.3f, 0.9f, 0.3f);
+            geo = new com.jme3.scene.Geometry("zombie", box);
+            // Desloca para assentar no chão (Y=0).
+            geo.setLocalTranslation(0, 0.9f, 0);
+        }
+        // --- NOVO: VACA (Cow) ---
+        else if (npc instanceof jogo.gameobject.npc.pacifico.Cow) {
+            // Modelo maior e mais gordo: 1.6m x 1.2m x 0.8m
+            com.jme3.scene.shape.Box body = new com.jme3.scene.shape.Box(0.8f, 0.6f, 0.4f);
+            geo = new com.jme3.scene.Geometry("cow", body);
+            // Altura total 1.2m, desloca o centro 0.6f
+            geo.setLocalTranslation(0, 0.6f, 0);
+        }
+        // --- NOVO: CURANDEIRO (Healer) ---
+        else if (npc instanceof jogo.gameobject.npc.pacifico.Healer) {
+            // Modelo humanoide simples: 0.4m x 1.6m x 0.4m
+            com.jme3.scene.shape.Box body = new com.jme3.scene.shape.Box(0.2f, 0.8f, 0.2f);
+            geo = new com.jme3.scene.Geometry("healer", body);
+            // Altura total 1.6m, desloca o centro 0.8f
+            geo.setLocalTranslation(0, 0.8f, 0);
+        }
+        // --- FALLBACK ---
+        else {
+            geo = new com.jme3.scene.Geometry("default", new com.jme3.scene.shape.Sphere(8, 8, 0.1f));
+        }
 
-        // ---- MATERIAL: UNWASHED.J3MD COM MAGENTA/VERDE ---
-        Material mat = new Material(app.getAssetManager(),
+
+        // --- 2. MATERIAL (Aplicação Universal) ---
+        com.jme3.material.Material mat = new com.jme3.material.Material(app.getAssetManager(),
                 "Common/MatDefs/Misc/Unshaded.j3md");
 
-        // Define a cor que você viu funcionar (Verde, neste caso)
-        mat.setColor("Color", com.jme3.math.ColorRGBA.Green);
+        // --- SLIME: MATERIAL E TEXTURA ---
+        if (npc instanceof jogo.gameobject.npc.hostil.Slime) {
+            mat.setColor("Color", com.jme3.math.ColorRGBA.Green);
+            try {
+                mat.setTexture("ColorMap", app.getAssetManager().loadTexture("Textures/NPC/slime.png"));
+                mat.getAdditionalRenderState().setBlendMode(com.jme3.material.RenderState.BlendMode.Alpha);
+            } catch (Exception e) {
+                System.err.println("ERRO: Falha ao carregar textura Slime. Usa VERDE.");
+            }
+        }
 
-        // Tenta carregar a textura (e define transparência)
-        try {
-            mat.setTexture("ColorMap", app.getAssetManager().loadTexture("Textures/slime.png"));
-            mat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-        } catch (Exception e) {
-            System.err.println("ERRO: Falha ao carregar textura. A Slime aparece a VERDE.");
+        // --- ZUMBI: MATERIAL E TEXTURA ---
+        else if (npc instanceof jogo.gameobject.npc.hostil.Zombie) {
+            mat.setColor("Color", com.jme3.math.ColorRGBA.Blue); // Cor de fallback
+            try {
+                mat.setTexture("ColorMap", app.getAssetManager().loadTexture("Textures/NPC/zombie.png"));
+            } catch (Exception e) {
+                System.err.println("ERRO: Falha ao carregar textura Zumbi. Usa AZUL SÓLIDO.");
+            }
+        }
+
+        // --- NOVO: VACA (Cow) ---
+        else if (npc instanceof jogo.gameobject.npc.pacifico.Cow) {
+            mat.setColor("Color", com.jme3.math.ColorRGBA.Brown); // Cor castanha sólida
+        }
+
+        // --- NOVO: CURANDEIRO (Healer) ---
+        else if (npc instanceof jogo.gameobject.npc.pacifico.Healer) {
+            mat.setColor("Color", com.jme3.math.ColorRGBA.Yellow); // Cor amarela sólida
+        }
+
+        // --- FALLBACK GERAL ---
+        else {
+            mat.setColor("Color", com.jme3.math.ColorRGBA.White);
         }
 
         geo.setMaterial(mat);
-
-        // Achatamento da slime
-        geo.setLocalScale(1f, 0.6f, 1f);
-
-        // CORREÇÃO CRÍTICA DE ALTURA: O centro do modelo deve estar 0.3f acima
-        // da posição lógica (Y) para o modelo assentar perfeitamente no chão.
-        // (Raio 0.5 * Escala 0.6 = 0.3 de altura da metade inferior).
-        geo.setLocalTranslation(0, 0.3f, 0);
-
         parent.attachChild(geo);
 
-        // Posição inicial (vem da posição lógica X, Y, Z da Slime)
+        // Posição Final da Node (que é o ponto de spawn lógico)
         parent.setLocalTranslation(
                 npc.getPosition().x,
                 npc.getPosition().y,
@@ -106,18 +156,31 @@ public class NPCAppState extends BaseAppState {
     @Override
     public void update(float tpf) {
 
+        if (player == null) return;
+
         for (NPC npc : npcList) {
 
-            if (npc instanceof Slime slime && player != null) {
+            if (npc instanceof Slime slime) {
                 slime.setTarget(player.getPosition());
             }
+            else if (npc instanceof Zombie zombie) {
+                zombie.setTarget(player.getPosition());
+            }
 
+            // --- NOVO: Cow Target ---
+            else if (npc instanceof Cow cow) {
+                cow.setTarget(player.getPosition());
+            }
 
+            // --- NOVO: Healer Target ---
+            else if (npc instanceof Healer healer) {
+                healer.setTarget(player.getPosition());
+            }
 
 
             npc.updateAI(tpf);
 
-            Node model = models.get(npc);
+            com.jme3.scene.Node model = models.get(npc);
             if (model != null) {
                 model.setLocalTranslation(
                         npc.getPosition().x,

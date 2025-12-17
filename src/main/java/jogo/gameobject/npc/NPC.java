@@ -10,6 +10,9 @@ import jogo.gameobject.item.Tool;
 public abstract class NPC extends Character {
     public NPCAppState appStateHook;
 
+    protected float verticalVelocity = 0;
+    protected static final float GRAVITY = 24.0f;
+
     public NPC(String name) {
         super(name);
     }
