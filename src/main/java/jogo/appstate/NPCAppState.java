@@ -3,12 +3,7 @@ package jogo.appstate;
 
 import com.jme3.app.Application;
 import com.jme3.app.state.BaseAppState;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Sphere;
-import com.jme3.material.RenderState;
 
 import jogo.engine.GameRegistry;
 import jogo.engine.RenderIndex;
@@ -79,7 +74,7 @@ public class NPCAppState extends BaseAppState {
             geo.setLocalTranslation(0, 0.9f, 0);
         }
         // --- NOVO: VACA (Cow) ---
-        else if (npc instanceof jogo.gameobject.npc.pacifico.Cow) {
+        else if (npc instanceof Cow) {
             // Modelo maior e mais gordo: 1.6m x 1.2m x 0.8m
             com.jme3.scene.shape.Box body = new com.jme3.scene.shape.Box(0.8f, 0.6f, 0.4f);
             geo = new com.jme3.scene.Geometry("cow", body);
@@ -87,7 +82,7 @@ public class NPCAppState extends BaseAppState {
             geo.setLocalTranslation(0, 0.6f, 0);
         }
         // --- NOVO: CURANDEIRO (Healer) ---
-        else if (npc instanceof jogo.gameobject.npc.pacifico.Healer) {
+        else if (npc instanceof Healer) {
             // Modelo humanoide simples: 0.4m x 1.6m x 0.4m
             com.jme3.scene.shape.Box body = new com.jme3.scene.shape.Box(0.2f, 0.8f, 0.2f);
             geo = new com.jme3.scene.Geometry("healer", body);
@@ -126,12 +121,12 @@ public class NPCAppState extends BaseAppState {
         }
 
         // --- NOVO: VACA (Cow) ---
-        else if (npc instanceof jogo.gameobject.npc.pacifico.Cow) {
+        else if (npc instanceof Cow) {
             mat.setColor("Color", com.jme3.math.ColorRGBA.Brown); // Cor castanha sólida
         }
 
         // --- NOVO: CURANDEIRO (Healer) ---
-        else if (npc instanceof jogo.gameobject.npc.pacifico.Healer) {
+        else if (npc instanceof Healer) {
             mat.setColor("Color", com.jme3.math.ColorRGBA.Yellow); // Cor amarela sólida
         }
 
