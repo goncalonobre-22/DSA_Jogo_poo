@@ -21,7 +21,6 @@ public class WoodAxe extends Tool {
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        // Crie e adicione Textures/sticks.png ao seu projeto
         return assetManager.loadTexture("Interface/woodAxe.png");
     }
 

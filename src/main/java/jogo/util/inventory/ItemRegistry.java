@@ -8,7 +8,6 @@ import java.util.*;
 
 public class ItemRegistry {
     private static final Map<Byte, Class<? extends PlaceableItem>> blockToItem = new HashMap<>();
-   // private static final Map<String, Class<? extends Item>> nameToItem = new HashMap<>();
 
 
     static {

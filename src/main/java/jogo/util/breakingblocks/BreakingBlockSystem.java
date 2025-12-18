@@ -22,39 +22,31 @@ public class BreakingBlockSystem {
     public boolean hitBlock(int x, int y, int z, Item heldItem) {
         String key = x + "," + y + "," + z;
         VoxelBlockType blockType = world.getPalette().get(world.getBlock(x, y, z));
-        Player player = new Player();
 
         if (!blockType.isSolid()) {
             return false;
         }
 
-        // Dureza do bloco, convertida para float
         float hardness = (float) blockType.getHardness();
 
-        // 1. Determinar o multiplicador (1.0x é o padrão da "mão")
         float multiplier = 1.0f;
         if (heldItem instanceof Tool tool) {
             multiplier = tool.getMiningSpeed(blockType);
         }
 
-        // Dano efetivo: 1.0f de dano base por clique * multiplicador da ferramenta
         float damage = 1.0f * multiplier;
 
-        // Se o dano for maior ou igual à dureza (quebra no 1º hit com bónus)
         if (damage >= hardness) {
             breakingBlocks.remove(key);
             return true;
         }
 
-        // 2. Inicializar ou atualizar progresso
         BreakBlockProgress progress = breakingBlocks.get(key);
         if (progress == null) {
-            // Cria um novo registo com a dureza original do bloco
             progress = new BreakBlockProgress(hardness);
             breakingBlocks.put(key, progress);
         }
 
-        // 3. Aplicar o dano float
         boolean shouldBreak = progress.addDamage(damage);
 
         System.out.println("Hit no bloco '" + blockType.getName() +
@@ -72,7 +64,7 @@ public class BreakingBlockSystem {
 
     }
 
-    /** Chamado em cada frame para atualizar o timeout dos blocos em quebra. */
+    // atualiza o timeout dos blocos em quebra.
     public boolean update(float tpf) {
         Iterator<Map.Entry<String, BreakBlockProgress>> it = breakingBlocks.entrySet().iterator();
         boolean reset = false;

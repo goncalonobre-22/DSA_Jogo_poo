@@ -17,7 +17,7 @@ public abstract class NPC extends Character {
         super(name);
     }
 
-    // Atualização de IA (cada NPC implementa a sua)
+    // Atualização de IA
     public abstract void updateAI(float tpf);
 
     // Move logicamente o NPC
@@ -27,23 +27,10 @@ public abstract class NPC extends Character {
         this.position.z += dz;
     }
 
-    // Distância lógica
-    public float distanceTo(Vec3 other) {
-        return this.position.distance(other);
-    }
-
-    public void setPhysicsControl(RigidBodyControl rbc) {
-
-    }
-
-    public RigidBodyControl getPhysicsControl() {
-
-        return null;
-    }
 
     public void takeDamage(Item heldItem) {
         // Dano base (mão)
-        float baseDamage = 3.0f; // 3 de dano base da mão
+        float baseDamage = 3.0f;
         float multiplier = 1.0f;
         String source = "Mão";
 
@@ -54,19 +41,18 @@ public abstract class NPC extends Character {
 
         int finalDamage = (int) (baseDamage * multiplier);
 
-        int oldHealth = getHealth(); // [NOVO] Capturar vida antiga
-        super.takeDamage(finalDamage); // Chama o takeDamage base do Character
+        int oldHealth = getHealth();
+        super.takeDamage(finalDamage);
 
-        int newHealth = getHealth(); // [NOVO] Capturar vida nova
+        int newHealth = getHealth();
 
-        // [NOVO] Lógica de MORTE
+        // Lógica de morte
         if (newHealth <= 0 && oldHealth > 0) {
             System.out.println(getName() + " morreu.");
             if (appStateHook != null) {
                 appStateHook.removeNPC(this); // [NOVO] Notificar o AppState para remover o modelo/AI
             }
         } else {
-            // Lógica de feedback normal
             System.out.println(getName() + " sofreu " + finalDamage + " de dano de " + source + ". Vida atual: " + newHealth);
         }
     }

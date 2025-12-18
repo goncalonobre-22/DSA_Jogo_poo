@@ -57,13 +57,13 @@ public class FurnaceState {
             return;
         }
 
-        // 1. Fundição terminada, mas output bloqueado
+        // Fundição terminada mas output bloqueado
         if (meltProgress >= MELT_TIME_TOTAL) {
             // Espera até o jogador retirar o item (o outputStack está cheio/ocupado)
             return;
         }
 
-        // 2. Tentar consumir combustível se acabou e há mais para usar
+        // Tentar consumir combustível se acabou e há mais para usar
         if (fuelLeft <= 0.0f) {
             if (fuelStack != null && fuelStack.getAmount() > 0) {
                 // Consome 1 de combustível
@@ -76,13 +76,13 @@ public class FurnaceState {
             }
         }
 
-        // 3. Fundir e gastar combustível
+        // Fundir e gastar combustível
         float fuelCost = tpf / MELT_TIME_TOTAL;
 
         meltProgress += tpf;
         fuelLeft -= fuelCost;
 
-        // 4. Finalizar Fundição (Item Consumido -> Output Adicionado)
+        // Finalizar fundição
         if (meltProgress >= MELT_TIME_TOTAL) {
             FurnaceRecipe recipe = FurnaceRegistry.findRecipe(inputStack.getItem());
             if (recipe != null) {
@@ -99,11 +99,10 @@ public class FurnaceState {
                     if (inputStack.getAmount() == 0) inputStack = null;
                     meltProgress = 0.0f;
                 }
-                // Se o output estiver bloqueado, o meltProgress fica em 8.0f (estado 'done').
             }
         }
 
-        // 5. Garante que o combustível não é negativo
+        // Garante que o combustível não é negativo
         if (fuelLeft < 0.0f) {
             fuelLeft = 0.0f;
         }

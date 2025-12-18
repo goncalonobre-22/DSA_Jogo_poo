@@ -6,14 +6,12 @@ import jogo.gameobject.item.Tool;
 import jogo.voxel.VoxelBlockType;
 
 public class StonePickaxe extends Tool {
-    // Construtor sem argumentos para o GameRegistry
     public StonePickaxe() {
         super("Stone Pickaxe");
     }
 
     @Override
     public Texture getIcon(AssetManager assetManager) {
-        // Crie e adicione Textures/sticks.png ao seu projeto
         return assetManager.loadTexture("Interface/StonePickaxe.png");
     }
 

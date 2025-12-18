@@ -18,7 +18,6 @@ public class ShapedRecipeSystem extends RecipeSystem {
 
     @Override
     public boolean matches(Stacks[] grid) {
-        // Verifica se a grid corresponde ao pattern
         for (int i = 0; i < 9; i++) {
             int row = i / 3;
             int col = i % 3;
@@ -27,14 +26,11 @@ public class ShapedRecipeSystem extends RecipeSystem {
             Stacks stack = grid[i];
 
             if (patternChar == ' ') {
-                // Deve estar vazio
                 if (stack != null && stack.getAmount() > 0) {
                     return false;
                 }
             } else {
-                // Deve ter o item correspondente
                 Item requiredItem = getItemForChar(patternChar);
-                // Verifica se o item existe no mapa E se corresponde ao item na grelha.
                 if (requiredItem == null || stack == null || !stack.getItem().getName().equals(requiredItem.getName())) {
                     return false;
                 }
@@ -51,7 +47,6 @@ public class ShapedRecipeSystem extends RecipeSystem {
 
             char patternChar = pattern[row].charAt(col);
             if (patternChar != ' ') {
-                // Remove 1 item
                 if (grid[i] != null) {
                     grid[i].removeAmount(1);
                     if (grid[i].getAmount() <= 0) {
@@ -62,7 +57,6 @@ public class ShapedRecipeSystem extends RecipeSystem {
         }
     }
 
-    // Procura o item diretamente pelo caractere no mapa.
     private Item getItemForChar(char c) {
         return ingredientsMap.get(c);
     }

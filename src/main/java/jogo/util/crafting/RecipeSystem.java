@@ -13,14 +13,10 @@ public abstract class RecipeSystem {
         this.resultAmount = resultAmount;
     }
 
-    /**
-     * Verifica se a grid corresponde a esta receita.
-     */
+    //Verifica se a grid corresponde a esta receita
     public abstract boolean matches(Stacks[] grid);
 
-    /**
-     * Consome os ingredientes da grid após crafting.
-     */
+    // Consome os ingredientes da grid após crafting
     public abstract void consumeIngredients(Stacks[] grid);
 
     public Item getResult() {

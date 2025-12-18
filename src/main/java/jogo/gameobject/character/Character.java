@@ -5,7 +5,7 @@ import jogo.framework.math.Vec3; // Se Vec3 for necessário para a posição (As
 
 public abstract class Character extends GameObject {
 
-    // --- CAMPOS DE SAÚDE ATUALIZADOS ---
+
     protected int health;
     protected int maxHealth = 100; // Definimos a vida máxima por defeito
 
@@ -17,9 +17,8 @@ public abstract class Character extends GameObject {
         this.health = maxHealth; // Inicializar a vida cheia
     }
 
-    // --- MÉTODOS DE SAÚDE ATUALIZADOS ---
 
-    // [NOVO] Método para obter a vida máxima (necessário para o Healer)
+    // Método para obter a vida máxima
     public int getMaxHealth() {
         return maxHealth;
     }
@@ -29,10 +28,10 @@ public abstract class Character extends GameObject {
         return health;
     }
 
-    // Método para definir a vida (garante que não ultrapassa o máximo)
+    // Método para definir a vida
     public void setHealth(int newHealth) {
         this.health = Math.min(newHealth, maxHealth);
-        this.health = Math.max(0, this.health); // Garante que não é negativo
+        this.health = Math.max(0, this.health);
     }
 
     // Método para levar dano
@@ -40,19 +39,16 @@ public abstract class Character extends GameObject {
         this.health = Math.max(0, this.health - damage);
     }
 
-    // [NOVO] Método para curar (necessário para o Healer)
+    // Método para curar
     public void heal(int amount) {
         this.health = Math.min(this.health + amount, maxHealth);
     }
 
-    // --- MÉTODOS DE POSIÇÃO ---
 
-    // Para ser usado pelo NPCAppState para dar o alvo à Slime/Zombie
     public Vec3 getPosition() {
         return position;
     }
 
-    // Para ser usado pelo PlayerAppState para sincronizar a posição real
     public void setPosition(Vec3 position) {
         this.position = position;
     }

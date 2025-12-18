@@ -14,7 +14,6 @@ import java.util.Map;
 
 public class FurnaceRegistry {
     private static final List<FurnaceRecipe> recipes = new ArrayList<>();
-    // Nome do Item -> Eficiência de Combustível (Melt Units)
     private static final Map<String, Float> fuelEfficiency = new HashMap<>();
 
     static {

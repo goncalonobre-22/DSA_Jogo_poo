@@ -8,9 +8,6 @@ public abstract class PlaceableItem extends Item{
         this.blockId = blockId;
     }
 
-    /**
-     * Obtém o ID do bloco que este item representa.
-     */
     public byte getBlockId() {
         return blockId;
     }

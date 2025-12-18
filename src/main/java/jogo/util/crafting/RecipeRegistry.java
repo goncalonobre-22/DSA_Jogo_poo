@@ -116,9 +116,7 @@ public class RecipeRegistry {
         ));
     }
 
-    /**
-     * Encontra uma receita que corresponda à grid.
-     */
+    //Encontra uma receita que corresponda à grid.
     public static RecipeSystem findRecipe(Stacks[] grid) {
         for (RecipeSystem recipe : recipes) {
             if (recipe.matches(grid)) {

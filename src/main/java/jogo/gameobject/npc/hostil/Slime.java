@@ -12,14 +12,14 @@ public class Slime extends NPC {
     private final VoxelWorld world;
     private final Player player;
 
-    // --- VARIÁVEIS DE FÍSICA E MOVIMENTO ---
+    // Física e movimento
     private float verticalVelocity = 0;
     private static final float GRAVITY = 24.0f;
     private static final float JUMP_POWER = 8.0f;
     private float jumpTimer = 0.0f;
     private static final float JUMP_INTERVAL = 1.0f;
 
-    // --- VARIÁVEIS DE ATAQUE ---
+    // Ataque
     private static final float ATTACK_RANGE = 1.8f;
     private static final float ATTACK_COOLDOWN = 1.5f;
     public float attackCooldownTimer = 0.0f;
@@ -46,7 +46,6 @@ public class Slime extends NPC {
 
         if (targetPos == null) return;
 
-        // Decrementa temporizadores
         jumpTimer -= tpf;
         attackCooldownTimer -= tpf;
 
@@ -56,22 +55,18 @@ public class Slime extends NPC {
         float distSq = dx * dx + dz * dz;
         float dist = (float)Math.sqrt(distSq);
 
-        // --- 1. Lógica de Ataque (PRIORIDADE) ---
+        // Lógica de ataque
         if (dist < ATTACK_RANGE && attackCooldownTimer <= 0) {
-
-            // LÓGICA DE DANO CONSOLIDADA AQUI
             player.takeDamage(ATTACK_DAMAGE);
             System.out.println(this.getName() + " ATAQUE ATIVADO! DIST: " + dist +
                     " | Player sofreu " + ATTACK_DAMAGE + " de dano. Vida atual: " + player.getHealth());
-            // FIM LÓGICA DE DANO CONSOLIDADA
-
             attackCooldownTimer = ATTACK_COOLDOWN;
             return; // Pára o movimento e AI para atacar.
         }
 
-        // --- 2. Lógica de Perseguição Horizontal (Mínima) ---
 
-        // A Slime só persegue se a distância for maior que 0.1m e estiver dentro do alcance de percepção.
+
+
         if (dist > 0.1f && dist < PERCEPTION_RANGE) {
 
             float safeDist = dist;
