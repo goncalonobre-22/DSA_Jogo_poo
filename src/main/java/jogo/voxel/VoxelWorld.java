@@ -224,12 +224,11 @@ public class VoxelWorld {
 
                 // 4. Geração de Árvores
                 if (getBlock(x, height + 1, z) == AIR) {
-                    if (Math.random() < 0.005) {
-                        if (isHot) {
-                            generateHotTree(x, height + 1, z);
-                        } else {
-                            generateTree(x, height + 1, z);
-                        }
+                    if (!isDesert && !isHot && Math.random() < 0.005) {
+                        generateTree(x, height + 1, z);
+                    }
+                    if (isHot && Math.random() < 0.005) {
+                        generateHotTree(x, height + 1, z);
                     }
                 }
             }

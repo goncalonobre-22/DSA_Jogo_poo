@@ -66,7 +66,7 @@ public class Jogo extends SimpleApplication {
 
         try {
             hurtSound = new AudioNode(assetManager, "Sounds/hurtPlayer.ogg", false);
-            hurtSound.setPositional(false); // Som não posicional (global)
+            hurtSound.setPositional(false);
             hurtSound.setLooping(false);
             hurtSound.setVolume(2);
         } catch (Exception e) {
@@ -80,7 +80,7 @@ public class Jogo extends SimpleApplication {
             player.setHurtSound(hurtSound);
         }
 
-        stateManager.attach(new NPCAppState(world.getNpcList(), world, player_inv, renderIndex, registry)); // [NOVO]
+        stateManager.attach(new NPCAppState(world.getNpcList(), world, player_inv, renderIndex, registry));
 
         // Post-processing: SSAO for subtle contact shadows
         try {
