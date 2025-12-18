@@ -49,6 +49,7 @@ public class Slime extends NPC {
         jumpTimer -= tpf;
         attackCooldownTimer -= tpf;
 
+        //Distância entre nós e o NPC
         float dx = targetPos.x - position.x;
         float dz = targetPos.z - position.z;
 
@@ -65,15 +66,15 @@ public class Slime extends NPC {
         }
 
 
-
-
         if (dist > 0.1f && dist < PERCEPTION_RANGE) {
 
             float safeDist = dist;
 
+            // Para o NPC não corre super rápido
             float nx = dx / safeDist;
             float nz = dz / safeDist;
 
+            // Quanto tem que andar nesse milissegundo
             float moveX = nx * speed * tpf;
             float moveZ = nz * speed * tpf;
 

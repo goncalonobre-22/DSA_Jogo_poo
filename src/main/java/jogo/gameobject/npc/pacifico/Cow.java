@@ -10,10 +10,10 @@ public class Cow extends NPC {
     private final VoxelWorld world;
     private final Player player;
 
-    // --- VARIÁVEIS DE ALVO ---
+    // Alvo
     private Vec3 targetPos;
 
-    // --- VARIÁVEIS DE MOVIMENTO E FÍSICA ---
+    // Movimento e física
     private float speed = 0.8f;
     private float wanderTimer = 0;
     private static final float WANDER_INTERVAL = 5.0f;
@@ -21,7 +21,6 @@ public class Cow extends NPC {
     private static final float WANDER_DISTANCE = 5.0f;
 
     // Usamos os campos 'verticalVelocity' e 'GRAVITY' herdados de NPC.java
-
     public Cow(String name, Vec3 spawnPos, VoxelWorld world, Player player) {
         super(name);
         this.position = new Vec3(spawnPos.x, spawnPos.y, spawnPos.z);
@@ -42,7 +41,7 @@ public class Cow extends NPC {
 
         wanderTimer -= tpf;
 
-        // --- 1. Lógica de Vaguear (Wander) ---
+        // Lógica de Vaguear
         if (wanderTimer <= 0) {
             float angle = (float) Math.random() * 360;
             float targetX = position.x + (float) Math.cos(angle) * WANDER_DISTANCE;
@@ -66,17 +65,17 @@ public class Cow extends NPC {
             float moveX = nx * speed * tpf;
             float moveZ = nz * speed * tpf;
 
-            // --- COLISÃO HORIZONTAL (CORRIGIDO) ---
+            // Colisão horizontal
             float newX = position.x + moveX;
             float newZ = position.z + moveZ;
             int currentY = (int) Math.floor(position.y);
 
-            // Tenta mover-se para X (Impede atravessar paredes)
+            // Tenta mover-se para X
             if (!world.isSolid((int)Math.floor(newX), currentY, (int)Math.floor(position.z))) {
                 position.x = newX;
             }
 
-            // Tenta mover-se para Z (Impede atravessar paredes)
+            // Tenta mover-se para Z
             if (!world.isSolid((int)Math.floor(position.x), currentY, (int)Math.floor(newZ))) {
                 position.z = newZ;
             }
@@ -88,7 +87,7 @@ public class Cow extends NPC {
             }
         }
 
-        // --- 2. Gravidade ---
+        // Gravidade
 
         int blockBelow = (int) Math.floor(position.y - 0.1f);
         boolean onGround = world.isSolid((int)Math.floor(position.x), blockBelow, (int)Math.floor(position.z));

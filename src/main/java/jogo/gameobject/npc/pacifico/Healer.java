@@ -10,18 +10,18 @@ public class Healer extends NPC {
     private final VoxelWorld world;
     private final Player player;
 
-    // --- VARIÁVEIS DE ALVO ---
+    // Alvo
     private Vec3 targetPos;
 
-    // --- VARIÁVEIS DE MOVIMENTO E FÍSICA ---
-    private float speed = 1.0f;         // Velocidade base para vaguear
-    private float followSpeed = 2.5f;   // NOVO: Velocidade quando está a seguir
+    // Movimento e Física
+    private float speed = 1.0f;
+    private float followSpeed = 2.5f;
     private float wanderTimer = 0;
     private static final float WANDER_INTERVAL = 8.0f;
     private Vec3 wanderTarget;
     private static final float WANDER_DISTANCE = 10.0f;
 
-    // --- VARIÁVEIS DE CURA ---
+    // Cura
     private static final float HEAL_RANGE = 5.0f;
     private static final float HEAL_FOLLOW_RANGE = 10.0f; // Distância máxima para começar a seguir
     private static final float LOW_HEALTH_PERCENT = 1f;
@@ -50,18 +50,18 @@ public class Healer extends NPC {
         healCooldownTimer -= tpf;
         wanderTimer -= tpf;
 
-        // --- CÁLCULOS CONDICIONAIS ---
+        // cálculos condicionais
         float dist = this.position.distance(targetPos);
         float currentHealth = player.getHealth();
         float maxHealth = player.getMaxHealth();
 
-        // O jogador precisa de cura E está fora do alcance de cura (5m)
+        // O jogador precisa de cura e está fora do alcance de cura (5m)
         boolean playerNeedsHealAndIsFar = (maxHealth > 0 && currentHealth / maxHealth <= LOW_HEALTH_PERCENT && dist > HEAL_RANGE);
 
         // Distância máxima para o Healer começar a seguir (10m)
         boolean isInFollowRange = dist < HEAL_FOLLOW_RANGE;
 
-        // --- 1. Lógica de Cura (Só cura se estiver no raio E for necessário) ---
+        // Lógica de Cura (Só cura se estiver no raio E for necessário)
         if (healCooldownTimer <= 0) {
 
             // O jogador precisa de cura E está dentro do raio
@@ -73,12 +73,12 @@ public class Healer extends NPC {
             }
         }
 
-        // --- 2. Lógica de Movimento (Seguir OU Vaguear) ---
+        // Lógica de Movimento (Seguir OU Vaguear)
         Vec3 moveTarget = wanderTarget;
         float currentSpeed = speed;
         boolean isFollowing = false;
 
-        // Se a vida está baixa E o jogador está dentro do raio de seguimento (10m)
+        // Se a vida está baixa e o jogador está dentro do raio de seguimento (10m)
         if (playerNeedsHealAndIsFar && isInFollowRange) {
             // CONDIÇÃO: RUSH TO THE PLAYER
             moveTarget = targetPos;
@@ -131,7 +131,7 @@ public class Healer extends NPC {
             }
         }
 
-        // --- 3. Gravidade ---
+        // Gravidade
 
         int blockBelow = (int) Math.floor(position.y - 0.1f);
         boolean onGround = world.isSolid((int) Math.floor(position.x), blockBelow, (int) Math.floor(position.z));

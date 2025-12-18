@@ -30,7 +30,7 @@ public abstract class NPC extends Character {
 
     public void takeDamage(Item heldItem) {
         // Dano base (mão)
-        float baseDamage = 3.0f;
+        float baseDamage = 2.0f;
         float multiplier = 1.0f;
         String source = "Mão";
 
@@ -50,7 +50,7 @@ public abstract class NPC extends Character {
         if (newHealth <= 0 && oldHealth > 0) {
             System.out.println(getName() + " morreu.");
             if (appStateHook != null) {
-                appStateHook.removeNPC(this); // [NOVO] Notificar o AppState para remover o modelo/AI
+                appStateHook.removeNPC(this);
             }
         } else {
             System.out.println(getName() + " sofreu " + finalDamage + " de dano de " + source + ". Vida atual: " + newHealth);

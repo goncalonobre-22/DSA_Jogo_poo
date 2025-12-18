@@ -1,6 +1,5 @@
 package jogo.util.breakingblocks;
 
-import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.Tool;
 import jogo.voxel.VoxelWorld;
@@ -34,7 +33,7 @@ public class BreakingBlockSystem {
             multiplier = tool.getMiningSpeed(blockType);
         }
 
-        float damage = 1.0f * multiplier;
+        float damage = multiplier;
 
         if (damage >= hardness) {
             breakingBlocks.remove(key);

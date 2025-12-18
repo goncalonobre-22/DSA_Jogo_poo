@@ -48,7 +48,7 @@ public class WorldAppState extends BaseAppState {
     private float worldTickTimer = 0.0f; // NOVO: Temporizador para o tick do mundo
     private static final float WORLD_TICK_RATE = 180.0f; // Troca de terra para relva ao fim de 3 minutos
 
-    private float furnaceUpdateTimer = 0.0f; // NOVO: Timer para o update da fornalha
+    private float furnaceUpdateTimer = 0.0f; // Timer para o update da fornalha
     private static final float FURNACE_UPDATE_RATE = 0.1f; // Tenta o update mais vezes (10x por seg)
 
     private List<NPC> npcList = new ArrayList<>();
@@ -327,7 +327,7 @@ public class WorldAppState extends BaseAppState {
 
         int slimeCount = 8;
         int zombieCount = 5;
-        int cowCount = 4;
+        int cowCount = 8;
         int healerCount = 10;
 
         for (int i = 0; i < slimeCount; i++) {

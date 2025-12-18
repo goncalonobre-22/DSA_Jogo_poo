@@ -75,6 +75,8 @@ public class Zombie extends NPC {
             float newZ = position.z + moveZ;
 
             int currentY = (int) Math.floor(position.y);
+
+            // Converter a posição futura para ver se há paredes
             int targetXBlock = (int) Math.floor(newX);
             int targetZBlock = (int) Math.floor(newZ);
 
