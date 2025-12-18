@@ -34,11 +34,6 @@ public class FurnaceState {
                 return true;
             }
         }
-        // 2. Se o slot já tiver o mesmo item e não estiver cheio (MAX_STACK_SIZE)
-        else if (inputStack.isSameItem(item) && inputStack.isFull()) {
-            inputStack.addAmount(1);
-            return true;
-        }
         return false;
     }
 
@@ -81,7 +76,7 @@ public class FurnaceState {
             }
         }
 
-        // 3. Fundir e gastar combustível (1 Melt Unit em 8.0s)
+        // 3. Fundir e gastar combustível
         float fuelCost = tpf / MELT_TIME_TOTAL;
 
         meltProgress += tpf;
