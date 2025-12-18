@@ -206,7 +206,6 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
                 if (isPressed && mouseCaptured && movementEnabled) interactRequested = true;
             }
 
-            // Adicionado do inventário pt.4
             case "Place" -> {
                 if (isPressed && mouseCaptured && movementEnabled) placeRequested = true;
             }
@@ -456,7 +455,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         return r;
     }
 
-    public boolean consumeClearCraftRequested() { // <--- NOVO
+    public boolean consumeClearCraftRequested() {
         boolean r = clearCraftRequested;
         clearCraftRequested = false;
         return r;
