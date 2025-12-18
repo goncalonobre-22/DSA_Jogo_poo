@@ -30,17 +30,17 @@ public class DirtBlockType extends VoxelBlockType {
 
     @Override
     public boolean onTick(int x, int y, int z, VoxelWorld world, float tpf) {
-        // 1. O bloco de cima não é sólido (exposto à luz/ar)?
+        // O bloco de cima não é sólido
         byte aboveId = world.getBlock(x, y + 1, z);
         VoxelBlockType aboveType = world.getPalette().get(aboveId);
 
         if (!aboveType.isSolid()) {
-            // 2. Transforma o bloco atual em Grass
+            // Transforma o bloco atual em Grass
             world.setBlock(x, y, z, VoxelPalette.GRASS_ID); // DIRT_ID = 2 -> GRASS_ID = 9
-            return true; // O mundo mudou e precisa de rebuild
+            return true;
         }
 
-        return false; // Não houve alteração
+        return false;
     }
 
 

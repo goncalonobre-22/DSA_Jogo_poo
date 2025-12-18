@@ -97,7 +97,6 @@ public class Jogo extends SimpleApplication {
         }
 
         // HUD (just a crosshair for now)
-        //stateManager.attach(new HudAppState(guiNode, assetManager));
         HudAppState hudAppState = new HudAppState(guiNode, assetManager);
         hudAppState.setPlayer(player_inv);
         stateManager.attach(hudAppState);

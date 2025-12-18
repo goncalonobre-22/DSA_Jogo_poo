@@ -132,7 +132,7 @@ public class VoxelWorld {
     public void generateLayers() {
 
         SimpleNoise heightNoise = new SimpleNoise(2742);
-        SimpleNoise biomeNoise = new SimpleNoise(1268); // Novo noise para biomas
+        SimpleNoise biomeNoise = new SimpleNoise(1268);
 
         int width = sizeX;
         int depth = sizeZ;
@@ -144,7 +144,7 @@ public class VoxelWorld {
         for (int x = 0; x < width; x++) {
             for (int z = 0; z < depth; z++) {
 
-                // 1. Determinar o Bioma
+                // Determinar o Bioma
                 float biomeN = biomeNoise.noise(x * biomeFrequency, z * biomeFrequency);
 
                 byte topBlock;
@@ -153,25 +153,25 @@ public class VoxelWorld {
                 boolean isHot = false;
                 boolean isDesert = false;
 
-                if (biomeN < -0.3f) { // Bioma Deserto
+                if (biomeN < -0.3f) {
                     topBlock = SAND;
-                    oreChance = 0.0f; // Sem minério (opcional)
-                    surfaceDepth = 5; // 5 camadas de areia/soul sand
+                    oreChance = 0.0f;
+                    surfaceDepth = 5;
                     isDesert = true;
 
-                } else if (biomeN > 0.3f) { // Bioma Hot/Volcanic
+                } else if (biomeN > 0.3f) {
                     topBlock = HOTBLOCK;
-                    oreChance = 0.05f; // Mais minério
-                    surfaceDepth = 3; // 3 camadas de hotblock
+                    oreChance = 0.2f;
+                    surfaceDepth = 3;
                     isHot = true;
 
                 } else { // Bioma Padrão (Grass)
                     topBlock = GRASS;
                     oreChance = 0.015f;
-                    surfaceDepth = 3; // 3 camadas de sujeira
+                    surfaceDepth = 3;
                 }
 
-                // 2. Calcular Altura
+                // Calcular Altura
                 float n = heightNoise.noise(x * 0.02f, z * 0.02f);
                 int height = baseHeight + (int) (n * amplitude);
 
@@ -179,19 +179,16 @@ public class VoxelWorld {
                 if (height < 3) height = 3;
                 if (height >= sizeY - 1) height = sizeY - 2;
 
-                // 3. Colocar Blocos
+                // Colocar Blocos
 
-                // Itera de cima para baixo
                 for (int y = height; y >= 0; y--) {
 
-                    if (y > height) continue; // Bloco de ar acima do solo
+                    if (y > height) continue;
 
                     if (isHot) {
-                        // Hot/Volcanic: 3 camadas de HotBlock + Stone/Ore
-                        if (y >= height - 2) { // Camadas: height, height-1, height-2
+                        if (y >= height - 2) {
                             setBlock(x, y, z, HOTBLOCK);
                         } else {
-                            // Subsolo de Stone com muita abundância de MetalOre
                             if (Math.random() < oreChance) {
                                 setBlock(x, y, z, METALORE);
                             } else {
@@ -200,32 +197,22 @@ public class VoxelWorld {
                         }
 
                     } else if (isDesert) {
-                        // Deserto: Camada superior de Areia/SoulSand + Stone apenas no fundo
                         if (y > height - surfaceDepth) { // Camadas de Areia
-                            if (Math.random() < 0.015 && y >= height - 2) { // Pequena chance de Soul Sand perto da superfície
+                            if (Math.random() < 0.05 && y >= height - 2) {
                                 setBlock(x, y, z, SOULSAND);
                             } else {
                                 setBlock(x, y, z, SAND);
                             }
                         } else {
-                            // Subsolo: Pedra apenas na camada inferior (y=0)
-                            if (y == 0) {
-                                setBlock(x, y, z, BEDROCK);
-                            } else {
-                                // Opcional: Manter o resto como ar (AIR) ou como Stone/Ore para manter um subsolo sólido
-                                // Para manter o subsolo sólido como o mundo original, mas com stone e sem ore:
-                                setBlock(x, y, z, BEDROCK);
-                            }
+                            setBlock(x, y, z, BEDROCK);
                         }
 
                     } else { // Bioma Padrão
-                        // Padrão: Grass/Dirt + Stone/Ore
                         if (y == height) {
                             setBlock(x, y, z, GRASS);
                         } else if (y > height - surfaceDepth) {
                             setBlock(x, y, z, DIRT);
                         } else {
-                            // STONE + ORE
                             if (y < baseHeight - 4 && Math.random() < oreChance) {
                                 setBlock(x, y, z, METALORE);
                             } else {
@@ -237,7 +224,7 @@ public class VoxelWorld {
 
                 // 4. Geração de Árvores
                 if (getBlock(x, height + 1, z) == AIR) {
-                    if (Math.random() < 0.005) {   // 0.5% chance
+                    if (Math.random() < 0.005) {
                         if (isHot) {
                             generateHotTree(x, height + 1, z);
                         } else {
@@ -523,7 +510,6 @@ public class VoxelWorld {
                     byte currentId = getBlock(x, y, z);
                     VoxelBlockType type = palette.get(currentId);
 
-                    // Chama a lógica polimórfica APENAS se o bloco for tickable
                     if (type.isTickable()) {
                         if (type.onTick(x, y, z, this, tpf)) {
                             worldChanged = true;
@@ -534,7 +520,6 @@ public class VoxelWorld {
         }
 
         if (worldChanged) {
-            // Rebuild e update da física apenas se houve alterações
             rebuildDirtyChunks(physicsSpace);
         }
     }
@@ -548,7 +533,7 @@ public class VoxelWorld {
         return furnaceStates.computeIfAbsent(key, k -> new FurnaceState());
     }
 
-    // Novo: Adicionar método para remover estado (chamar ao quebrar bloco)
+    // método para remover estado
     public FurnaceState removeFurnaceState(int x, int y, int z) {
         return furnaceStates.remove(new Vector3i(x, y, z));
     }
@@ -601,10 +586,6 @@ public class VoxelWorld {
             this.seed = seed;
         }
 
-        // =======================
-        //   NOISE SUAVE 2D
-        // =======================
-
         public float noise(float x, float z) {
             // Coordenadas de grid
             int x0 = (int) Math.floor(x);
@@ -630,9 +611,6 @@ public class VoxelWorld {
             return lerp(ix0, ix1, sz);
         }
 
-        // =======================
-        //   FUNÇÕES AUXILIARES
-        // =======================
 
         // Noise bruto (0–1 → -1..1)
         private float rawNoise(int x, int z) {
@@ -649,9 +627,6 @@ public class VoxelWorld {
             return t * t * (3 - 2 * t);
         }
 
-        // =======================
-        //   HASH DETERMINÍSTICO
-        // =======================
 
         private int hash(int x, int z) {
             long h = seed;
@@ -693,12 +668,10 @@ public class VoxelWorld {
 
         int trunkHeight = 4 + (int) (Math.random() * 3);
 
-        // Tronco (WOOD)
+        // Tronco
         for (int i = 0; i < trunkHeight; i++) {
             safeSetBlock(x, y + i, z, WOOD);
         }
-
-        // Sem Folhas
     }
 
     private void safeSetBlock(int x, int y, int z, byte id) {
