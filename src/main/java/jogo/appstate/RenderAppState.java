@@ -17,6 +17,7 @@ import jogo.framework.math.Vec3;
 import jogo.gameobject.GameObject;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
+import jogo.gameobject.item.normalitems.WoodStick;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,10 +89,16 @@ public class RenderAppState extends BaseAppState {
             g.setMaterial(colored(ColorRGBA.Green));
             return g;
         } else if (obj instanceof Item) {
-            Geometry g = new Geometry(obj.getName(), new Box(0.3f, 0.3f, 0.3f));
-            g.setMaterial(colored(ColorRGBA.Yellow));
+            if (obj instanceof WoodStick) {
+                Geometry g = new Geometry(obj.getName(), new Box(0.05f, 0.05f, 0.25f));
+                g.setMaterial(colored(ColorRGBA.Brown));
+                return g;
+            }
+            Geometry g = new Geometry(obj.getName(), new Box(0.2f, 0.2f, 0.2f));
+            g.setMaterial(colored(ColorRGBA.Brown));
             return g;
         }
+
         return null;
     }
 

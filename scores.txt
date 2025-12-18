@@ -1,0 +1,16 @@
+Jogo 1: 2
+Jogo 2: 4
+Jogo 3: 2
+Jogo 4: 0
+Jogo 5: 1
+Jogo 6: 3
+Jogo 7: 3
+Jogo 8: 2
+Jogo 9: 1
+Jogo 10: 2
+Jogo 11: 2
+Jogo 12: 10
+Jogo 13: 3
+Jogo 14: 1
+Jogo 15: 3
+Jogo 16: 5

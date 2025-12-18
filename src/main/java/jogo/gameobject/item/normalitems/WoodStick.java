@@ -1,6 +1,9 @@
 package jogo.gameobject.item.normalitems;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.material.Material;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import jogo.gameobject.item.Item;
 

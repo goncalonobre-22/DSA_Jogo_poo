@@ -11,7 +11,9 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
+import jogo.engine.GameRegistry;
 import jogo.framework.math.Vec3;
+import jogo.gameobject.GameObject;
 import jogo.gameobject.character.Player;
 import jogo.gameobject.item.Item;
 import jogo.gameobject.item.PlaceableItem;
@@ -52,6 +54,8 @@ public class WorldAppState extends BaseAppState {
     private static final float FURNACE_UPDATE_RATE = 0.1f; // Tenta o update mais vezes (10x por seg)
 
     private List<NPC> npcList = new ArrayList<>();
+
+    private GameRegistry registry;
 
 
     // world root for easy cleanup
@@ -131,6 +135,10 @@ public class WorldAppState extends BaseAppState {
                 voxelWorld.updateTickableBlocks(playerAppState.getPlayerPosition(), WORLD_TICK_RATE, physicsSpace);
             }
             worldTickTimer = 0.0f;
+        }
+
+        if (input != null && input.consumeDropRequested()) {
+            handleDropOrPickup();
         }
     }
 
@@ -387,6 +395,100 @@ public class WorldAppState extends BaseAppState {
             npcList.add(healer);
             System.out.println("Spawn Healer: " + healer.getName() + " em X=" + x + " Y=" + y + " Z=" + z);
         }
+    }
+
+    /**
+            * Sistema unificado de Drop/Pickup usando tecla M
+     * Verifica primeiro se há itens próximos para pegar.
+            * Se não houver, dropa o item selecionado.
+            */
+    private void handleDropOrPickup() {
+        if (registry == null || player == null || playerAppState == null) {
+            return;
+        }
+
+        // Primeiro tenta pegar um item próximo
+        if (tryPickupNearbyItem()) {
+            return; // Se pegou algum item, não dropa
+        }
+
+        // Se não pegou nada, tenta dropar o item selecionado
+        dropSelectedItem();
+    }
+
+    /**
+     * Tenta pegar um item próximo ao jogador
+     * @return true se pegou algum item
+     */
+    private boolean tryPickupNearbyItem() {
+        Vector3f playerPos = playerAppState.getPlayerPosition();
+        float pickupRadius = 2.0f;
+
+        for (GameObject obj : registry.getAll()) {
+            if (obj instanceof Item item) {
+                Vec3 itemPos = item.getPosition();
+                Vector3f itemPosVec = new Vector3f(itemPos.x, itemPos.y, itemPos.z);
+                float distance = playerPos.distance(itemPosVec);
+
+                if (distance <= pickupRadius) {
+                    if (player.getInventory().addItem(item, 1)) {
+                        registry.remove(item);
+                        System.out.println("Item recolhido: " + item.getName());
+                        return true;
+                    } else {
+                        System.out.println("Inventário cheio! Não foi possível pegar: " + item.getName());
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Dropa o item atualmente selecionado no inventário
+     */
+    private void dropSelectedItem() {
+        Stacks selectedStack = player.getInventory().getSelectedItem();
+
+        if (selectedStack == null || selectedStack.getAmount() <= 0) {
+            System.out.println("Nenhum item para dropar!");
+            return;
+        }
+
+        Item itemToDrop = selectedStack.getItem();
+
+        // Calcula a posição de drop à frente do jogador
+        Vector3f playerPos = playerAppState.getPlayerPosition();
+        Vector3f playerDirection = cam.getDirection().normalize();
+
+        // Dropa 1.5 blocos à frente do jogador
+        Vector3f dropPos = playerPos.add(playerDirection.mult(1.5f));
+
+        dropPos.y += 0.5f;
+
+        // Cria uma nova instância do item para dropar
+        try {
+            Item droppedItem = itemToDrop.getClass().getDeclaredConstructor().newInstance();
+            droppedItem.setPosition(new Vec3(dropPos.x, dropPos.y, dropPos.z));
+
+            // Registra o item no GameRegistry (RenderAppState criará o Spatial)
+            registry.add(droppedItem);
+
+            // Remove do inventário
+            player.getInventory().removeItem(itemToDrop, 1);
+
+            System.out.println("Item dropado: " + droppedItem.getName() + " em " +
+                    String.format("(%.2f, %.2f, %.2f)", dropPos.x, dropPos.y, dropPos.z));
+
+        } catch (Exception e) {
+            System.err.println("Erro ao dropar item: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void setGameRegistry(GameRegistry registry) {
+        this.registry = registry;
     }
 
     public Node getWorldNode() {

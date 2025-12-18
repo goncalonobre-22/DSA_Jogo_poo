@@ -43,6 +43,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     private volatile boolean craftArrowRight;
     private volatile boolean putInFurnaceRequested;
     private volatile boolean clearCraftRequested;
+    private volatile boolean manipulateItem;
 
 
 
@@ -112,6 +113,7 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
         im.addMapping("ClearCraft", new KeyTrigger(KeyInput.KEY_BACK));
 
+        im.addMapping("DropItem", new KeyTrigger(KeyInput.KEY_M));
 
 
         im.addListener(this, "MoveForward", "MoveBackward", "MoveLeft", "MoveRight", "Jump", "Sprint", "ToggleMouse", "Break", "ToggleShading", "Respawn", "Interact");
@@ -124,6 +126,8 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
         im.addListener(this, "Hotbar1","Hotbar2","Hotbar3","Hotbar4","Hotbar5","Hotbar6","Hotbar7","Hotbar8","Hotbar9", "Hotbar10");
         im.addListener(this, "Take", "Put", "CraftMenu", "ExitCraft",
                 "CraftUp", "CraftDown", "CraftLeft", "CraftRight", "PutInFurnace", "ClearCraft");
+
+        im.addListener(this, "DropItem");
     }
 
     @Override
@@ -267,6 +271,10 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
 
             case "ClearCraft" -> { // <--- NOVO
                 if (isPressed) clearCraftRequested = true;
+            }
+
+            case "DropItem" -> {
+                if (isPressed) manipulateItem = true; // Criar esta variável volatile no topo
             }
         }
     }
@@ -458,6 +466,12 @@ public class InputAppState extends BaseAppState implements ActionListener, Analo
     public boolean consumeClearCraftRequested() {
         boolean r = clearCraftRequested;
         clearCraftRequested = false;
+        return r;
+    }
+
+    public boolean consumeDropRequested() {
+        boolean r = manipulateItem;
+        manipulateItem = false;
         return r;
     }
 

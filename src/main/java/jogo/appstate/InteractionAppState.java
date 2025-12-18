@@ -107,6 +107,8 @@ public class InteractionAppState extends BaseAppState {
                 }
             });
         }
+
+
     }
 
     private GameObject findRegistered(Spatial s) {

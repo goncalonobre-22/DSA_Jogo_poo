@@ -13,10 +13,20 @@ import jogo.engine.GameRegistry;
 import jogo.engine.RenderIndex;
 import jogo.gameobject.character.Player;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 /**
  * Main application entry.
  */
 public class Jogo extends SimpleApplication {
+
+    private Player player_inv;
+    private GameRegistry registry;
+    private RenderIndex renderIndex;
 
     public static void main(String[] args) {
         Jogo app = new Jogo();
@@ -43,6 +53,10 @@ public class Jogo extends SimpleApplication {
         inputManager.setCursorVisible(false);
         viewPort.setBackgroundColor(new ColorRGBA(0.6f, 0.75f, 1f, 1f)); // sky-like
 
+
+        registry = new GameRegistry();
+        renderIndex = new RenderIndex();
+
         // Physics
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
@@ -53,14 +67,15 @@ public class Jogo extends SimpleApplication {
         InputAppState input = new InputAppState();
         stateManager.attach(input);
 
-        Player player_inv = new Player();
+        this.player_inv = new Player();
 
         WorldAppState world = new WorldAppState(rootNode, assetManager, physicsSpace, cam, input, player_inv);
+        world.setGameRegistry(registry);
         stateManager.attach(world);
 
         // Engine registry and render layers
-        GameRegistry registry = new GameRegistry();
-        RenderIndex renderIndex = new RenderIndex();
+//        GameRegistry registry = new GameRegistry();
+//        RenderIndex renderIndex = new RenderIndex();
         stateManager.attach(new RenderAppState(rootNode, assetManager, registry, renderIndex));
         stateManager.attach(new InteractionAppState(rootNode, cam, input, renderIndex, world));
 
@@ -113,6 +128,32 @@ public class Jogo extends SimpleApplication {
                     input.setMouseCaptured(!hudAppState.isInventoryOpen());
                 }
             }
+            private void saveScoreToFile() {
+                if (player_inv == null) return;
+
+                String fileName = "scores.txt";
+                int score = player_inv.getScore();
+                int lineCount = 0;
+
+                try {
+                    // Conta as linhas existentes para determinar o número do próximo jogo
+                    if (Files.exists(Paths.get(fileName))) {
+                        lineCount = (int) Files.lines(Paths.get(fileName)).count();
+                    }
+
+                    int gameNumber = lineCount + 1;
+
+                    // O segundo parâmetro 'true' no FileWriter ativa o modo append
+                    try (PrintWriter out = new PrintWriter(new FileWriter(fileName, true))) {
+                        out.println("Jogo " + gameNumber + ": " + score);
+                        System.out.println("Score guardado: Jogo " + gameNumber + ": " + score);
+                    }
+                } catch (IOException e) {
+                    System.err.println("Erro ao guardar o score com PrintWriter: " + e.getMessage());
+                }
+            }
+
+
 
             @Override
             protected void cleanup(com.jme3.app.Application app) {}
@@ -121,5 +162,36 @@ public class Jogo extends SimpleApplication {
             @Override
             protected void onDisable() {}
         });
+    }
+
+    @Override
+    public void stop() {
+        saveScoreToFile(); // Chama a gravação antes de parar o motor
+        super.stop();      // Executa o encerramento normal do JME
+    }
+
+    private void saveScoreToFile() {
+        if (player_inv == null) return;
+
+        String fileName = "scores.txt";
+        int score = player_inv.getScore();
+        int lineCount = 0;
+
+        try {
+            // Conta as linhas existentes para determinar o número do próximo jogo
+            if (Files.exists(Paths.get(fileName))) {
+                lineCount = (int) Files.lines(Paths.get(fileName)).count();
+            }
+
+            int gameNumber = lineCount + 1;
+
+            // O segundo parâmetro 'true' no FileWriter ativa o modo append
+            try (PrintWriter out = new PrintWriter(new FileWriter(fileName, true))) {
+                out.println("Jogo " + gameNumber + ": " + score);
+                System.out.println("Score guardado: Jogo " + gameNumber + ": " + score);
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao guardar o score com PrintWriter: " + e.getMessage());
+        }
     }
 }
