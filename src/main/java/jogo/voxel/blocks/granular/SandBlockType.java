@@ -23,7 +23,7 @@ public class SandBlockType extends VoxelBlockType {
 
     @Override
     public boolean isAffectedByGravity() {
-        return true; // <--- Implementa a distinção funcional para queda
+        return true;
     }
 
     // isSolid() inherits true from base

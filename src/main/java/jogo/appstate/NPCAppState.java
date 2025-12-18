@@ -19,10 +19,10 @@ import java.util.List;
 
 public class NPCAppState extends BaseAppState {
 
-    //    private final Node worldNode;
+    // private final Node worldNode;
     private final Player player;
     private final RenderIndex renderIndex;
-    private final GameRegistry registry; // Não usado para NPC, mas bom para consistência
+    private final GameRegistry registry;
     private final WorldAppState worldAppState;
     private HashMap<Node, NPC> modelToNpc = new HashMap<>();
 
@@ -49,7 +49,6 @@ public class NPCAppState extends BaseAppState {
 
             renderIndex.register(model, npc);
 
-            // [NOVO] Injetar o AppState hook no NPC
             npc.appStateHook = this;
         }
     }
@@ -59,7 +58,6 @@ public class NPCAppState extends BaseAppState {
         com.jme3.scene.Node parent = new com.jme3.scene.Node(npc.getName());
         com.jme3.scene.Geometry geo;
 
-        // --- 1. LÓGICA DA GEOMETRIA ---
         if (npc instanceof jogo.gameobject.npc.hostil.Slime) {
             com.jme3.scene.shape.Sphere sphere = new com.jme3.scene.shape.Sphere(16, 16, 0.5f);
             geo = new com.jme3.scene.Geometry("slime", sphere);
@@ -67,39 +65,28 @@ public class NPCAppState extends BaseAppState {
             geo.setLocalTranslation(0, 0.3f, 0);
         }
         else if (npc instanceof jogo.gameobject.npc.hostil.Zombie) {
-            // Caixa de 0.6m de largura/profundidade e 1.8m de altura
             com.jme3.scene.shape.Box box = new com.jme3.scene.shape.Box(0.3f, 0.9f, 0.3f);
             geo = new com.jme3.scene.Geometry("zombie", box);
-            // Desloca para assentar no chão (Y=0).
             geo.setLocalTranslation(0, 0.9f, 0);
         }
-        // --- NOVO: VACA (Cow) ---
         else if (npc instanceof Cow) {
-            // Modelo maior e mais gordo: 1.6m x 1.2m x 0.8m
             com.jme3.scene.shape.Box body = new com.jme3.scene.shape.Box(0.8f, 0.6f, 0.4f);
             geo = new com.jme3.scene.Geometry("cow", body);
-            // Altura total 1.2m, desloca o centro 0.6f
             geo.setLocalTranslation(0, 0.6f, 0);
         }
-        // --- NOVO: CURANDEIRO (Healer) ---
         else if (npc instanceof Healer) {
-            // Modelo humanoide simples: 0.4m x 1.6m x 0.4m
             com.jme3.scene.shape.Box body = new com.jme3.scene.shape.Box(0.2f, 0.8f, 0.2f);
             geo = new com.jme3.scene.Geometry("healer", body);
-            // Altura total 1.6m, desloca o centro 0.8f
             geo.setLocalTranslation(0, 0.8f, 0);
         }
-        // --- FALLBACK ---
         else {
             geo = new com.jme3.scene.Geometry("default", new com.jme3.scene.shape.Sphere(8, 8, 0.1f));
         }
 
 
-        // --- 2. MATERIAL (Aplicação Universal) ---
         com.jme3.material.Material mat = new com.jme3.material.Material(app.getAssetManager(),
                 "Common/MatDefs/Misc/Unshaded.j3md");
 
-        // --- SLIME: MATERIAL E TEXTURA ---
         if (npc instanceof jogo.gameobject.npc.hostil.Slime) {
             mat.setColor("Color", com.jme3.math.ColorRGBA.Green);
             try {
@@ -110,9 +97,8 @@ public class NPCAppState extends BaseAppState {
             }
         }
 
-        // --- ZUMBI: MATERIAL E TEXTURA ---
         else if (npc instanceof jogo.gameobject.npc.hostil.Zombie) {
-            mat.setColor("Color", com.jme3.math.ColorRGBA.Blue); // Cor de fallback
+            mat.setColor("Color", com.jme3.math.ColorRGBA.Blue);
             try {
                 mat.setTexture("ColorMap", app.getAssetManager().loadTexture("Textures/NPC/zombie.png"));
             } catch (Exception e) {
@@ -120,17 +106,14 @@ public class NPCAppState extends BaseAppState {
             }
         }
 
-        // --- NOVO: VACA (Cow) ---
         else if (npc instanceof Cow) {
-            mat.setColor("Color", com.jme3.math.ColorRGBA.Brown);// Cor castanha sólida
+            mat.setColor("Color", com.jme3.math.ColorRGBA.Brown);
         }
 
-        // --- NOVO: CURANDEIRO (Healer) ---
         else if (npc instanceof Healer) {
             mat.setColor("Color", com.jme3.math.ColorRGBA.Yellow); // Cor amarela sólida
         }
 
-        // --- FALLBACK GERAL ---
         else {
             mat.setColor("Color", com.jme3.math.ColorRGBA.White);
         }
@@ -138,7 +121,6 @@ public class NPCAppState extends BaseAppState {
         geo.setMaterial(mat);
         parent.attachChild(geo);
 
-        // Posição Final da Node (que é o ponto de spawn lógico)
         parent.setLocalTranslation(
                 npc.getPosition().x,
                 npc.getPosition().y,
@@ -162,16 +144,13 @@ public class NPCAppState extends BaseAppState {
                 zombie.setTarget(player.getPosition());
             }
 
-            // --- NOVO: Cow Target ---
             else if (npc instanceof Cow cow) {
                 cow.setTarget(player.getPosition());
             }
 
-            // --- NOVO: Healer Target ---
             else if (npc instanceof Healer healer) {
                 healer.setTarget(player.getPosition());
             }
-
 
             npc.updateAI(tpf);
 
@@ -186,22 +165,17 @@ public class NPCAppState extends BaseAppState {
         }
     }
 
-    // Adicionar método de remoção:
+    // Metodo de remoção do NPC
     public void removeNPC(NPC npc) {
         Node model = models.get(npc);
         if (model != null) {
-            // 1. Remover da cena
             model.removeFromParent();
 
-            // 2. Limpar o RenderIndex
             renderIndex.unregister(model);
 
-            // 3. Remover dos mapas e da lista de NPCs a serem atualizados (AI)
             models.remove(npc);
             modelToNpc.remove(model);
             npcList.remove(npc);
-            // Nota: Se houver controlo de física no NPC (RigidBodyControl), também deve ser removido aqui,
-            // mas a Slime usa lógica de movimento manual por padrão (NPC.setPhysicsControl retorna null).
 
             System.out.println("NPC " + npc.getName() + " removido da cena.");
         }

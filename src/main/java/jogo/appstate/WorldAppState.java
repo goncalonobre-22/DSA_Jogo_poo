@@ -39,7 +39,6 @@ public class WorldAppState extends BaseAppState {
     private final InputAppState input;
     private PlayerAppState playerAppState;
 
-    // Adicionado do inventário
     private final Player player;
 
     private BreakingBlockSystem breakingBlockSystem;
@@ -66,7 +65,6 @@ public class WorldAppState extends BaseAppState {
         this.physicsSpace = physicsSpace;
         this.cam = cam;
         this.input = input;
-        // Adicionado do inventário
         this.player = player;
     }
 
@@ -103,7 +101,7 @@ public class WorldAppState extends BaseAppState {
         // compute recommended spawn
         spawnPosition = voxelWorld.getRecommendedSpawn();
 
-        //spawnNPCs();
+        spawnNPCs();
     }
 
     public com.jme3.math.Vector3f getRecommendedSpawnPosition() {
@@ -171,15 +169,12 @@ public class WorldAppState extends BaseAppState {
 
         boolean worldChanged = false;
 
-        // Posição do jogador
         Vector3f playerPos = playerAppState.getPlayerPosition();
 
-        // Converte para coords de bloco
         int px = (int) playerPos.x;
         int py = (int) playerPos.y;
         int pz = (int) playerPos.z;
 
-        // Limites da área a processar
         int minX = Math.max(0, px - GRAVITY_RADIUS);
         int maxX = Math.min(voxelWorld.getSizeX() - 1, px + GRAVITY_RADIUS);
 
@@ -189,7 +184,6 @@ public class WorldAppState extends BaseAppState {
         int minZ = Math.max(0, pz - GRAVITY_RADIUS);
         int maxZ = Math.min(voxelWorld.getSizeZ() - 1, pz + GRAVITY_RADIUS);
 
-        // Itera somente nos blocos perto do jogador
         for (int y = minY; y <= maxY; y++) {
             for (int x = minX; x <= maxX; x++) {
                 for (int z = minZ; z <= maxZ; z++) {
@@ -214,7 +208,6 @@ public class WorldAppState extends BaseAppState {
             }
         }
 
-        // Só reconstrói se realmente mudou algo
         if (worldChanged) {
             voxelWorld.rebuildDirtyChunks(physicsSpace);
             if (playerAppState != null) {
@@ -285,7 +278,6 @@ public class WorldAppState extends BaseAppState {
                 if (player != null) {
                     var selectedStack = player.getInventory().getSelectedItem();
 
-                    // 1. Verificar se existe item selecionado
                     if (selectedStack == null || selectedStack.getAmount() <= 0) {
                         System.out.println("Nenhum item selecionado ou pilha vazia!");
                         return;
@@ -293,7 +285,6 @@ public class WorldAppState extends BaseAppState {
 
                     Item item = selectedStack.getItem();
 
-                    // 2. Verificar se o item é colocável
                     if (!(item instanceof PlaceableItem placeableItem)) {
                         System.out.println(item.getName() + "' não é um bloco colocável.");
                         return;
@@ -301,13 +292,11 @@ public class WorldAppState extends BaseAppState {
 
                     byte blockId = placeableItem.getBlockId();
 
-                    // 3. Verificar se o local de colocação está ocupado
                     if (voxelWorld.getBlock(placeX, placeY, placeZ) != VoxelPalette.AIR_ID) {
                         System.out.println("Não é possível colocar: Local já ocupado.");
                         return;
                     }
 
-                    // SUCESSO: Colocar o Bloco e remover do inventário
                     voxelWorld.setBlock(placeX, placeY, placeZ, blockId);
 
                     player.getInventory().removeItem(item, 1);
@@ -325,7 +314,6 @@ public class WorldAppState extends BaseAppState {
         furnaceUpdateTimer += tpf;
         if (furnaceUpdateTimer >= FURNACE_UPDATE_RATE) {
             if (voxelWorld != null) {
-                // O VoxelWorld gere o tick em todos os FurnaceState
                 voxelWorld.updateAllFurnaces(furnaceUpdateTimer, physicsSpace);
             }
             furnaceUpdateTimer = 0.0f; // Reinicia o timer
@@ -342,7 +330,6 @@ public class WorldAppState extends BaseAppState {
         int cowCount = 4;
         int healerCount = 10;
 
-        // --- 1. SPAWN DE SLIMES (Seu código existente) ---
         for (int i = 0; i < slimeCount; i++) {
 
             int x = (int) (Math.random() * worldX);
@@ -361,7 +348,6 @@ public class WorldAppState extends BaseAppState {
                     " em X=" + x + " Y=" + y + " Z=" + z);
         }
 
-        // --- 2. SPAWN DE ZOMBIES (NOVO) ---
         for (int i = 0; i < zombieCount; i++) {
 
             int x = (int) (Math.random() * worldX);

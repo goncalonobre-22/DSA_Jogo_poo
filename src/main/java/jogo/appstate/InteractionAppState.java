@@ -54,7 +54,6 @@ public class InteractionAppState extends BaseAppState {
             if (selectedStack != null && selectedStack.getAmount() > 0) {
                 selectedItem = selectedStack.getItem();
 
-                // 1. Injeta a referência do Player em itens que a necessitam (via Downcasting/Polimorfismo)
                 if (selectedItem instanceof Bread bread) {
                     bread.player = player;
                 }
@@ -64,7 +63,6 @@ public class InteractionAppState extends BaseAppState {
                     woodAxe.camera = cam; // Injeta Camera
                 }
 
-                // 2. Chama o método de interação para QUALQUER item selecionado
                 selectedItem.onInteract();
                 System.out.println("Interagiu com o item selecionado: " + selectedItem.getName());
             }
@@ -82,12 +80,10 @@ public class InteractionAppState extends BaseAppState {
             Spatial hit = results.getClosestCollision().getGeometry();
             GameObject obj = findRegistered(hit);
             if (obj instanceof NPC npc) {
-                // Aplica dano com o item selecionado (ou a "mão" se selectedItem for null)
                 npc.takeDamage(selectedItem);
                 return;
             }
 
-            // Fallback: interagir com Item (se não for NPC)
             if (obj instanceof Item item) {
                 item.onInteract();
                 System.out.println("Interacted with item: " + obj.getName());
@@ -106,10 +102,8 @@ public class InteractionAppState extends BaseAppState {
 
                 if (blockId == VoxelPalette.FURNACE_ID) {
                     targetFurnace = cell;
-                    // Abre o HUD da fornalha (o HUDAppState fará a verificação e o set)
                     getStateManager().getState(HudAppState.class).enterFurnaceMode(targetFurnace);
                     System.out.println("A abrir Fornalha em: " + cell.x + "," + cell.y + "," + cell.z);
-                    return; // Interação concluída
                 }
             });
         }
@@ -121,11 +115,9 @@ public class InteractionAppState extends BaseAppState {
             GameObject obj = renderIndex.lookup(cur);
             if (obj != null) return obj;
             if (world != null && cur.getName() != null) {
-                // Procura na lista de NPCs (agora exposta pelo WorldAppState)
                 for (NPC npc : world.getNpcList()) {
-                    // O nome do Node do Slime é igual ao nome do NPC
                     if (cur.getName().equals(npc.getName())) {
-                        return npc; // Sucesso! Encontrámos a Slime/NPC
+                        return npc;
                     }
                 }
             }

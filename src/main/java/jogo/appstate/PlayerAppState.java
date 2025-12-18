@@ -58,7 +58,6 @@ public class PlayerAppState extends BaseAppState {
         this.input = input;
         this.physicsSpace = physicsSpace;
         this.world = world;
-        // Adicionado do inventário pt.1 (Só o this.player = player)
         this.player = player;
         world.registerPlayerAppState(this);
     }
@@ -101,17 +100,14 @@ public class PlayerAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
-        // 1. SINCRONIZAÇÃO CRÍTICA: Atualizar a posição lógica do objeto Player
         if (player != null && playerNode != null) {
 
-            // CORREÇÃO: Usamos playerNode.getWorldTranslation() (posição da Node) em vez do método inexistente getPhysicsLocation().
             com.jme3.math.Vector3f physicsPos = playerNode.getWorldTranslation();
 
-            // Convertemos para o nosso Vec3 e definimos no objeto Player (que a Slime vai ler)
             player.setPosition(new jogo.framework.math.Vec3(physicsPos.x, physicsPos.y, physicsPos.z));
         }
 
-        handleInventoryInput();  // ADICIONAR esta linha
+        handleInventoryInput();
 
         if (player != null) {
             player.updateHunger(tpf, input.isSprinting());
@@ -122,17 +118,14 @@ public class PlayerAppState extends BaseAppState {
         }
 
         if (player != null && player.getHealth() <= 0) {
-            // Se morreu nesta frame, desativamos imediatamente o controlo
             setControlEnabled(false);
 
-            // Congela e retorna imediatamente, prevenindo a execução do código de movimento/física
             characterControl.setWalkDirection(Vector3f.ZERO);
             if (playerLight != null) playerLight.setPosition(playerNode.getWorldTranslation().add(0, eyeHeight, 0));
             return;
         }
 
         if (!isEnabled()) {
-            // Se desativado, congela a personagem
             characterControl.setWalkDirection(Vector3f.ZERO);
             if (playerLight != null) playerLight.setPosition(playerNode.getWorldTranslation().add(0, eyeHeight, 0));
             return;
@@ -173,15 +166,12 @@ public class PlayerAppState extends BaseAppState {
             dir = computeWorldMove(wish).normalizeLocal();
         }
 
-        // 1. CONSOLIDADO: OBTEM O TIPO DE BLOCO SOB O JOGADOR
         VoxelBlockType blockType = getVoxelBlockTypeUnderPlayer();
 
 
-        // NOVO: LÓGICA DE DANO DO BLOCO (REUTILIZAÇÃO DO blockType)
         playerDamageTimer += tpf;
         if (blockType != null && playerDamageTimer >= DAMAGE_TICK_RATE) {
 
-            // Aplica dano se o bloco for perigoso
             if (blockType.doesDamage()) {
                 int damage = blockType.getDamageAmount();
                 player.takeDamage(damage);
@@ -190,21 +180,16 @@ public class PlayerAppState extends BaseAppState {
 
             playerDamageTimer = 0.0f;
         }
-        // FIM LÓGICA DE DANO DO BLOCO
 
 
-        // LÓGICA DE VELOCIDADE (REUTILIZAÇÃO DO blockType)
         float blockMultiplier = 1.0f;
 
-        // Verifica se está no chão E se o bloco foi encontrado
         if (characterControl.isOnGround() && blockType != null) {
             blockMultiplier = blockType.getSpeedMultiplier(); // <- REUTILIZA O VALOR DO BLOCO
         }
 
-        // 2. Aplicar o multiplicador no cálculo da velocidade
         float speed = moveSpeed * (input.isSprinting() ? sprintMultiplier : 1f) * blockMultiplier;
         characterControl.setWalkDirection(dir.mult(speed));
-
 
 
         // jump
@@ -227,14 +212,11 @@ public class PlayerAppState extends BaseAppState {
 
         VoxelWorld vw = world.getVoxelWorld();
 
-        // O bloco sob o jogador (y da base - um pequeno delta)
         int blockX = (int) getPlayerPosition().x;
         int blockY = (int) (getPlayerPosition().y - 1f);
         int blockZ = (int) getPlayerPosition().z;
 
         byte blockId = vw.getBlock(blockX, blockY, blockZ);
-        // A Palette garante que retorna um VoxelBlockType (AirBlockType para IDs inválidos),
-        // que é seguro de usar.
         return vw.getPalette().get(blockId);
     }
 
@@ -293,13 +275,11 @@ public class PlayerAppState extends BaseAppState {
     }
 
     private void handleInventoryInput() {
-        // Scroll do mouse para trocar slot selecionado
         int scroll = input.consumeScrollDelta();
         if (scroll != 0) {
             int currentSlot = player.getInventory().getSelectedSlot();
             currentSlot -= scroll;
 
-            // Wrap around (0-8)
             if (currentSlot < 0) currentSlot = 8;
             if (currentSlot > 8) currentSlot = 0;
 
@@ -309,47 +289,35 @@ public class PlayerAppState extends BaseAppState {
     }
 
 
-    // Adicionado do inventário
     public Player getPlayer() {
         return player;
     }
 
     public void triggerRespawn() {
-        // 1. Atualiza a posição de spawn
         if (world != null) {
             spawnPosition = world.getRecommendedSpawnPosition();
         }
-        // 2. Reseta estatísticas (Vida e Fome no máximo)
         player.resetStats();
-        // 3. Teleporta
         respawn();
-        // 4. Re-ativa o controlo e o input
         setControlEnabled(true);
-        // 5. Captura o mouse (necessário para sair do estado de morte)
         input.setMouseCaptured(true);
     }
 
     public void setControlEnabled(boolean enabled) {
-        // 1. Controla o AppState (CORREÇÃO DE sintaxe)
         setEnabled(enabled);
 
         if (characterControl != null) {
             characterControl.setWalkDirection(Vector3f.ZERO);
-            // 2. Controla o componente de física do JME
             characterControl.setEnabled(enabled);
 
-            // 3. [CORREÇÃO FINAL DO CRASH] Adicionar/Remover do PhysicsSpace
             if (physicsSpace != null) {
                 if (enabled) {
-                    // Adicionar de volta quando ativado (respawn)
                     physicsSpace.add(characterControl);
                 } else {
-                    // Remover imediatamente do PhysicsSpace quando desativado (morte/congelamento)
                     physicsSpace.remove(characterControl);
                 }
             }
         }
-        // 4. Controla o input
         input.setMovementEnabled(enabled);
     }
 
@@ -369,12 +337,10 @@ public class PlayerAppState extends BaseAppState {
         passiveScoreTimer += tpf;
 
         if (passiveScoreTimer >= PASSIVE_SCORE_INTERVAL) {
-            // Adiciona o incremento à fila
             player.addScoreIncrement(PASSIVE_SCORE_AMOUNT);
             passiveScoreTimer = 0.0f; // Reinicia o timer
         }
 
-        // Processa todos os eventos de pontuação que estão na fila a cada frame.
         player.processScoreQueue();
     }
 
