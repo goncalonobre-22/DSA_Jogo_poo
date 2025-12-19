@@ -128,7 +128,11 @@ public class VoxelWorld {
 
 
 
-    //TODO this is where you'll generate your world
+    /**
+     * Gera o terreno do mundo utilizando ruído procedural (Simple Noise).
+     * Cria biomas distintos (Deserto, Quente, Padrão) com diferentes alturas,
+     * camadas de solo, minérios e vegetação.
+     */
     public void generateLayers() {
 
         SimpleNoise heightNoise = new SimpleNoise(2742);
@@ -482,6 +486,12 @@ public class VoxelWorld {
         return  sizeZ;
     }
 
+    /**
+     * Atualiza a lógica de blocos "vivos" (tickables) dentro de um raio em volta de um centro.
+     * @param center Posição central (geralmente do jogador).
+     * @param tpf Tempo por frame.
+     * @param physicsSpace Espaço de física para reconstrução se o mundo mudar.
+     */
     public void updateTickableBlocks(Vector3f center, float tpf, PhysicsSpace physicsSpace) {
         if (physicsSpace == null) return;
 
@@ -523,6 +533,11 @@ public class VoxelWorld {
         }
     }
 
+
+    /**
+     * Obtém ou cria o estado persistente de uma fornalha numa posição específica.
+     * @return O {@link FurnaceState} associado ou null se o bloco não for uma fornalha.
+     */
     public FurnaceState getFurnaceState(int x, int y, int z) {
         Vector3i key = new Vector3i(x, y, z);
         if (getBlock(x, y, z) != VoxelPalette.FURNACE_ID) {
@@ -532,11 +547,24 @@ public class VoxelWorld {
         return furnaceStates.computeIfAbsent(key, k -> new FurnaceState());
     }
 
-    // método para remover estado
+    /**
+     * Remove o estado persistente de uma fornalha (inventários e progresso) numa coordenada específica.
+     * Este método é geralmente chamado quando um bloco de fornalha é destruído no mundo,
+     * garantindo que os dados associados àquela posição sejam eliminados da memória.
+     * * @param x Coordenada X da fornalha.
+     * @param y Coordenada Y da fornalha.
+     * @param z Coordenada Z da fornalha.
+     * @return O objeto {@link FurnaceState} que foi removido, ou null se não existisse nenhum estado naquela posição.
+     */
     public FurnaceState removeFurnaceState(int x, int y, int z) {
         return furnaceStates.remove(new Vector3i(x, y, z));
     }
 
+    /**
+     * Atualiza o progresso de fundição de todas as fornalhas ativas no mundo.
+     * @param tpf Tempo por frame.
+     * @param physicsSpace Espaço de física.
+     */
     public void updateAllFurnaces(float tpf, PhysicsSpace physicsSpace) {
         // Usa um HashSet das keys para evitar ConcurrentModificationException
         for (Vector3i key : new java.util.HashSet<>(furnaceStates.keySet())) {
@@ -577,6 +605,9 @@ public class VoxelWorld {
         }
     }
 
+    /**
+     * Implementação simplificada de ruído de valor para geração procedural de terreno.
+     */
     public static class SimpleNoise {
 
         private final long seed;
@@ -638,6 +669,14 @@ public class VoxelWorld {
         }
     }
 
+    /**
+     * Gera uma árvore padrão no mundo, composta por um tronco vertical de madeira e uma copa de folhas.
+     * O tronco tem uma altura variável entre 4 e 6 blocos. As folhas são geradas em redor do topo
+     * do tronco seguindo um cálculo de distância de Manhattan para criar um formato orgânico.
+     * * @param x Coordenada X da base do tronco.
+     * @param y Coordenada Y da base do tronco.
+     * @param z Coordenada Z da base do tronco.
+     */
     private void generateTree(int x, int y, int z) {
 
         int trunkHeight = 4 + (int) (Math.random() * 3);
@@ -663,6 +702,14 @@ public class VoxelWorld {
         }
     }
 
+    /**
+     * Gera uma "Árvore Quente" (Hot Tree), típica de biomas áridos ou de alta temperatura.
+     * Esta variante gera apenas o tronco vertical de madeira, sem a presença de folhas,
+     * simulando uma árvore seca ou petrificada.
+     * * @param x Coordenada X da base do tronco.
+     * @param y Coordenada Y da base do tronco.
+     * @param z Coordenada Z da base do tronco.
+     */
     private void generateHotTree(int x, int y, int z) {
 
         int trunkHeight = 4 + (int) (Math.random() * 3);
