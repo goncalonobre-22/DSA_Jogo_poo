@@ -3,28 +3,47 @@ package jogo.util.furnace;
 import jogo.gameobject.item.Item;
 import jogo.util.inventory.Stacks;
 
+/**
+ * Representa o estado interno e a lógica de processamento de uma fornalha específica.
+ * Controla os slots de entrada, combustível e saída, bem como o progresso da fundição
+ * e o consumo de energia calorífica.
+ */
 public class FurnaceState {
+    /** Slot que contém o item a ser processado. */
     public Stacks inputStack = null;
+
+    /** Slot que contém o combustível atual. */
     public Stacks fuelStack = null;
+
+    /** Slot que contém o resultado final do processamento. */
     public Stacks outputStack = null;
 
-    public float meltProgress = 0.0f; // 0.0f a 8.0f (tempo total de fusão)
-    public float fuelLeft = 0.0f; // Combustível restante (em unidades de 'melts')
+    /** Progresso atual da fundição (de 0.0f até MELT_TIME_TOTAL). */
+    public float meltProgress = 0.0f;
 
+    /** Quantidade de energia de combustível restante na câmara de combustão. */
+    public float fuelLeft = 0.0f;
+
+    /** Tempo total (em segundos) necessário para processar um item. */
     public static final float MELT_TIME_TOTAL = 8.0f;
-    public static final float PHASE_DURATION = 2.0f; // 8.0 / 4 fases
+
+    /** Duração de cada fase visual da fundição (utilizado para animações ou ícones). */
+    public static final float PHASE_DURATION = 2.0f;
 
     /**
-     * Retorna o índice da imagem de fase (0 a 4, onde 4 é o progresso total).
+     * Calcula a fase atual do progresso de fundição (0 a 4).
+     * @return O índice da fase baseado no progresso atual.
      */
     public int getPhase() {
         if (inputStack == null || fuelLeft <= 0.0f) return 0;
-        // Fase 1 a 4
         return (int) (meltProgress / PHASE_DURATION);
     }
 
     /**
-     * Coloca um item no slot de Input (se for uma receita válida).
+     * Tenta colocar um item no slot de entrada.
+     * Só aceita o item se houver uma receita válida registada para ele.
+     * @param item O item a ser fundido.
+     * @return true se o item foi aceite; false caso contrário.
      */
     public boolean setInput(Item item) {
         if (inputStack == null) {
@@ -38,7 +57,9 @@ public class FurnaceState {
     }
 
     /**
-     * Coloca combustível (se for um item combustível).
+     * Tenta abastecer a fornalha com combustível.
+     * @param item O item a ser usado como combustível.
+     * @return true se o item for um combustível válido e o slot estiver livre; false caso contrário.
      */
     public boolean setFuel(Item item) {
         if (fuelStack == null && FurnaceRegistry.getFuelEfficiency(item) > 0.0f) {
@@ -49,7 +70,10 @@ public class FurnaceState {
     }
 
     /**
-     * O coração da lógica da fornalha, chamado pelo WorldAppState.
+     * Executa a lógica de atualização da fornalha.
+     * Consome combustível, avança o progresso da fundição e gera o item de saída
+     * quando o processo termina, desde que o slot de saída esteja disponível.
+     * @param tpf Tempo por frame (Time Per Frame).
      */
     public void updateMelt(float tpf) {
         if (inputStack == null) {
@@ -57,43 +81,38 @@ public class FurnaceState {
             return;
         }
 
-        // Fundição terminada mas output bloqueado
+        // Se a fundição terminou, aguarda que o slot de output seja libertado.
         if (meltProgress >= MELT_TIME_TOTAL) {
-            // Espera até o jogador retirar o item (o outputStack está cheio/ocupado)
             return;
         }
 
-        // Tentar consumir combustível se acabou e há mais para usar
+        // Tenta consumir uma nova unidade de combustível se a energia acabou.
         if (fuelLeft <= 0.0f) {
             if (fuelStack != null && fuelStack.getAmount() > 0) {
-                // Consome 1 de combustível
                 fuelLeft = FurnaceRegistry.getFuelEfficiency(fuelStack.getItem());
                 fuelStack.removeAmount(1);
                 if (fuelStack.getAmount() == 0) fuelStack = null;
             } else {
-                // Sem combustível, o progresso para.
-                return;
+                return; // Para o progresso se não houver combustível disponível.
             }
         }
 
-        // Fundir e gastar combustível
+        // Avança o progresso e consome a energia do combustível proporcionalmente ao tempo.
         float fuelCost = tpf / MELT_TIME_TOTAL;
-
         meltProgress += tpf;
         fuelLeft -= fuelCost;
 
-        // Finalizar fundição
+        // Finaliza o processamento e move o resultado para o slot de saída.
         if (meltProgress >= MELT_TIME_TOTAL) {
             FurnaceRecipe recipe = FurnaceRegistry.findRecipe(inputStack.getItem());
             if (recipe != null) {
                 Item outputItem = recipe.getOutput();
 
-                // Tentar adicionar ao output
                 if (outputStack == null) {
                     outputStack = new Stacks(outputItem, 1);
-                    inputStack.removeAmount(1);// Item de input consumido
-                    meltProgress = 0.0f; // Prepara para o próximo item
-                } else if (outputStack.isSameItem(outputItem) && outputStack.isFull()) {
+                    inputStack.removeAmount(1);
+                    meltProgress = 0.0f;
+                } else if (outputStack.isSameItem(outputItem) && !outputStack.isFull()) {
                     outputStack.addAmount(1);
                     inputStack.removeAmount(1);
                     if (inputStack.getAmount() == 0) inputStack = null;
@@ -102,9 +121,6 @@ public class FurnaceState {
             }
         }
 
-        // Garante que o combustível não é negativo
-        if (fuelLeft < 0.0f) {
-            fuelLeft = 0.0f;
-        }
+        if (fuelLeft < 0.0f) fuelLeft = 0.0f;
     }
 }

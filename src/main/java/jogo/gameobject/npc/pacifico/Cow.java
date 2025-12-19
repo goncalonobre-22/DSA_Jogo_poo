@@ -7,20 +7,38 @@ import jogo.gameobject.character.Player;
 
 public class Cow extends NPC {
 
+    /** Referência ao mundo de voxels para verificação de colisões e terreno. */
     private final VoxelWorld world;
+
+    /** Referência ao jogador (atualmente não utilizada para interação direta nesta classe). */
     private final Player player;
 
-    // Alvo
+    /** Posição do alvo atual para o movimento da IA. */
     private Vec3 targetPos;
 
-    // Movimento e física
+    /** Velocidade de movimento da vaca ao vaguear. */
     private float speed = 0.8f;
+
+    /** Temporizador para controlar a frequência de mudança de direção ao vaguear. */
     private float wanderTimer = 0;
+
+    /** Intervalo base entre as mudanças de alvo de movimento. */
     private static final float WANDER_INTERVAL = 5.0f;
+
+    /** Posição específica para onde a vaca se está a deslocar no momento. */
     private Vec3 wanderTarget;
+
+    /** Distância máxima que a vaca pode escolher percorrer num único ciclo de movimento. */
     private static final float WANDER_DISTANCE = 5.0f;
 
-    // Usamos os campos 'verticalVelocity' e 'GRAVITY' herdados de NPC.java
+    /**
+     * Construtor da classe Cow.
+     * Inicializa a vaca com um nome, posição de nascimento, vida (10 pontos) e define o alvo inicial como a sua própria posição.
+     * @param name Nome do NPC.
+     * @param spawnPos Posição inicial no mundo.
+     * @param world Referência ao sistema de voxels.
+     * @param player Referência ao jogador.
+     */
     public Cow(String name, Vec3 spawnPos, VoxelWorld world, Player player) {
         super(name);
         this.position = new Vec3(spawnPos.x, spawnPos.y, spawnPos.z);
@@ -34,6 +52,12 @@ public class Cow extends NPC {
         this.targetPos = target;
     }
 
+    /**
+     * Atualiza a inteligência artificial e a física da vaca a cada frame.
+     * Gere a escolha de novos alvos aleatórios, o movimento horizontal com deteção de colisões
+     * e a aplicação da gravidade para garantir que a vaca permanece no solo.
+     * @param tpf Tempo por frame (Time Per Frame).
+     */
     @Override
     public void updateAI(float tpf) {
 

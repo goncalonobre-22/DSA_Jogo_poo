@@ -7,28 +7,59 @@ import jogo.gameobject.character.Player;
 
 public class Healer extends NPC {
 
+    /** Referência ao mundo de voxels para cálculos de colisão e posicionamento. */
     private final VoxelWorld world;
+
+    /** Referência ao jogador que o Healer deve proteger e curar. */
     private final Player player;
 
-    // Alvo
+    /** Posição alvo para o movimento (geralmente a posição do jogador). */
     private Vec3 targetPos;
 
-    // Movimento e Física
+    /** Velocidade de movimento base ao vaguear. */
     private float speed = 1.0f;
+
+    /** Velocidade acelerada utilizada quando o Healer corre para ajudar o jogador. */
     private float followSpeed = 2.5f;
+
+    /** Temporizador para controlar a mudança de direção no modo de vaguear. */
     private float wanderTimer = 0;
+
+    /** Intervalo de tempo entre as mudanças de alvo no modo de vaguear. */
     private static final float WANDER_INTERVAL = 8.0f;
+
+    /** Coordenadas do ponto para onde o Healer se desloca quando não está a seguir o jogador. */
     private Vec3 wanderTarget;
+
+    /** Distância máxima que o Healer percorre em cada ciclo de movimento aleatório. */
     private static final float WANDER_DISTANCE = 10.0f;
 
-    // Cura
+    /** Raio de alcance (em metros) dentro do qual o Healer consegue aplicar a cura. */
     private static final float HEAL_RANGE = 5.0f;
-    private static final float HEAL_FOLLOW_RANGE = 10.0f; // Distância máxima para começar a seguir
+
+    /** Distância máxima a que o Healer começará a perseguir o jogador para o curar. */
+    private static final float HEAL_FOLLOW_RANGE = 10.0f;
+
+    /** Percentagem de vida (1.0 = 100%) abaixo da qual o jogador é considerado elegível para cura. */
     private static final float LOW_HEALTH_PERCENT = 1f;
+
+    /** Quantidade de pontos de vida restaurados por cada pulso de cura. */
     private static final int HEAL_AMOUNT = 5;
+
+    /** Tempo de espera (em segundos) entre cada ação de cura. */
     private static final float HEAL_COOLDOWN = 3.0f;
+
+    /** Temporizador interno para gerir o cooldown da habilidade de cura. */
     private float healCooldownTimer = 0;
 
+    /**
+     * Construtor da classe Healer.
+     * Inicializa o NPC com 20 pontos de vida e define a sua posição inicial.
+     * @param name Nome do NPC.
+     * @param spawnPos Posição inicial no mundo.
+     * @param world Referência ao sistema de voxels.
+     * @param player Referência ao jogador alvo.
+     */
     public Healer(String name, Vec3 spawnPos, VoxelWorld world, Player player) {
         super(name);
         this.position = new Vec3(spawnPos.x, spawnPos.y, spawnPos.z);
@@ -42,6 +73,12 @@ public class Healer extends NPC {
         this.targetPos = target;
     }
 
+    /**
+     * Atualiza a lógica de decisão, cura, movimento e física do Healer.
+     * O Healer prioriza aproximar-se do jogador se este precisar de cura e estiver dentro do raio de 10m.
+     * Caso contrário, vagueia aleatoriamente pelo cenário.
+     * @param tpf Tempo por frame (Time Per Frame).
+     */
     @Override
     public void updateAI(float tpf) {
 
