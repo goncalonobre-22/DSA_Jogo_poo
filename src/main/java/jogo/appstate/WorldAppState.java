@@ -164,14 +164,26 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Retorna a referência ao objeto do jogador.
+     * @return O Player atual.
+     */
     public Player getPlayer() {
         return player;
     }
 
+    /**
+     * Retorna a lista de NPCs (Non-Player Characters) ativos no mundo.
+     * @return Lista de NPCs.
+     */
     public List<NPC> getNpcList() {
         return npcList;
     }
 
+    /**
+     * Verifica blocos afetados pela gravidade num raio em redor do jogador.
+     * Se um bloco (como areia) não tiver um bloco sólido por baixo, ele cai.
+     */
     private void checkFallingBlocks() {
         if (voxelWorld == null || physicsSpace == null) return;
 
@@ -224,12 +236,20 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Atualiza o progresso de quebra de blocos baseado no tempo decorrido.
+     * @param tpf Tempo desde o último frame.
+     */
     public void setBreakingBlockSystem(float tpf) {
         if (breakingBlockSystem != null) {
             breakingBlockSystem.update(tpf);
         }
     }
 
+    /**
+     * Processa a quebra de blocos pelo jogador. Verifica se o bloco foi atingido,
+     * calcula o dano (baseado no item na mão) e adiciona o item correspondente ao inventário se quebrado.
+     */
     public void setBrokenBlockToInventory() {
         if (input != null && input.isMouseCaptured() && input.consumeBreakRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
@@ -272,6 +292,10 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Gere a colocação de blocos no mundo a partir do item selecionado no inventário do jogador.
+     * Calcula a posição adjacente à face do bloco focada pela mira.
+     */
     public void setPlacedBlockInWorld() {
         if (input != null && input.isMouseCaptured() && input.consumePlaceRequested()) {
             var pick = voxelWorld.pickFirstSolid(cam, 6f);
@@ -318,6 +342,10 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Atualiza o estado de todas as fornalhas ativas no mundo com base num timer de atualização constante.
+     * @param tpf Tempo desde o último frame.
+     */
     public void setFurnaceUpdateTimer(float tpf) {
         furnaceUpdateTimer += tpf;
         if (furnaceUpdateTimer >= FURNACE_UPDATE_RATE) {
@@ -328,6 +356,10 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Realiza o spawn aleatório de diversas categorias de NPCs (Slimes, Zombies, Vacas e Healers)
+     * através do mapa, garantindo que aparecem na superfície sólida.
+     */
     private void spawnNPCs() {
 
         int worldX = 320;
@@ -487,6 +519,10 @@ public class WorldAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Define o registo de jogo (GameRegistry) para gestão de entidades e itens.
+     * @param registry O GameRegistry a utilizar.
+     */
     public void setGameRegistry(GameRegistry registry) {
         this.registry = registry;
     }

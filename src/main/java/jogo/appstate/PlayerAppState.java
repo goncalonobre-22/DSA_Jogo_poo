@@ -98,6 +98,12 @@ public class PlayerAppState extends BaseAppState {
         applyViewToCamera();
     }
 
+    /**
+     * Ciclo principal de atualização do jogador. Gere a sincronização da posição física com a entidade,
+     * o consumo de fome, efeitos de som de dano, menus de inventário, movimento baseado na
+     * sensibilidade do rato e interação com blocos especiais (dano e modificadores de velocidade).
+     * @param tpf Tempo desde o último frame (time per frame).
+     */
     @Override
     public void update(float tpf) {
         if (player != null && playerNode != null) {
@@ -204,6 +210,10 @@ public class PlayerAppState extends BaseAppState {
         if (playerLight != null) playerLight.setPosition(playerNode.getWorldTranslation().add(0, eyeHeight, 0));
     }
 
+    /**
+     * Identifica o tipo de bloco (VoxelBlockType) que se encontra imediatamente abaixo dos pés do jogador.
+     * @return O objeto VoxelBlockType correspondente ao bloco no chão ou null se não for detetado.
+     */
     private VoxelBlockType getVoxelBlockTypeUnderPlayer() {
         if (world == null || world.getVoxelWorld() == null || playerNode == null) {
             return null;
@@ -274,6 +284,10 @@ public class PlayerAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Processa a entrada da roda do rato (scroll) para alternar entre os slots
+     * rápidos (0-8) do inventário do jogador.
+     */
     private void handleInventoryInput() {
         int scroll = input.consumeScrollDelta();
         if (scroll != 0) {
@@ -288,11 +302,14 @@ public class PlayerAppState extends BaseAppState {
         }
     }
 
-
     public Player getPlayer() {
         return player;
     }
 
+    /**
+     * Executa o processo completo de renascimento: restaura estatísticas (vida/fome),
+     * reposiciona no spawn, reativa controlos e captura o rato.
+     */
     public void triggerRespawn() {
         if (world != null) {
             spawnPosition = world.getRecommendedSpawnPosition();
@@ -303,6 +320,10 @@ public class PlayerAppState extends BaseAppState {
         input.setMouseCaptured(true);
     }
 
+    /**
+     * Ativa ou desativa a capacidade de movimento do jogador e a sua presença no motor de física.
+     * @param enabled true para permitir controlo, false para imobilizar o jogador.
+     */
     public void setControlEnabled(boolean enabled) {
         setEnabled(enabled);
 
@@ -321,16 +342,27 @@ public class PlayerAppState extends BaseAppState {
         input.setMovementEnabled(enabled);
     }
 
+    /**
+     * Define o nó de áudio a ser utilizado quando o jogador sofre dano.
+     * @param hurtSound O AudioNode com o som de ferimento.
+     */
     public void setHurtSound(AudioNode hurtSound) {
         this.hurtSound = hurtSound;
     }
 
+    /**
+     * Reproduz uma instância do som de dano, se este estiver definido.
+     */
     private void playHurtSound() {
         if (hurtSound != null) {
             hurtSound.playInstance();
         }
     }
 
+    /**
+     * Gere a atribuição passiva de pontuação ao jogador com base em intervalos de tempo fixos.
+     * @param tpf Tempo desde o último frame.
+     */
     private void handlePassiveScore(float tpf) {
         if (player == null) return;
 

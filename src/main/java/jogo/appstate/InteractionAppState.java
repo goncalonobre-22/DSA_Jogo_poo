@@ -39,6 +39,12 @@ public class InteractionAppState extends BaseAppState {
     @Override
     protected void initialize(Application app) { }
 
+    /**
+     * Ciclo principal de atualização que processa os pedidos de interação.
+     * Verifica primeiro o item na mão do jogador, depois colisões com objetos no mundo (NPCs/Itens)
+     * e, por fim, interações com o sistema de voxels (ex: abrir fornalha).
+     * @param tpf Tempo desde o último frame.
+     */
     @Override
     public void update(float tpf) {
         if (!input.isMouseCaptured()) return;
@@ -111,6 +117,7 @@ public class InteractionAppState extends BaseAppState {
 
     }
 
+
     private GameObject findRegistered(Spatial s) {
         Spatial cur = s;
         while (cur != null) {
@@ -128,6 +135,9 @@ public class InteractionAppState extends BaseAppState {
         return null;
     }
 
+    /**
+     * Limpa a referência da fornalha que está atualmente a ser acedida pelo jogador.
+     */
     public void clearTargetFurnace() {
         this.targetFurnace = null;
     }

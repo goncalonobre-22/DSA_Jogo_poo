@@ -102,3 +102,25 @@ if (worldChanged) {
 Decisão: usar
 Reflexão: Aprendemos que sempre que queremos mexer com blocos de alguma forma temos de atualizar o mundo para as mudanças
 acontecerem. Foi útil para adições posteriores como o updateTickableBlock, o setBrokenBlockToInventory e o setPlacedBlockInWorld
+
+
+
+5. Contexto: Queríamos diminuir as sombras porque o jogo estava muito escuro
+
+Prompt: Neste momento as sombras estão muito escuras, podes dizer o que tenho de alterar para aumentar a luminosidade?
+
+Output relevante:
+Object ssao = ssaoCls.getConstructor(float.class, float.class, float.class, float.class)
+                    .newInstance(4f, 1.5f, 0.5f, 0.02f); // radius, intensity, scale, bias
+
+Decisão: Rejeitar
+Reflexão: Decidimos não utilizar estas mudanças porque sentimos que não faziam diferença suficiente no jogo.
+Posteriormente alteramos o raio da playerLight.
+
+
+6. Contexto: Estavamos com falta de tempo para fazer os comentários de JavaDoc, por isso decidimos pedir à IA para
+produzir JavaDocs para as classes mais "densas" do projeto para depois rever e editar sem ser necessário começar do zero
+
+Prompt: Podes produzir JavaDocs para cada método das classes HudAppState, InteractionAppState, PlayerAppState e WorldAppState?
+
+Output relevante:

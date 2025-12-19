@@ -218,7 +218,16 @@ public class HudAppState extends BaseAppState {
 
     }
 
-    // Criar um slot
+    /**
+     * Desenha um slot individual de inventário, incluindo moldura, fundo, ícone do item e quantidade.
+     * @param parentNode Nó onde o slot será anexado.
+     * @param stack A pilha de itens (Stacks) a exibir.
+     * @param slotIndex Índice identificador do slot.
+     * @param x Coordenada X na tela.
+     * @param y Coordenada Y na tela.
+     * @param bgColor Cor de fundo do slot.
+     * @param isSelected Define se o slot deve exibir a borda de seleção.
+     */
     private void drawInventorySlot(Node parentNode, Stacks stack, int slotIndex, int x, int y, ColorRGBA bgColor, boolean isSelected) {
         // Border
         if (isSelected) {
@@ -294,7 +303,9 @@ public class HudAppState extends BaseAppState {
     }
 
 
-    // Atualizar a hotbar
+    /**
+     * Atualiza e renderiza visualmente a barra de acesso rápido (Hotbar) na parte inferior da tela.
+     */
     private void updateHotbar() {
         hotbarNode.detachAllChildren();
 
@@ -316,7 +327,9 @@ public class HudAppState extends BaseAppState {
     }
 
 
-    // Inventário + Crafting (Quando se abre o inventário)
+    /**
+     * Renderiza a interface completa do inventário e a grelha de crafting básica quando o menu está aberto.
+     */
     private void updateInventoryAndCrafting() {
         inventoryNode.detachAllChildren();
 
@@ -434,7 +447,10 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-
+    /**
+     * Gere a lógica de interação específica para o modo de crafting (navegação, seleção e execução).
+     * @param input Estado das entradas do teclado/rato.
+     */
     private void updateCraftingInterface(InputAppState input) {
         // alt sai do menu de craft
         if (input.consumeExitCraftRequested()) {
@@ -467,7 +483,9 @@ public class HudAppState extends BaseAppState {
         updateInventoryAndCrafting();
     }
 
-    // Entrar ou sair do inventário
+    /**
+     * Alterna o estado do inventário entre aberto e fechado, configurando a visibilidade dos nós na GUI.
+     */
     public void toggleInventory() {
         inventoryOpen = !inventoryOpen;
 
@@ -492,7 +510,10 @@ public class HudAppState extends BaseAppState {
     }
 
 
-    // Ver se o inventário está aberto ou não
+    /**
+     * Verifica se o menu de inventário está visível no momento.
+     * @return true se o inventário estiver aberto, false caso contrário.
+     */
     public boolean isInventoryOpen() {
         return inventoryOpen;
     }
@@ -529,7 +550,10 @@ public class HudAppState extends BaseAppState {
     }
 
 
-    // Mexer no inventário
+    /**
+     * Move o cursor de seleção dentro da grelha do inventário principal.
+     * @param dir Direção do movimento ("Left", "Right", "Up", "Down").
+     */
     public void moveInventorySelection(String dir) {
         Inventory inv = player.getInventory();
         int selected = inv.getSelectedSlot();
@@ -559,14 +583,18 @@ public class HudAppState extends BaseAppState {
     }
 
 
-    // Entrar no menu de craft
+    /**
+     * Entra no modo de crafting
+     */
     private void enterCraftMenu() {
         craftMenuOpen = true;
         player.setSelectedCraftSlot(0);
         System.out.println("Entrou no menu de crafting");
     }
 
-    // Sair do menu de craft
+    /**
+     * Desativa o modo de crafting e limpa seleções temporárias.
+     */
     private void exitCraftMenu() {
         craftMenuOpen = false;
         selectedItem = null;
@@ -574,7 +602,9 @@ public class HudAppState extends BaseAppState {
         System.out.println("Saiu do menu de crafting (ALT)");
     }
 
-    // Tirar item do inventário para o craft
+    /**
+     * Gere a seleção de um item do inventário (tecla T) para ser usado no sistema de crafting.
+     */
     private void handleTakeFromInventory() {
         if (selectedItem != null) {
             // Se já tem um item selecionado para colocar, deseleciona.
@@ -600,7 +630,9 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Tirar item do craft para o inventário
+    /**
+     * Cancela a seleção de um item que estava "na mão" para o crafting.
+     */
     private void handleTakeForCrafting() {
         if (selectedItem != null) {
             selectedItem = null;
@@ -610,7 +642,9 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Colocar o item no craft
+    /**
+     * Coloca uma unidade do item selecionado no slot atual da grelha de crafting.
+     */
     private void handlePutInCraftGrid() {
         if (selectedItem == null) {
             System.out.println("Nenhum item selecionado para colocar!");
@@ -660,7 +694,10 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Funcionamento do crafting na tela
+    /**
+     * Executa a receita de crafting se os ingredientes na grelha forem válidos,
+     * gerando o item resultante no inventário.
+     */
     private void handleCrafting() {
         RecipeSystem recipe = RecipeRegistry.findRecipe(player.getCraftingGrid());
 
@@ -682,7 +719,11 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Navegação no craft
+    /**
+     * Move o cursor de seleção dentro da grelha 3x3 de crafting.
+     * @param deltaX Deslocamento horizontal.
+     * @param deltaY Deslocamento vertical.
+     */
     private void moveCraftSelection(int deltaX, int deltaY) {
         int current = player.getSelectedCraftSlot();
         int col = current % 3;
@@ -701,7 +742,13 @@ public class HudAppState extends BaseAppState {
         player.setSelectedCraftSlot(newSlot);
     }
 
-    //Desenhar o coração
+    /**
+     * Renderiza um ícone individual de coração para a barra de vida.
+     * @param parentNode Nó pai.
+     * @param texturePath Caminho da textura (cheio, meio ou vazio).
+     * @param x Posição X.
+     * @param y Posição Y.
+     */
     private void drawHeartIcon(Node parentNode, String texturePath, int x, int y) {
         Quad quad = new Quad(HEART_SIZE, HEART_SIZE);
         Geometry heartGeom = new Geometry("HeartIcon", quad);
@@ -723,7 +770,9 @@ public class HudAppState extends BaseAppState {
         parentNode.attachChild(heartGeom);
     }
 
-    // Desenhar a barra da vida
+    /**
+     * Atualiza dinamicamente a exibição da barra de vida (corações) com base no HP atual do jogador.
+     */
     private void updateHealthDisplay() {
         heartNode.detachAllChildren();
 
@@ -753,7 +802,13 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Desenhar coisinhas da fome
+    /**
+     * Renderiza um ícone individual de comida para a barra de fome.
+     * @param parentNode Nó pai.
+     * @param texturePath Caminho da textura (comida cheia, meia ou vazia).
+     * @param x Posição X.
+     * @param y Posição Y.
+     */
     private void drawHungerIcon(Node parentNode, String texturePath, int x, int y) {
         Quad quad = new Quad(FOOD_SIZE, FOOD_SIZE);
         Geometry hungerGeom = new Geometry("FoodIcon", quad);
@@ -772,7 +827,9 @@ public class HudAppState extends BaseAppState {
         parentNode.attachChild(hungerGeom);
     }
 
-    // Desenhar a barra da fome
+    /**
+     * Atualiza dinamicamente a exibição da barra de fome com base no status atual do jogador.
+     */
     private void updateHungerDisplay() {
         hungerNode.detachAllChildren();
 
@@ -803,14 +860,20 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Update da tela de game over
+    /**
+     * Gere a lógica de entrada para a tela de Game Over (ex: solicitar respawn).
+     * @param input Estado das entradas.
+     */
     private void updateGameOverScreen(InputAppState input) {
         if (input.consumeRespawnRequested()) {
             handleRespawn();
         }
     }
 
-    // Mostra a tela de Game Over
+    /**
+     * Ativa ou desativa a sobreposição visual de "Morte" e bloqueia controlos do jogador.
+     * @param show true para exibir a tela, false para esconder.
+     */
     public void showGameOver(boolean show) {
         if (show == gameOverOpen) return;
 
@@ -870,7 +933,9 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Esconder a tela de game over ao dar respawn
+    /**
+     * Aciona o processo de respawn do jogador e restaura a interface normal.
+     */
     private void handleRespawn() {
         if (playerAppState == null) return;
 
@@ -879,7 +944,10 @@ public class HudAppState extends BaseAppState {
         showGameOver(false);
     }
 
-    // Entrar na fornalha
+    /**
+     * Abre a interface de interação com uma fornalha específica no mundo.
+     * @param cell Coordenadas da célula onde a fornalha está localizada.
+     */
     public void enterFurnaceMode(VoxelWorld.Vector3i cell) {
         WorldAppState worldAppState = getStateManager().getState(WorldAppState.class);
         VoxelWorld vw = worldAppState.getVoxelWorld();
@@ -899,7 +967,9 @@ public class HudAppState extends BaseAppState {
         guiNode.attachChild(inventoryNode);
     }
 
-    // Sair da fornalha
+    /**
+     * Fecha o menu da fornalha e limpa as referências de estado atuais.
+     */
     private void exitFurnaceMode() {
         if (currentFurnaceCell != null) {
             getStateManager().getState(InteractionAppState.class).clearTargetFurnace();
@@ -911,7 +981,10 @@ public class HudAppState extends BaseAppState {
         player.getInventory().setSelectedSlot(0);
     }
 
-    // Colocar o item na fornalha
+    /**
+     * Tenta colocar o item selecionado no slot de entrada ou combustível da fornalha.
+     * @param slotType O tipo de slot (Entrada ou Combustível).
+     */
     private void handlePutInFurnace(int slotType) {
         if (currentFurnaceState == null || selectedItemForFurnace == null) return;
 
@@ -964,7 +1037,9 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Retirar o resultado da fornalha
+    /**
+     * Transfere o item resultante do processo de fundição da fornalha para o inventário do jogador.
+     */
     private void handleRetrieveOutput() {
         if (currentFurnaceState == null || currentFurnaceState.outputStack == null) return;
 
@@ -982,6 +1057,10 @@ public class HudAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Gere a lógica de navegação e interação específica do menu da fornalha.
+     * @param input Estado das entradas.
+     */
     private void updateFurnaceInterface(InputAppState input) {
         if (currentFurnaceState == null) {
             exitFurnaceMode();
@@ -1061,6 +1140,9 @@ public class HudAppState extends BaseAppState {
         drawInventoryAndFurnace();
     }
 
+    /**
+     * Renderiza visualmente o inventário em conjunto com os slots da fornalha (Input, Fuel, Output).
+     */
     private void drawInventoryAndFurnace() {
         inventoryNode.detachAllChildren();
 
@@ -1203,7 +1285,13 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Desenho da seta
+    /**
+     * Desenha a imagem indicadora do progresso de fundição (fases da seta/fogo) na fornalha.
+     * @param parentNode Nó pai.
+     * @param texturePath Caminho da imagem da fase atual.
+     * @param x Posição X.
+     * @param y Posição Y.
+     */
     private void drawPhaseImage(Node parentNode, String texturePath, int x, int y) {
         Quad quad = new Quad(SLOT_SIZE, SLOT_SIZE);
         Geometry geom = new Geometry("FurnacePhase", quad);
@@ -1224,7 +1312,9 @@ public class HudAppState extends BaseAppState {
         parentNode.attachChild(geom);
     }
 
-    // Para limpar o craft
+    /**
+     * Remove todos os itens da grelha de crafting e tenta devolvê-los ao inventário do jogador.
+     */
     private void handleClearCrafting() {
         Stacks[] grid = player.getCraftingGrid();
         boolean gridFullyCleared = true;
@@ -1276,7 +1366,9 @@ public class HudAppState extends BaseAppState {
         }
     }
 
-    // Para atualizar a pontuação
+    /**
+     * Atualiza o painel de pontuação (Score) exibindo o nome do jogador e os pontos atuais.
+     */
     private void updateScoreDisplay() {
         scoreNode.detachAllChildren();
 
