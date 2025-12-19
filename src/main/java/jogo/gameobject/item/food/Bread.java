@@ -16,6 +16,10 @@ public class Bread extends Item {
         return assetManager.loadTexture("Interface/bread.png");
     }
 
+    /**
+     * Define o comportamento ao interagir com o pão (consumo).
+     * Se o jogador for válido, remove uma unidade do item do inventário e aumenta o nível de fome em 30 unidades.
+     */
     @Override
     public void onInteract() {
         if (player != null && player.getInventory().removeItem(this, 1)) {

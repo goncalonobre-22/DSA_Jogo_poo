@@ -7,28 +7,58 @@ import jogo.voxel.VoxelWorld;
 
 public class Slime extends NPC {
 
+    /** Posição atual do alvo que o Slime está a tentar alcançar. */
     private Vec3 targetPos;
+
+    /** Velocidade de movimento horizontal do Slime. */
     private float speed = 3.0f;
+
+    /** Referência ao mundo de voxels para verificação de colisões e terreno. */
     private final VoxelWorld world;
+
+    /** Referência ao jogador para cálculo de perseguição e aplicação de dano. */
     private final Player player;
 
-    // Física e movimento
+    /** Velocidade vertical atual (para gravidade e saltos). */
     private float verticalVelocity = 0;
+
+    /** Força da gravidade aplicada ao Slime. */
     private static final float GRAVITY = 24.0f;
+
+    /** Força aplicada no momento do salto. */
     private static final float JUMP_POWER = 8.0f;
+
+    /** Temporizador para controlar o intervalo entre saltos. */
     private float jumpTimer = 0.0f;
+
+    /** Intervalo de tempo (em segundos) entre cada salto. */
     private static final float JUMP_INTERVAL = 1.0f;
 
-    // Ataque
+    /** Distância máxima para o Slime conseguir desferir um ataque ao jogador. */
     private static final float ATTACK_RANGE = 1.8f;
+
+    /** Tempo de espera entre ataques consecutivos. */
     private static final float ATTACK_COOLDOWN = 1.5f;
+
+    /** Temporizador interno para gerir o cooldown do ataque. */
     public float attackCooldownTimer = 0.0f;
+
+    /** Quantidade de dano infligida ao jogador por cada ataque. */
     private final int ATTACK_DAMAGE = 5;
 
+    /** Distância máxima a que o Slime consegue detetar o jogador. */
     private static final float PERCEPTION_RANGE = 30.0f;
 
+    /** Vida inicial atribuída ao Slime. */
     private final int health = 5;
 
+    /**
+     * Construtor da classe Slime.
+     * @param name Nome identificador do NPC.
+     * @param spawnPos Posição inicial onde o Slime será criado.
+     * @param world O mundo de voxels onde o Slime habita.
+     * @param player O jogador que o Slime irá perseguir.
+     */
     public Slime(String name, Vec3 spawnPos, VoxelWorld world, Player player) {
         super(name);
         this.position = new Vec3(spawnPos.x, spawnPos.y, spawnPos.z);
@@ -37,10 +67,20 @@ public class Slime extends NPC {
         setHealth(health);
     }
 
+    /**
+     * Define a posição alvo para a qual o Slime se deve dirigir.
+     * @param target Coordenadas do destino (geralmente a posição do jogador).
+     */
     public void setTarget(Vec3 target) {
         this.targetPos = target;
     }
 
+    /**
+     * Atualiza a IA e a física do Slime a cada frame.
+     * Gere a lógica de ataque se o jogador estiver perto, calcula o movimento horizontal
+     * em direção ao alvo, verifica colisões e aplica a física de saltos e gravidade.
+     * @param tpf Tempo por frame (Time Per Frame).
+     */
     @Override
     public void updateAI(float tpf) {
 
@@ -100,7 +140,7 @@ public class Slime extends NPC {
         }
 
 
-        // --- 3. Gravidade e Movimento Vertical (Salto) ---
+        // Gravidade e Movimento Vertical (Salto)
 
         verticalVelocity -= GRAVITY * tpf;
         float moveY = verticalVelocity * tpf;
