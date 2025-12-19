@@ -1,0 +1,104 @@
+Aqui está documentado o uso de Inteligência Artificial no projeto
+
+1. Contexto: No primeiro uso de inteligência artificial estavamos com dificuldades em colocar em prática o sistema de
+crafting da forma como queríamos que funcionasse. Queríamos utilizar um array de Strings nas receitas que correspondia
+a cada índice do array da grid do crafting, mas não conseguíamos fazer com que cada caracter da String da receita
+ligasse ao indice correspondente na Grid.
+
+Prompt: Estou a fazer um sistema de crafting onde quero que as receitas tenham 4 atributos, o item de resultado,
+a quantidade do item de resultado, um array de Strings correspondente ao local da grid (por exemplo, se o String[]
+for ["WWW", " S ", " S "], eu quero que na grid do crafting o "WWW" corresponda aos stacks nas posições 0, 1 e 2
+e que os S correspondam aos stacks nas posições 4 e 7, sendo que as posições correspondentes aos espaços não devem
+estar preenchidas) e por último um map que relaciona um caracter a um item (pegando o exemplo anterior vamos supor
+que cada W corresponde a um WoodBlockItem e o S corresponde ao StickItem). Neste momento tenho as receitas definidas,
+mas não estou a conseguir ligar cada caracter do array de Strings a uma posição da Grid, podes ajudar a fazer essa
+ligação?
+
+Output relevante: int row = i / 3;
+                  int col = i % 3;
+                  char patternChar = pattern[row].charAt(col);
+
+Decisão: Usar
+Reflexão: Aprendemos como dividir um array em linhas e colunas e a utilidade do charAt. A divisão em linhas e colunas
+foi útil na criação da interface.
+
+
+
+2. Contexto: Após colocar a fornalha a funcionar apercebemo-nos que o estado não guardava quando saíamos do menu da
+fornalha. Dado que o funcionamento correto da fornalha não era necessário para o projeto, mas que enquanto grupo
+queríamos que ela funcionasse sem ser necessário estar no menu da fornalha decidimos utilizar a inteligência artificial
+para obter a função que nos permite guardar o estado.
+
+Prompt: Nós temos um sistema de furnace que está funcional, mas queremos que a fornalha se mantenha a derreter os itens
+sem ser preciso estar com o seu menu aberto, o que temos de fazer para que o estado fique guardado ao sair do menu da
+furnace?
+
+Output relevante:
+
+public void setFurnaceUpdateTimer(float tpf) {
+        furnaceUpdateTimer += tpf;
+        if (furnaceUpdateTimer >= FURNACE_UPDATE_RATE) {
+            if (voxelWorld != null) {
+                voxelWorld.updateAllFurnaces(furnaceUpdateTimer, physicsSpace);
+            }
+            furnaceUpdateTimer = 0.0f; // Reinicia o timer
+        }
+    }
+
+public void updateAllFurnaces(float tpf, PhysicsSpace physicsSpace) {
+        // Usa um HashSet das keys para evitar ConcurrentModificationException
+        for (Vector3i key : new java.util.HashSet<>(furnaceStates.keySet())) {
+            FurnaceState state = furnaceStates.get(key);
+
+            if (state != null) {
+                state.updateMelt(tpf);
+            }
+        }
+    }
+
+public FurnaceState getFurnaceState(int x, int y, int z) {
+        Vector3i key = new Vector3i(x, y, z);
+        if (getBlock(x, y, z) != VoxelPalette.FURNACE_ID) {
+            furnaceStates.remove(key);
+            return null;
+        }
+        return furnaceStates.computeIfAbsent(key, k -> new FurnaceState());
+    }
+
+Decisão: Usar
+Reflexão: Aprendemos como manter o estado da fornalha ao utilizar HashSets.
+
+
+3. Contexto: Queríamos retirar o fundo preto/branco das pngs utilizadas nos slots
+
+Prompt: Neste momento as nossas pngs utilizadas no slot do inventário ficam com um fundo branco ou preto ao invés
+ficarem com fundo transparente como na imagem original, como resolvo isso?
+
+Output relevante:
+
+iconMat.setTransparent(true);
+iconMat.getAdditionalRenderState().setBlendMode(com.jme3.material.RenderState.BlendMode.Alpha);
+
+Decisão: Usar
+Reflexão: Descobrimos como se tira o fundo que aparece automaticamente nas pngs, o que nos permitiu utilizar imagens
+do bloco ao invés de usar imagens das texturas 2D.
+
+
+4. Contexto: Quando estávamos a tentar criar a gravidade para afetar o bloco de areia o bloco não caía, por isso
+utilizamos IA para tentar descobrir se o nosso método funcionava de forma errada ou se havia algo em falta.
+
+Prompt: O nosso sistema de queda de blocos não está a funcionar, consegues explicar o que está errado no método para ele
+não funcionar?
+
+Output relevante:
+
+if (worldChanged) {
+            voxelWorld.rebuildDirtyChunks(physicsSpace);
+            if (playerAppState != null) {
+                playerAppState.refreshPhysics();
+            }
+        }
+
+Decisão: usar
+Reflexão: Aprendemos que sempre que queremos mexer com blocos de alguma forma temos de atualizar o mundo para as mudanças
+acontecerem. Foi útil para adições posteriores como o updateTickableBlock, o setBrokenBlockToInventory e o setPlacedBlockInWorld
