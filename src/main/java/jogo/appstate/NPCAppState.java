@@ -38,6 +38,12 @@ public class NPCAppState extends BaseAppState {
         this.registry = registry;
     }
 
+
+    /**
+     * Inicializa o estado dos NPCs. Para cada NPC na lista, cria o seu modelo 3D,
+     * regista-o no RenderIndex para deteção de colisões e anexa-o ao nó do mundo.
+     * @param app A instância da aplicação JMonkeyEngine.
+     */
     @Override
     protected void initialize(Application app) {
         Node worldNode = worldAppState.getWorldNode();
@@ -53,6 +59,13 @@ public class NPCAppState extends BaseAppState {
         }
     }
 
+    /**
+     * Cria a representação visual (modelo 3D) de um NPC com base no seu tipo (Slime, Zombie, Cow ou Healer).
+     * Configura a geometria, escala, materiais e texturas específicas para cada entidade.
+     * @param app A instância da aplicação para aceder ao AssetManager.
+     * @param npc A instância lógica do NPC.
+     * @return Um Node contendo a geometria e material do NPC.
+     */
     private com.jme3.scene.Node create3DModel(com.jme3.app.Application app, jogo.gameobject.npc.NPC npc) {
 
         com.jme3.scene.Node parent = new com.jme3.scene.Node(npc.getName());
@@ -130,6 +143,13 @@ public class NPCAppState extends BaseAppState {
         return parent;
     }
 
+
+    /**
+     * Ciclo principal de atualização dos NPCs. Define o jogador como alvo para as IAs,
+     * executa a lógica de decisão de cada NPC (updateAI) e sincroniza a posição dos
+     * modelos 3D com as coordenadas lógicas.
+     * @param tpf Tempo desde o último frame (time per frame).
+     */
     @Override
     public void update(float tpf) {
 
@@ -165,7 +185,11 @@ public class NPCAppState extends BaseAppState {
         }
     }
 
-    // Metodo de remoção do NPC
+    /**
+     * Remove um NPC do jogo de forma completa: retira o modelo da árvore de cena,
+     * remove o registo de colisão no RenderIndex e elimina o NPC das listas de controlo.
+     * @param npc O NPC a ser removido.
+     */
     public void removeNPC(NPC npc) {
         Node model = models.get(npc);
         if (model != null) {
